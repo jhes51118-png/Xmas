@@ -84,6 +84,7 @@
             Lock: (p) => <Icon {...p} path={<><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>} />,
             LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />,
             Trash2: (p) => <Icon {...p} path={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></>} />,
+            Key: (p) => <Icon {...p} path={<><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></>} />,
         };
 
         // --- Config Wizard Component ---
@@ -172,6 +173,8 @@
             const [isProcessing, setIsProcessing] = useState(false);
             const [isAdmin, setIsAdmin] = useState(false);
             const [adminPasswordInput, setAdminPasswordInput] = useState('');
+            const [userPasswordInput, setUserPasswordInput] = useState('');
+            const [loginTargetUser, setLoginTargetUser] = useState(null);
             
             // Firebase refs
             const appRef = useRef(null);
@@ -301,18 +304,18 @@
                 setView('draw');
             };
 
-            const saveUser = async (name, drawingData) => {
+            const saveUser = async (name, password, drawingData) => {
                 setIsProcessing(true);
                 try {
                     if (mode === 'cloud') {
                         const userUid = authRef.current?.currentUser?.uid || 'anon';
                         const docRef = await addDoc(collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants'), {
-                            name, drawing: drawingData, createdAt: serverTimestamp(), uid: userUid
+                            name, password, drawing: drawingData, createdAt: serverTimestamp(), uid: userUid
                         });
                         localStorage.setItem('my_participant_id', docRef.id);
                         setMyParticipantId(docRef.id);
                     } else {
-                        const newUser = { id: Date.now().toString(), name, drawing: drawingData, uid: 'local' };
+                        const newUser = { id: Date.now().toString(), name, password, drawing: drawingData, uid: 'local' };
                         const newUsers = [...users, newUser];
                         setUsers(newUsers);
                         localStorage.setItem('xmas_users', JSON.stringify(newUsers));
@@ -378,13 +381,35 @@
                 setIsProcessing(false);
             };
 
-            const handleViewResult = (targetUser) => {
-                const receiverId = matches[targetUser.id];
-                if (!receiverId) return;
+            const handleUserLogin = () => {
+                if (!loginTargetUser) return;
+                
+                // Check password
+                // If user doesn't have password set (legacy data), allow empty or prompt? 
+                // Let's assume strict: must match if exists. If no password in DB, any input works? 
+                // Or better: if no password in DB, just allow access.
+                
+                if (loginTargetUser.password && loginTargetUser.password !== userPasswordInput) {
+                    alert('密碼錯誤！請輸入您當初設定的密碼。');
+                    return;
+                }
+                
+                // Success
+                const receiverId = matches[loginTargetUser.id];
+                if (!receiverId) return alert('尚未分配禮物');
+                
                 const receiver = users.find(u => u.id === receiverId);
-                setRevealData({ giver: targetUser, receiver });
+                setRevealData({ giver: loginTargetUser, receiver });
+                setLoginTargetUser(null);
+                setUserPasswordInput('');
                 setView('check_result');
-            };
+            }
+
+            const promptUserLogin = (user) => {
+                setLoginTargetUser(user);
+                setUserPasswordInput('');
+                setView('user_login');
+            }
 
             const isMe = (uid) => myParticipantId === uid;
 
@@ -460,6 +485,26 @@
                                 </div>
                             </div>
 
+                            {/* Match List (New) */}
+                            {Object.keys(matches).length > 0 && (
+                                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                                    <h3 className="font-bold text-slate-700 mb-4 border-b pb-2">配對名單 (僅後台可見)</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                                        {users.map(u => {
+                                            const recId = matches[u.id];
+                                            const rec = users.find(r => r.id === recId);
+                                            return (
+                                                <div key={u.id} className="flex justify-between p-2 bg-slate-50 rounded border">
+                                                    <span>🎁 <strong>{u.name}</strong></span>
+                                                    <span className="text-slate-400 mx-2">➜ 送給 ➜</span>
+                                                    <span><strong>{rec?.name}</strong> 🧑‍🎄</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Gallery */}
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                                 <div className="flex justify-between items-end mb-4 border-b pb-2">
@@ -488,6 +533,32 @@
                         </div>
                     </div>
                 )
+            }
+
+            // --- User Login View (New) ---
+            if (view === 'user_login') {
+                return (
+                    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+                        <div className="bg-white p-8 rounded-2xl shadow-lg max-w-sm w-full">
+                            <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-slate-700">
+                                <Icons.Lock className="text-blue-600"/> 玩家驗證
+                            </h2>
+                            <p className="text-slate-600 font-medium mb-1">歡迎回來，{loginTargetUser?.name}</p>
+                            <p className="text-slate-400 text-xs mb-4">請輸入您當初設定的密碼以查看結果。</p>
+                            <input 
+                                type="password" 
+                                value={userPasswordInput}
+                                onChange={e => setUserPasswordInput(e.target.value)}
+                                className="w-full p-3 border rounded-lg mb-4 outline-none focus:ring-2 ring-blue-500"
+                                placeholder="請輸入密碼"
+                            />
+                            <div className="flex gap-2">
+                                <button onClick={() => setView('reveal')} className="flex-1 py-2 bg-slate-100 text-slate-600 rounded-lg">取消</button>
+                                <button onClick={handleUserLogin} className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold">查看結果</button>
+                            </div>
+                        </div>
+                    </div>
+                );
             }
 
             // Main Public App UI
@@ -587,13 +658,13 @@
                                 <div className="flex flex-col h-full">
                                     <div className="text-center mb-6">
                                         <h2 className="text-2xl font-bold text-red-600">分配完成！</h2>
-                                        <p className="text-slate-500">請點擊你的名字查看結果</p>
+                                        <p className="text-slate-500">請點擊你的名字並輸入密碼</p>
                                     </div>
                                     <div className="grid grid-cols-2 gap-3 overflow-y-auto pb-4">
                                         {users.map((u) => (
-                                            <button key={u.id} onClick={() => handleViewResult(u)} className={`p-4 border-2 rounded-xl shadow-sm flex flex-col items-center justify-center aspect-square transition relative ${isMe(u.id) ? 'bg-red-50 border-red-400 ring-2 ring-red-200' : 'bg-white border-red-100'}`}>
+                                            <button key={u.id} onClick={() => promptUserLogin(u)} className={`p-4 border-2 rounded-xl shadow-sm flex flex-col items-center justify-center aspect-square transition relative ${isMe(u.id) ? 'bg-red-50 border-red-400 ring-2 ring-red-200' : 'bg-white border-red-100 hover:bg-red-50'}`}>
                                                 {isMe(u.id) && <div className="absolute top-2 right-2 text-red-500 font-bold text-xs">Me</div>}
-                                                <Icons.Gift size={32} className={`${isMe(u.id) ? 'text-red-600' : 'text-red-400'} mb-2`} />
+                                                <Icons.Lock size={24} className={`${isMe(u.id) ? 'text-red-400' : 'text-slate-300'} mb-2`} />
                                                 <span className="font-bold text-slate-700">{u.name}</span>
                                             </button>
                                         ))}
@@ -605,19 +676,24 @@
                             {view === 'check_result' && revealData && (
                                 <div className="flex flex-col h-full items-center justify-center text-center animate-fade-in">
                                     <div className="mb-6">
-                                        <span className="text-sm text-slate-400 uppercase tracking-widest">你是</span>
+                                        <span className="text-sm text-slate-400 uppercase tracking-widest">Hi, </span>
                                         <h2 className="text-3xl font-bold text-slate-800">{revealData.giver.name}</h2>
-                                        {!isMe(revealData.giver.id) && <p className="text-xs text-orange-500 mt-1">(注意：這不是你的名字，請勿偷看！)</p>}
                                     </div>
                                     <div className="w-full bg-red-50 p-6 rounded-2xl border-2 border-red-100 mb-6 relative overflow-hidden">
                                         <p className="text-slate-500 mb-2 font-medium">你要送禮物的對象是：</p>
-                                        <div className="text-2xl font-bold text-red-600 mb-6 bg-white py-2 px-4 rounded-lg shadow-sm inline-block">{revealData.receiver ? revealData.receiver.name : "系統錯誤"}</div>
-                                        <p className="text-slate-500 mb-2">他許願的禮物草圖：</p>
+                                        
+                                        {/* Masked Name */}
+                                        <div className="text-2xl font-bold text-red-600 mb-2 bg-white py-2 px-4 rounded-lg shadow-sm inline-block tracking-widest">
+                                            ??? (神秘許願者)
+                                        </div>
+                                        <p className="text-xs text-orange-600 mb-6 bg-orange-100 px-2 py-1 rounded inline-block">主辦人將在現場揭曉身分！</p>
+                                        
+                                        <p className="text-slate-500 mb-2">請準備符合此圖的禮物：</p>
                                         <div className="bg-white border-2 border-slate-800 rounded-lg p-2 shadow-inner inline-block relative">
                                             {revealData.receiver ? <img src={revealData.receiver.drawing} alt="Secret Sketch" className="w-64 h-64 object-contain" /> : "Error"}
                                         </div>
                                     </div>
-                                    <button onClick={() => setView('reveal')} className="w-full py-3 bg-slate-800 text-white font-semibold rounded-lg hover:bg-slate-900">我看好了 (關閉)</button>
+                                    <button onClick={() => setView('reveal')} className="w-full py-3 bg-slate-800 text-white font-semibold rounded-lg hover:bg-slate-900">看好了 (登出)</button>
                                 </div>
                             )}
                         </main>
@@ -630,6 +706,7 @@
             const canvasRef = useRef(null);
             const [isDrawing, setIsDrawing] = useState(false);
             const [name, setName] = useState('');
+            const [password, setPassword] = useState('');
             const [hasDrawn, setHasDrawn] = useState(false);
 
             useEffect(() => {
@@ -654,16 +731,23 @@
             const clearCanvas = () => { const ctx = canvasRef.current.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height); setHasDrawn(false); };
             const handleSave = () => {
                 if (!name.trim()) return alert('請輸入名字！');
+                if (!password.trim()) return alert('請設定密碼，之後查看結果需要用到！');
                 if (!hasDrawn) return alert('請畫圖！');
-                onSave(name, canvasRef.current.toDataURL('image/png'));
+                onSave(name, password.trim(), canvasRef.current.toDataURL('image/png'));
             };
 
             return (
                 <div className="flex flex-col h-full animate-slide-up">
-                    <h2 className="text-xl font-bold mb-4 text-center">繪製許願卡</h2>
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-slate-700 mb-1">你的名字</label>
-                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：小明" className="w-full p-3 border border-slate-300 rounded-lg outline-none focus:border-red-500" />
+                    <h2 className="text-xl font-bold mb-2 text-center">繪製許願卡</h2>
+                    <div className="mb-2 grid grid-cols-2 gap-2">
+                        <div>
+                            <label className="block text-xs font-medium text-slate-700 mb-1">名字</label>
+                            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：小明" className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-red-500 text-sm" />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-slate-700 mb-1">設定密碼 (查看結果用)</label>
+                            <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="例如：1234" className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-red-500 text-sm" />
+                        </div>
                     </div>
                     <div className="flex-1 flex flex-col items-center">
                         <div className="text-sm text-red-600 font-bold mb-2 flex items-center gap-1"><Icons.PenTool size={16}/> 挑戰一筆畫！</div>
