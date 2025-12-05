@@ -66,7 +66,7 @@
                 {path}
             </svg>
         );
-        // 修復了 WifiOff 和 Settings 的語法錯誤 (加上了 <></>)
+        
         const Icons = {
             Gift: (p) => <Icon {...p} path={<><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></>} />,
             PenTool: (p) => <Icon {...p} path={<><path d="m12 19 7-7 3 3-7 7-3-3z"/><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="m2 2 7.586 7.586"/><circle cx="11" cy="11" r="2"/></>} />,
@@ -81,6 +81,9 @@
             WifiOff: (p) => <Icon {...p} path={<><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></>} />,
             Settings: (p) => <Icon {...p} path={<><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.39a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>} />,
             Loader2: (p) => <Icon {...p} className={`${p.className} animate-spin`} path={<path d="M21 12a9 9 0 1 1-6.219-8.56" />} />,
+            Lock: (p) => <Icon {...p} path={<><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>} />,
+            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />,
+            Trash2: (p) => <Icon {...p} path={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></>} />,
         };
 
         // --- Config Wizard Component ---
@@ -91,25 +94,18 @@
             const handleSave = () => {
                 try {
                     let configStr = inputConfig.trim();
-                    // Remove variable declarations like "const firebaseConfig ="
                     configStr = configStr.replace(/^(const|let|var|export\s+const)\s+\w+\s*=\s*/, '');
-                    // Remove trailing semicolon
                     configStr = configStr.replace(/;$/, '');
                     
                     let config;
                     try {
-                        // 1. Try standard JSON first
                         config = JSON.parse(configStr);
                     } catch (e1) {
                         try {
-                            // 2. If not JSON, try to treat as JS object
-                            // If it doesn't start with {, assume it's a list of properties and wrap it
                             let jsStr = configStr;
                             if (!jsStr.startsWith('{')) {
                                 jsStr = `{${jsStr}}`;
                             }
-                            // Use Function to parse JS object literal (handles unquoted keys, single quotes, trailing commas)
-                            // This avoids the regex issues with colons inside values (like in appId or URLs)
                             const fn = new Function(`return ${jsStr}`);
                             config = fn();
                         } catch (e2) {
@@ -174,6 +170,8 @@
             const [myParticipantId, setMyParticipantId] = useState(localStorage.getItem('my_participant_id'));
             const [revealData, setRevealData] = useState(null);
             const [isProcessing, setIsProcessing] = useState(false);
+            const [isAdmin, setIsAdmin] = useState(false);
+            const [adminPasswordInput, setAdminPasswordInput] = useState('');
             
             // Firebase refs
             const appRef = useRef(null);
@@ -190,24 +188,19 @@
 
                     let config = null;
                     try {
-                        // Priority 1: Environment Variable (Preview Mode)
                         if (typeof __firebase_config !== 'undefined') {
                             config = JSON.parse(__firebase_config);
-                        } 
-                        // Priority 2: LocalStorage Override (User pasted config)
-                        else {
+                        } else {
                             const saved = localStorage.getItem('fb_config_override');
                             if(saved) config = JSON.parse(saved);
                         }
 
-                        // Check if valid config exists
                         if (config && config.apiKey) {
                             try {
                                 appRef.current = initializeApp(config);
                                 authRef.current = getAuth(appRef.current);
                                 dbRef.current = getFirestore(appRef.current);
                                 
-                                // Auth
                                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                                     await signInWithCustomToken(authRef.current, __initial_auth_token);
                                 } else {
@@ -217,7 +210,6 @@
                                 setMode('cloud');
                             } catch (err) {
                                 console.error("Firebase Init Failed", err);
-                                // If init fails (e.g. bad key), go to setup
                                 setMode('setup'); 
                             }
                         } else {
@@ -255,7 +247,6 @@
             // 3. Local Data Sync (Offline Mode Only)
             useEffect(() => {
                 if (mode !== 'offline') return;
-                // Load initial
                 const savedUsers = localStorage.getItem('xmas_users');
                 const savedMatches = localStorage.getItem('xmas_matches');
                 if (savedUsers) setUsers(JSON.parse(savedUsers));
@@ -269,12 +260,11 @@
             };
 
             const handleConfigComplete = (config) => {
-                // Reload to apply config cleanly
                 window.location.reload();
             };
 
             const handleReset = async () => {
-                if (!confirm('確定要刪除所有資料？這將清空所有人的進度！')) return;
+                if (!confirm('【警告】確定要刪除所有資料？\n這將清空所有人的繪圖和分配結果！此操作無法復原！')) return;
                 setIsProcessing(true);
                 
                 if (mode === 'cloud') {
@@ -298,7 +288,8 @@
                 
                 localStorage.removeItem('my_participant_id');
                 setMyParticipantId(null);
-                setView('home');
+                setRevealData(null);
+                setView('home'); // Reset goes to home
                 setIsProcessing(false);
             };
 
@@ -321,7 +312,6 @@
                         localStorage.setItem('my_participant_id', docRef.id);
                         setMyParticipantId(docRef.id);
                     } else {
-                        // Offline Logic
                         const newUser = { id: Date.now().toString(), name, drawing: drawingData, uid: 'local' };
                         const newUsers = [...users, newUser];
                         setUsers(newUsers);
@@ -335,8 +325,8 @@
             };
 
             const performMatching = async () => {
-                if (users.length < 2) { alert('至少需要兩位玩家！'); return; }
-                if (Object.keys(matches).length > 0 && !confirm('已經分配過了，要重新分配嗎？')) return;
+                if (users.length < 2) { alert('至少需要兩位玩家才能分配！'); return; }
+                if (Object.keys(matches).length > 0 && !confirm('已經分配過了，要重新分配嗎？這會打亂現有的結果。')) return;
                 
                 setIsProcessing(true);
                 let giverIds = users.map(u => u.id);
@@ -344,7 +334,8 @@
                 let isValid = false;
 
                 // Simple Derangement Shuffle
-                while (!isValid) {
+                let attempts = 0;
+                while (!isValid && attempts < 100) {
                     for (let i = receiverIds.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
                         [receiverIds[i], receiverIds[j]] = [receiverIds[j], receiverIds[i]];
@@ -353,25 +344,37 @@
                     for (let i = 0; i < giverIds.length; i++) {
                         if (giverIds[i] === receiverIds[i]) { isValid = false; break; }
                     }
+                    attempts++;
+                }
+
+                if (!isValid) {
+                    // Fallback for tricky cases (rare)
+                     const shifted = [...giverIds];
+                     const first = shifted.shift();
+                     shifted.push(first);
+                     receiverIds = shifted;
                 }
 
                 if (mode === 'cloud') {
                     try {
                         const batch = writeBatch(dbRef.current);
+                        // Clear old matches first conceptually, but overwrite is fine
                         giverIds.forEach((giverId, index) => {
                             const matchRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'matches', giverId);
                             batch.set(matchRef, { receiverId: receiverIds[index] });
                         });
                         await batch.commit();
-                        // View update handled by onSnapshot
-                    } catch (e) { alert('分配失敗'); }
+                    } catch (e) { alert('分配失敗: ' + e.message); }
                 } else {
                     const newMatches = {};
                     giverIds.forEach((gid, i) => newMatches[gid] = receiverIds[i]);
                     setMatches(newMatches);
                     localStorage.setItem('xmas_matches', JSON.stringify(newMatches));
                 }
-                setView('reveal');
+                
+                // Stay in admin view or go to reveal?
+                // Admin might want to stay in admin panel
+                alert('分配完成！');
                 setIsProcessing(false);
             };
 
@@ -385,11 +388,109 @@
 
             const isMe = (uid) => myParticipantId === uid;
 
+            const handleAdminLogin = () => {
+                if (adminPasswordInput === 'admin123') { // Simple hardcoded password
+                    setIsAdmin(true);
+                    setView('admin_dashboard');
+                    setAdminPasswordInput('');
+                } else {
+                    alert('密碼錯誤');
+                }
+            };
+
             // Render Modes
-            if (mode === 'loading') return null; // Handled by HTML loader
+            if (mode === 'loading') return null;
             if (mode === 'setup') return <ConfigWizard onConfigComplete={handleConfigComplete} onOfflineMode={handleOfflineMode} />;
 
-            // Main App UI
+            // --- Admin Views ---
+            if (view === 'admin_login') {
+                return (
+                    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+                        <div className="bg-white p-8 rounded-2xl shadow-lg max-w-sm w-full">
+                            <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-slate-700">
+                                <Icons.Lock className="text-red-600"/> 主辦單位登入
+                            </h2>
+                            <p className="text-slate-500 text-sm mb-4">請輸入管理密碼以進入後台。</p>
+                            <input 
+                                type="password" 
+                                value={adminPasswordInput}
+                                onChange={e => setAdminPasswordInput(e.target.value)}
+                                className="w-full p-3 border rounded-lg mb-4 outline-none focus:ring-2 ring-red-500"
+                                placeholder="密碼 (預設: admin123)"
+                            />
+                            <div className="flex gap-2">
+                                <button onClick={() => setView('home')} className="flex-1 py-2 bg-slate-100 text-slate-600 rounded-lg">取消</button>
+                                <button onClick={handleAdminLogin} className="flex-1 py-2 bg-slate-800 text-white rounded-lg font-bold">登入</button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (view === 'admin_dashboard') {
+                return (
+                    <div className="min-h-screen bg-slate-100 flex flex-col">
+                         <header className="bg-slate-800 text-white p-4 shadow-md flex justify-between items-center sticky top-0 z-20">
+                            <div className="flex items-center gap-2">
+                                <Icons.Settings className="text-slate-300" />
+                                <h1 className="text-lg font-bold">後台管理</h1>
+                            </div>
+                            <button onClick={() => { setIsAdmin(false); setView('home'); }} className="text-xs bg-slate-700 px-3 py-1.5 rounded flex items-center gap-1 hover:bg-slate-600">
+                                <Icons.LogOut size={14}/> 離開後台
+                            </button>
+                        </header>
+                        <div className="p-4 max-w-5xl mx-auto w-full space-y-6">
+                            
+                            {/* Control Panel */}
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                                <h3 className="font-bold text-slate-700 mb-4 border-b pb-2">活動控制</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <p className="text-sm text-slate-500">當所有人都完成繪圖後，點擊按鈕進行隨機配對。</p>
+                                        <button onClick={performMatching} disabled={isProcessing} className="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold shadow-sm flex items-center justify-center gap-2">
+                                            <Icons.Shuffle size={20}/> {Object.keys(matches).length > 0 ? '重新分配禮物' : '開始分配禮物'}
+                                        </button>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <p className="text-sm text-slate-500">活動結束後，可清空資料重新開始。</p>
+                                        <button onClick={handleReset} disabled={isProcessing} className="w-full py-3 bg-white border-2 border-slate-200 hover:bg-slate-50 text-red-600 rounded-lg font-bold flex items-center justify-center gap-2">
+                                            <Icons.Trash2 size={20}/> 清除所有資料
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Gallery */}
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                                <div className="flex justify-between items-end mb-4 border-b pb-2">
+                                    <h3 className="font-bold text-slate-700">參加者畫廊 ({users.length}人)</h3>
+                                    <span className="text-xs text-slate-400">僅後台可見所有圖片</span>
+                                </div>
+                                
+                                {users.length === 0 ? (
+                                    <p className="text-center text-slate-400 py-8">目前還沒有人加入...</p>
+                                ) : (
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                        {users.map(u => (
+                                            <div key={u.id} className="border rounded-lg p-2 bg-slate-50 relative group">
+                                                <div className="aspect-square bg-white rounded border border-slate-200 overflow-hidden mb-2">
+                                                    <img src={u.drawing} className="w-full h-full object-contain" />
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="font-bold text-sm truncate">{u.name}</span>
+                                                    {matches[u.id] && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded">已配對</span>}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            // Main Public App UI
             return (
                 <div className="min-h-screen bg-slate-50 relative overflow-hidden flex flex-col items-center">
                     {/* Background */}
@@ -406,7 +507,6 @@
                             </div>
                             <div className="flex items-center gap-2">
                                 {mode === 'cloud' && <span className="text-xs bg-red-800/50 px-2 py-1 rounded flex items-center gap-1"><Icons.Cloud size={10}/> 連線中</span>}
-                                {users.length > 0 && <button onClick={handleReset} className="text-xs bg-red-800 px-2 py-1 rounded hover:bg-red-900">重置</button>}
                             </div>
                         </header>
 
@@ -414,7 +514,7 @@
                             {isProcessing && <div className="absolute inset-0 z-50 bg-white/80 flex items-center justify-center"><Icons.Loader2 className="text-red-600" size={48}/></div>}
 
                             {view === 'home' && (
-                                <div className="flex flex-col items-center justify-center h-full gap-8 animate-fade-in">
+                                <div className="flex flex-col items-center justify-center h-full gap-8 animate-fade-in relative">
                                     <div className="text-center space-y-2">
                                         <h2 className="text-2xl font-bold text-gray-800">歡迎來到交換禮物</h2>
                                         <div className="bg-slate-100 px-4 py-2 rounded-full inline-block">
@@ -434,24 +534,32 @@
                                         <button onClick={() => setView('participants')} className="w-full py-4 bg-white border-2 border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl shadow-sm flex items-center justify-center gap-3 text-lg font-semibold">
                                             <Icons.Users size={24}/> 查看玩家列表
                                         </button>
+                                        
                                         {Object.keys(matches).length > 0 ? (
                                             <button onClick={() => setView('reveal')} className="w-full py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl shadow-lg flex items-center justify-center gap-3 text-lg font-bold mt-8 animate-pulse">
                                                 <Icons.Eye size={24}/> 分配完成！查看結果
                                             </button>
                                         ) : (
-                                            users.length >= 2 && (
-                                                <button onClick={performMatching} className="w-full py-4 bg-slate-800 text-white rounded-xl shadow-lg flex items-center justify-center gap-3 text-lg font-bold mt-8">
-                                                    <Icons.Shuffle size={24}/> 主持人：開始分配
-                                                </button>
-                                            )
+                                            // Waiting state
+                                            <div className="mt-8 text-center text-slate-400 text-sm bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <p>等待主辦人分配禮物中...</p>
+                                                <Icons.Loader2 className="inline-block mt-2 text-slate-300" size={24}/>
+                                            </div>
                                         )}
                                     </div>
-                                    {mode === 'offline' && (
-                                        <div className="mt-8 text-xs text-slate-400 text-center">
-                                            目前為單機模式，資料僅存在此設備。<br/>若要切換雲端，請重整頁面並清除設定。
-                                            <button onClick={()=>{localStorage.removeItem('fb_config_override');window.location.reload()}} className="underline text-slate-500 ml-1">重設</button>
-                                        </div>
-                                    )}
+                                    
+                                    {/* Admin & Footer Links */}
+                                    <div className="mt-auto pt-8 flex flex-col items-center gap-2 w-full">
+                                        <button onClick={() => setView('admin_login')} className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 py-2 px-4 rounded transition">
+                                            <Icons.Lock size={12}/> 主辦專區 (Admin)
+                                        </button>
+
+                                        {mode === 'offline' && (
+                                            <div className="text-xs text-slate-300">
+                                                <button onClick={()=>{localStorage.removeItem('fb_config_override');window.location.reload()}} className="underline ml-1 hover:text-slate-500">重設連線</button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             )}
 
