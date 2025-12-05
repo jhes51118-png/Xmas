@@ -87,6 +87,7 @@
             Key: (p) => <Icon {...p} path={<><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></>} />,
             Image: (p) => <Icon {...p} path={<><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></>} />,
             Edit: (p) => <Icon {...p} path={<><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></>} />,
+            EyeOff: (p) => <Icon {...p} path={<><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></>} />,
         };
 
         // --- Config Wizard Component ---
@@ -178,6 +179,7 @@
             const [userPasswordInput, setUserPasswordInput] = useState('');
             const [loginTargetUser, setLoginTargetUser] = useState(null);
             const [editData, setEditData] = useState(null); // Data for editing
+            const [showAdminPasswords, setShowAdminPasswords] = useState(false); // Admin toggle to show user passwords
             
             // Firebase refs
             const appRef = useRef(null);
@@ -240,22 +242,15 @@
                     setUsers(usersList);
                     
                     // --- AUTO-LOGOUT FIX ---
-                    // 如果雲端有資料，但我的 local ID 卻不在雲端資料中 (被重置或刪除了)
-                    // 就自動登出，避免顯示「查看」卻報錯
                     if (localStorage.getItem('my_participant_id')) {
                          const currentMyId = localStorage.getItem('my_participant_id');
                          const exists = usersList.find(u => u.id === currentMyId);
-                         // 只有當確定雲端已經有資料（同步完成），但沒有我時，才自動登出
-                         // 注意：如果雲端完全被清空 (usersList.length === 0)，也應該登出
-                         // 這裡使用簡單判斷：只要 snapshot 觸發了，代表同步了一次，如果找不到我，就登出
                          if (!exists) {
                              console.log("Auto-logout: User no longer exists on server.");
                              localStorage.removeItem('my_participant_id');
                              setMyParticipantId(null);
-                             // 如果當前在 my_card 頁面，跳回 home
-                             if (window.location.hash !== '') {
-                                 // Simple logic to force re-render if needed, but setState usually enough
-                             }
+                             // Clear saved password too
+                             localStorage.removeItem('my_password_backup');
                          }
                     }
                 }, err => console.error(err));
@@ -313,6 +308,7 @@
                 }
                 
                 localStorage.removeItem('my_participant_id');
+                localStorage.removeItem('my_password_backup'); // Clear saved password
                 setMyParticipantId(null);
                 setRevealData(null);
                 setEditData(null);
@@ -323,6 +319,7 @@
             const handleManualLogout = () => {
                 if (confirm('確定要清除本機的登入狀態嗎？(不會刪除雲端資料)')) {
                     localStorage.removeItem('my_participant_id');
+                    localStorage.removeItem('my_password_backup'); // Clear saved password
                     setMyParticipantId(null);
                     setEditData(null);
                     setView('home');
@@ -353,6 +350,9 @@
             const saveUser = async (name, password, drawingData) => {
                 setIsProcessing(true);
                 try {
+                    // Auto-remember password for this user
+                    localStorage.setItem('my_password_backup', password);
+
                     // Check if update or create
                     if (editData && editData.id === myParticipantId) {
                          // --- UPDATE MODE ---
@@ -462,7 +462,17 @@
 
             const promptUserLogin = (user) => {
                 setLoginTargetUser(user);
-                setUserPasswordInput('');
+                // Auto-fill password if I am this user and I have saved password locally
+                if (isMe(user.id)) {
+                    const savedPwd = localStorage.getItem('my_password_backup');
+                    if(savedPwd) {
+                        setUserPasswordInput(savedPwd);
+                    } else {
+                        setUserPasswordInput('');
+                    }
+                } else {
+                    setUserPasswordInput('');
+                }
                 setView('user_login');
             }
 
@@ -564,7 +574,13 @@
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                                 <div className="flex justify-between items-end mb-4 border-b pb-2">
                                     <h3 className="font-bold text-slate-700">參加者畫廊 ({users.length}人)</h3>
-                                    <span className="text-xs text-slate-400">僅後台可見所有圖片</span>
+                                    <button 
+                                        onClick={() => setShowAdminPasswords(!showAdminPasswords)}
+                                        className={`text-xs flex items-center gap-1 px-2 py-1 rounded transition ${showAdminPasswords ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                                    >
+                                        {showAdminPasswords ? <Icons.EyeOff size={14}/> : <Icons.Eye size={14}/>}
+                                        {showAdminPasswords ? '隱藏密碼' : '顯示密碼(救援用)'}
+                                    </button>
                                 </div>
                                 
                                 {users.length === 0 ? (
@@ -576,9 +592,16 @@
                                                 <div className="aspect-square bg-white rounded border border-slate-200 overflow-hidden mb-2">
                                                     <img src={u.drawing} className="w-full h-full object-contain" />
                                                 </div>
-                                                <div className="flex justify-between items-center">
-                                                    <span className="font-bold text-sm truncate">{u.name}</span>
-                                                    {matches[u.id] && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded">已配對</span>}
+                                                <div className="flex flex-col">
+                                                    <div className="flex justify-between items-center mb-1">
+                                                        <span className="font-bold text-sm truncate">{u.name}</span>
+                                                        {matches[u.id] && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded">已配對</span>}
+                                                    </div>
+                                                    {showAdminPasswords && (
+                                                        <div className="bg-orange-50 text-orange-600 text-[10px] p-1 rounded font-mono break-all border border-orange-100">
+                                                            密碼: {u.password}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
