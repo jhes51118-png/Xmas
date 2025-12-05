@@ -103,6 +103,60 @@
             doc, setDoc, updateDoc, deleteDoc, getDocs, writeBatch, serverTimestamp 
         } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
+        // --- 呼吸法樣式設定 ---
+        const BREATH_STYLES = {
+            water: { 
+                name: '水之呼吸', 
+                border: 'border-blue-600', 
+                bg: 'bg-blue-50', 
+                text: 'text-blue-800', 
+                ring: 'ring-blue-400',
+                icon: '🌊' 
+            },
+            fire: { 
+                name: '炎之呼吸', 
+                border: 'border-red-600', 
+                bg: 'bg-red-50', 
+                text: 'text-red-800', 
+                ring: 'ring-red-400',
+                icon: '🔥'
+            },
+            thunder: { 
+                name: '雷之呼吸', 
+                border: 'border-yellow-500', 
+                bg: 'bg-yellow-50', 
+                text: 'text-yellow-800', 
+                ring: 'ring-yellow-400',
+                icon: '⚡'
+            },
+            beast: { 
+                name: '獸之呼吸', 
+                border: 'border-stone-600', 
+                bg: 'bg-stone-50', 
+                text: 'text-stone-800', 
+                ring: 'ring-stone-400',
+                icon: '🐗'
+            },
+            insect: { 
+                name: '蟲之呼吸', 
+                border: 'border-purple-600', 
+                bg: 'bg-purple-50', 
+                text: 'text-purple-800', 
+                ring: 'ring-purple-400',
+                icon: '🦋'
+            },
+            default: {
+                name: '普通隊員',
+                border: 'border-kimetsu-black',
+                bg: 'bg-white',
+                text: 'text-kimetsu-black',
+                ring: 'ring-kimetsu-green',
+                icon: '⚔️'
+            }
+        };
+
+        const getStyle = (key) => BREATH_STYLES[key] || BREATH_STYLES.default;
+
         // --- 簡易圖示元件 (SVG) ---
         const Icon = ({ path, size = 24, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -471,7 +525,7 @@
                  }
             };
 
-            const saveUser = async (name, password, drawingData) => {
+            const saveUser = async (name, password, drawingData, style) => {
                 setIsProcessing(true);
                 try {
                     // Check duplicate name
@@ -488,11 +542,11 @@
                          if (mode === 'cloud') {
                             const userRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants', myParticipantId);
                             await updateDoc(userRef, {
-                                name, password, drawing: drawingData, updatedAt: serverTimestamp()
+                                name, password, drawing: drawingData, style, updatedAt: serverTimestamp()
                             });
                          } else {
                              const updatedUsers = users.map(u => 
-                                u.id === myParticipantId ? { ...u, name, password, drawing: drawingData } : u
+                                u.id === myParticipantId ? { ...u, name, password, drawing: drawingData, style } : u
                              );
                              setUsers(updatedUsers);
                              localStorage.setItem('xmas_users', JSON.stringify(updatedUsers));
@@ -503,12 +557,12 @@
                         if (mode === 'cloud') {
                             const userUid = authRef.current?.currentUser?.uid || 'anon';
                             const docRef = await addDoc(collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants'), {
-                                name, password, drawing: drawingData, createdAt: serverTimestamp(), uid: userUid
+                                name, password, drawing: drawingData, style, createdAt: serverTimestamp(), uid: userUid
                             });
                             localStorage.setItem('my_participant_id', docRef.id);
                             setMyParticipantId(docRef.id);
                         } else {
-                            const newUser = { id: Date.now().toString(), name, password, drawing: drawingData, uid: 'local' };
+                            const newUser = { id: Date.now().toString(), name, password, drawing: drawingData, style, uid: 'local' };
                             const newUsers = [...users, newUser];
                             setUsers(newUsers);
                             localStorage.setItem('xmas_users', JSON.stringify(newUsers));
@@ -686,6 +740,7 @@
             if (view === 'admin_live') {
                 const giver = liveReceiver ? users.find(u => matches[u.id] === liveReceiver.id) : null;
                 const isHistoryMode = liveIndex < liveHistory.length - 1;
+                const style = getStyle(liveReceiver?.style || 'default');
                 
                 return (
                     <div className="min-h-screen flex flex-col bg-kimetsu-black text-white relative overflow-hidden">
@@ -716,16 +771,16 @@
                             ) : (
                                 <div className="w-full max-w-4xl flex flex-col items-center gap-6 animate-slide-up">
                                     <div className="text-center">
-                                        <p className="text-kimetsu-green tracking-[0.5em] text-lg mb-2 font-bold">受贈者 (許願隊員)</p>
+                                        <p className={`tracking-[0.5em] text-lg mb-2 font-bold ${style.text.replace('text-','text-kimetsu-green ')}`}>受贈者 ({style.name}・許願)</p>
                                         <h2 className="text-5xl font-black tracking-widest mb-6 border-b-4 border-kimetsu-pink inline-block pb-2">{liveReceiver.name}</h2>
                                     </div>
 
                                     <div className="flex flex-col md:flex-row gap-8 items-center justify-center w-full">
                                         {/* Drawing Display */}
-                                        <div className="bg-white p-2 rounded-lg shadow-2xl rotate-1 border-4 border-kimetsu-bg w-full max-w-md aspect-square flex items-center justify-center relative">
-                                            <div className="absolute -top-3 -left-3 w-8 h-8 bg-kimetsu-green z-10 border border-black"></div>
+                                        <div className={`p-2 rounded-lg shadow-2xl rotate-1 border-4 ${style.border} ${style.bg} w-full max-w-md aspect-square flex items-center justify-center relative`}>
+                                            <div className="absolute -top-3 -left-3 w-8 h-8 bg-kimetsu-green z-10 border border-black text-center leading-7">{style.icon}</div>
                                             <div className="absolute -bottom-3 -right-3 w-8 h-8 bg-kimetsu-pink z-10 border border-black"></div>
-                                            <img src={liveReceiver.drawing} className="w-full h-full object-contain bg-slate-50" />
+                                            <img src={liveReceiver.drawing} className="w-full h-full object-contain bg-white rounded" />
                                         </div>
 
                                         {/* Giver Reveal Section */}
@@ -854,24 +909,28 @@
                                     <p className="text-center text-slate-400 py-8 font-bold">目前尚無隊員加入...</p>
                                 ) : (
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                        {users.map(u => (
-                                            <div key={u.id} className="border-2 border-kimetsu-black rounded p-2 bg-kimetsu-bg relative group shadow-sm">
-                                                <div className="aspect-square bg-white border border-slate-300 overflow-hidden mb-2">
-                                                    <img src={u.drawing} className="w-full h-full object-contain" />
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <div className="flex justify-between items-center mb-1">
-                                                        <span className="font-bold text-sm truncate text-kimetsu-black">{u.name}</span>
-                                                        {matches[u.id] && <span className="text-[10px] bg-kimetsu-green text-white px-2 py-0.5 rounded font-bold">已指派</span>}
+                                        {users.map(u => {
+                                            const style = getStyle(u.style || 'default');
+                                            return (
+                                                <div key={u.id} className={`border-4 ${style.border} ${style.bg} rounded p-2 relative group shadow-sm transition-all`}>
+                                                    <div className={`absolute top-0 right-0 p-1 text-xs font-bold ${style.text}`}>{style.icon} {style.name}</div>
+                                                    <div className="aspect-square bg-white border border-slate-300 overflow-hidden mb-2 mt-4">
+                                                        <img src={u.drawing} className="w-full h-full object-contain" />
                                                     </div>
-                                                    {showAdminPasswords && (
-                                                        <div className="bg-red-50 text-red-600 text-[10px] p-1 rounded font-mono break-all border border-red-200 font-bold">
-                                                            {u.password}
+                                                    <div className="flex flex-col">
+                                                        <div className="flex justify-between items-center mb-1">
+                                                            <span className={`font-bold text-sm truncate ${style.text}`}>{u.name}</span>
+                                                            {matches[u.id] && <span className="text-[10px] bg-kimetsu-green text-white px-2 py-0.5 rounded font-bold">已指派</span>}
                                                         </div>
-                                                    )}
+                                                        {showAdminPasswords && (
+                                                            <div className="bg-red-50 text-red-600 text-[10px] p-1 rounded font-mono break-all border border-red-200 font-bold">
+                                                                {u.password}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            )
+                                        })}
                                     </div>
                                 )}
                             </div>
@@ -1002,14 +1061,15 @@
                                             </div>
                                         );
                                         const isLocked = !!matches[me.id];
+                                        const style = getStyle(me.style || 'default');
 
                                         return (
                                             <div className="flex-1 flex flex-col items-center">
-                                                <div className="w-full bg-white p-6 rounded shadow-lg border-4 border-kimetsu-black mb-6 relative">
-                                                    <div className="absolute -top-3 -right-3 w-8 h-8 bg-kimetsu-green rotate-45 border-2 border-kimetsu-black"></div>
+                                                <div className={`w-full p-6 rounded shadow-lg border-4 ${style.border} ${style.bg} mb-6 relative`}>
+                                                    <div className={`absolute -top-3 -right-3 px-2 py-1 bg-white border-2 ${style.border} rounded text-xs font-bold`}>{style.icon} {style.name}</div>
                                                     <div className="flex justify-between items-center mb-4 border-b-2 border-slate-200 pb-2">
-                                                        <span className="text-slate-500 text-sm font-bold">隊員階級: 癸</span>
-                                                        <span className="font-bold text-xl text-kimetsu-black">{me.name}</span>
+                                                        <span className={`text-sm font-bold ${style.text}`}>隊員階級: 癸</span>
+                                                        <span className={`font-bold text-xl ${style.text}`}>{me.name}</span>
                                                     </div>
                                                     <div className="aspect-square w-full bg-slate-50 rounded border-2 border-slate-300 overflow-hidden relative shadow-inner">
                                                         <img src={me.drawing} className="w-full h-full object-contain"/>
@@ -1039,16 +1099,19 @@
                                 <div className="flex flex-col h-full">
                                     <h2 className="text-2xl font-bold mb-6 flex items-center gap-3 text-kimetsu-black border-l-4 border-kimetsu-green pl-3 tracking-widest">鬼殺隊名冊</h2>
                                     <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-                                        {users.length === 0 ? <div className="text-center text-slate-500 mt-10 font-bold text-lg bg-white p-8 rounded border-2 border-slate-300">尚無隊員入隊...</div> : users.map((u, idx) => (
-                                            <div key={u.id} className={`p-4 rounded flex justify-between items-center border-2 shadow-sm transition-transform hover:translate-x-1 ${isMe(u.id) ? 'bg-green-50 border-kimetsu-green' : 'bg-white border-kimetsu-black'}`}>
-                                                <div className="flex items-center gap-3">
-                                                    <span className="font-bold text-lg text-kimetsu-black font-mono">#{idx + 1}</span>
-                                                    <span className="font-bold text-lg text-kimetsu-black">{u.name}</span>
-                                                    {isMe(u.id) && <span className="text-xs bg-kimetsu-black text-white px-2 py-1 rounded font-bold">我</span>}
+                                        {users.length === 0 ? <div className="text-center text-slate-500 mt-10 font-bold text-lg bg-white p-8 rounded border-2 border-slate-300">尚無隊員入隊...</div> : users.map((u, idx) => {
+                                            const style = getStyle(u.style || 'default');
+                                            return (
+                                                <div key={u.id} className={`p-4 rounded flex justify-between items-center border-2 shadow-sm transition-transform hover:translate-x-1 ${isMe(u.id) ? `bg-green-50 border-kimetsu-green` : `${style.bg} ${style.border}`}`}>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className={`font-bold text-lg ${style.text} font-mono`}>#{idx + 1}</span>
+                                                        <span className={`font-bold text-lg ${style.text}`}>{style.icon} {u.name}</span>
+                                                        {isMe(u.id) && <span className="text-xs bg-kimetsu-black text-white px-2 py-1 rounded font-bold">我</span>}
+                                                    </div>
+                                                    <span className="text-xs text-slate-500 font-bold border border-slate-300 px-2 py-1 rounded flex items-center gap-1"><Icons.Check size={12}/> 卷軸完成</span>
                                                 </div>
-                                                <span className="text-xs text-slate-500 font-bold border border-slate-300 px-2 py-1 rounded flex items-center gap-1"><Icons.Check size={12}/> 卷軸完成</span>
-                                            </div>
-                                        ))}
+                                            )
+                                        })}
                                     </div>
                                     <button onClick={() => setView('home')} className="mt-6 w-full py-4 bg-kimetsu-black text-white font-bold rounded border-b-4 border-slate-900 hover:bg-slate-800 transition shadow-md active:scale-95 tracking-widest">返回道場</button>
                                 </div>
@@ -1061,13 +1124,16 @@
                                         <p className="text-slate-600 font-bold mt-4">請點選你的名字解開卷軸</p>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4 overflow-y-auto pb-6 pr-2">
-                                        {users.map((u) => (
-                                            <button key={u.id} onClick={() => promptUserLogin(u)} className={`p-6 border-2 rounded shadow-md flex flex-col items-center justify-center aspect-square transition-all relative group active:scale-95 ${isMe(u.id) ? 'bg-green-50 border-kimetsu-green ring-2 ring-green-200' : 'bg-white border-kimetsu-black hover:bg-slate-50'}`}>
-                                                {isMe(u.id) && <div className="absolute top-2 right-2 text-white bg-kimetsu-black px-2 py-0.5 rounded text-xs font-bold">我</div>}
-                                                <Icons.Lock size={32} className={`${isMe(u.id) ? 'text-kimetsu-green' : 'text-slate-400'} mb-3 group-hover:scale-110 transition-transform`} />
-                                                <span className="font-bold text-kimetsu-black text-lg truncate w-full text-center">{u.name}</span>
-                                            </button>
-                                        ))}
+                                        {users.map((u) => {
+                                            const style = getStyle(u.style || 'default');
+                                            return (
+                                                <button key={u.id} onClick={() => promptUserLogin(u)} className={`p-6 border-2 rounded shadow-md flex flex-col items-center justify-center aspect-square transition-all relative group active:scale-95 ${isMe(u.id) ? 'bg-green-50 border-kimetsu-green ring-2 ring-green-200' : `${style.bg} ${style.border} hover:opacity-90`}`}>
+                                                    {isMe(u.id) && <div className="absolute top-2 right-2 text-white bg-kimetsu-black px-2 py-0.5 rounded text-xs font-bold">我</div>}
+                                                    <Icons.Lock size={32} className={`${isMe(u.id) ? 'text-kimetsu-green' : style.text} mb-3 group-hover:scale-110 transition-transform`} />
+                                                    <span className={`font-bold ${style.text} text-lg truncate w-full text-center`}>{u.name}</span>
+                                                </button>
+                                            )
+                                        })}
                                     </div>
                                     <button onClick={() => setView('home')} className="mt-auto w-full py-4 bg-kimetsu-black text-white font-bold rounded border-b-4 border-slate-900 hover:bg-slate-800 transition shadow-md active:scale-95 tracking-widest">返回道場</button>
                                 </div>
@@ -1113,6 +1179,7 @@
             const [isDrawing, setIsDrawing] = useState(false);
             const [name, setName] = useState(initialData ? initialData.name : '');
             const [password, setPassword] = useState(initialData ? initialData.password : '');
+            const [style, setStyle] = useState(initialData ? (initialData.style || 'water') : 'water');
             const [hasDrawn, setHasDrawn] = useState(false);
             const [isLocked, setIsLocked] = useState(false);
 
@@ -1184,34 +1251,57 @@
                 if (!name.trim()) return alert('請輸入隊員姓名！');
                 if (!password.trim()) return alert('請設定密碼，以免卷軸被鬼偷看！');
                 if (!hasDrawn) return alert('請繪製卷軸內容！');
-                onSave(name, password.trim(), canvasRef.current.toDataURL('image/png'));
+                onSave(name, password.trim(), canvasRef.current.toDataURL('image/png'), style);
             };
+
+            const currentStyle = getStyle(style);
 
             return (
                 <div className="flex flex-col h-full animate-slide-up font-kimetsu">
                     <h2 className="text-2xl font-bold mb-4 text-center text-kimetsu-black tracking-widest border-b-4 border-kimetsu-green pb-2 bg-white shadow-sm">{initialData ? '修改卷軸' : '繪製卷軸'}</h2>
-                    <div className="mb-4 grid grid-cols-2 gap-4">
+                    
+                    <div className="mb-4 space-y-3">
+                        {/* Style Selector */}
                         <div>
-                            <label className="block text-sm font-bold text-kimetsu-black mb-1">隊員姓名</label>
-                            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：竈門炭治郎" className="w-full p-2 border-2 border-kimetsu-black rounded outline-none focus:ring-2 ring-kimetsu-green text-center font-bold" />
+                            <label className="block text-sm font-bold text-kimetsu-black mb-1">選擇呼吸法流派</label>
+                            <div className="grid grid-cols-5 gap-1">
+                                {Object.entries(BREATH_STYLES).filter(([k]) => k !== 'default').map(([k, s]) => (
+                                    <button 
+                                        key={k}
+                                        onClick={() => setStyle(k)}
+                                        className={`p-1 rounded border-2 flex flex-col items-center justify-center transition-all ${style === k ? `border-kimetsu-black bg-white scale-105 shadow-md ${s.text}` : 'border-transparent opacity-60 hover:opacity-100'}`}
+                                    >
+                                        <span className="text-xl">{s.icon}</span>
+                                        <span className="text-[10px] font-bold mt-1">{s.name.substring(0,1)}</span>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-bold text-kimetsu-black mb-1">設定密碼</label>
-                            <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="解鎖用" className="w-full p-2 border-2 border-kimetsu-black rounded outline-none focus:ring-2 ring-kimetsu-green text-center font-bold" />
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="block text-sm font-bold text-kimetsu-black mb-1">隊員姓名</label>
+                                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：炭治郎" className={`w-full p-2 border-2 ${currentStyle.border} rounded outline-none focus:ring-2 ${currentStyle.ring} text-center font-bold`} />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-kimetsu-black mb-1">設定密碼</label>
+                                <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="解鎖用" className={`w-full p-2 border-2 ${currentStyle.border} rounded outline-none focus:ring-2 ${currentStyle.ring} text-center font-bold`} />
+                            </div>
                         </div>
                     </div>
+
                     <div className="flex-1 flex flex-col items-center">
-                        <div className={`text-sm font-bold mb-3 flex items-center gap-2 px-4 py-2 rounded border-2 shadow-sm transition-colors ${isLocked ? 'bg-red-100 text-red-600 border-red-300' : 'bg-green-100 text-green-800 border-green-300'}`}>
+                        <div className={`text-sm font-bold mb-3 flex items-center gap-2 px-4 py-2 rounded border-2 shadow-sm transition-colors ${isLocked ? 'bg-red-100 text-red-600 border-red-300' : `${currentStyle.bg} ${currentStyle.text} ${currentStyle.border}`}`}>
                             <Icons.PenTool size={18}/> 
                             {isLocked ? (hasDrawn ? '墨跡已乾！(一筆入魂，點擊重畫可重來)' : '全集中・一筆繪製！') : '全集中・一筆繪製！下筆後不能斷'}
                         </div>
-                        <div className={`w-full aspect-square border-4 border-double rounded overflow-hidden shadow-2xl relative bg-white touch-none transition-colors ${isLocked ? 'border-red-400' : 'border-kimetsu-black'}`}>
+                        <div className={`w-full aspect-square border-4 border-double rounded overflow-hidden shadow-2xl relative bg-white touch-none transition-colors ${isLocked ? 'border-red-400' : currentStyle.border}`}>
                             <canvas ref={canvasRef} className={`w-full h-full touch-none ${isLocked ? 'cursor-not-allowed' : 'cursor-crosshair'}`} onMouseDown={startDraw} onMouseMove={draw} onMouseUp={endDraw} onMouseLeave={endDraw} onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={endDraw} />
                             {isLocked && <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/10 text-red-600 font-extrabold text-2xl tracking-[1em] writing-vertical-rl">封印</div>}
                         </div>
-                        <div className="flex justify-end w-full mt-4"><button onClick={clearCanvas} className="text-sm text-kimetsu-black flex items-center gap-2 hover:text-kimetsu-green transition font-bold bg-white px-4 py-2 rounded border border-kimetsu-black shadow-sm"><Icons.RotateCcw size={16}/> 呼吸重置 (重畫)</button></div>
+                        <div className="flex justify-end w-full mt-4"><button onClick={clearCanvas} className={`text-sm flex items-center gap-2 transition font-bold bg-white px-4 py-2 rounded border shadow-sm ${currentStyle.text} ${currentStyle.border} hover:bg-slate-50`}><Icons.RotateCcw size={16}/> 呼吸重置 (重畫)</button></div>
                     </div>
-                    <div className="mt-8 flex gap-4">
+                    <div className="mt-6 flex gap-4">
                         <button onClick={onCancel} className="flex-1 py-4 border-2 border-kimetsu-black text-kimetsu-black rounded font-bold hover:bg-slate-100 transition shadow-sm active:scale-95 tracking-widest">取消</button>
                         <button onClick={handleSave} className="flex-1 py-4 bg-kimetsu-green text-white rounded shadow-md flex justify-center items-center gap-3 font-bold border-b-4 border-green-800 hover:bg-green-600 transition active:scale-95 tracking-widest"><Icons.Save size={20}/> {initialData ? '修復卷軸' : '傳送卷軸'}</button>
                     </div>
