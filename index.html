@@ -238,6 +238,26 @@
                     const usersList = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                     usersList.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
                     setUsers(usersList);
+                    
+                    // --- AUTO-LOGOUT FIX ---
+                    // 如果雲端有資料，但我的 local ID 卻不在雲端資料中 (被重置或刪除了)
+                    // 就自動登出，避免顯示「查看」卻報錯
+                    if (localStorage.getItem('my_participant_id')) {
+                         const currentMyId = localStorage.getItem('my_participant_id');
+                         const exists = usersList.find(u => u.id === currentMyId);
+                         // 只有當確定雲端已經有資料（同步完成），但沒有我時，才自動登出
+                         // 注意：如果雲端完全被清空 (usersList.length === 0)，也應該登出
+                         // 這裡使用簡單判斷：只要 snapshot 觸發了，代表同步了一次，如果找不到我，就登出
+                         if (!exists) {
+                             console.log("Auto-logout: User no longer exists on server.");
+                             localStorage.removeItem('my_participant_id');
+                             setMyParticipantId(null);
+                             // 如果當前在 my_card 頁面，跳回 home
+                             if (window.location.hash !== '') {
+                                 // Simple logic to force re-render if needed, but setState usually enough
+                             }
+                         }
+                    }
                 }, err => console.error(err));
 
                 const matchesRef = collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'matches');
@@ -300,13 +320,21 @@
                 setIsProcessing(false);
             };
 
+            const handleManualLogout = () => {
+                if (confirm('確定要清除本機的登入狀態嗎？(不會刪除雲端資料)')) {
+                    localStorage.removeItem('my_participant_id');
+                    setMyParticipantId(null);
+                    setEditData(null);
+                    setView('home');
+                }
+            };
+
             const startDrawing = () => {
                 if (myParticipantId && users.find(u => u.id === myParticipantId)) {
-                    // Logic handled in view 'home', this function is for new users
                     alert('你已經參加過了喔！');
                     return;
                 }
-                setEditData(null); // Clear any edit data
+                setEditData(null); 
                 setView('draw');
             };
 
@@ -341,7 +369,7 @@
                              localStorage.setItem('xmas_users', JSON.stringify(updatedUsers));
                          }
                          alert('修改成功！');
-                         setView('my_card'); // Go back to card view
+                         setView('my_card'); 
                     } else {
                         // --- CREATE MODE ---
                         if (mode === 'cloud') {
@@ -390,7 +418,6 @@
                 }
 
                 if (!isValid) {
-                    // Fallback for tricky cases (rare)
                      const shifted = [...giverIds];
                      const first = shifted.shift();
                      shifted.push(first);
@@ -400,7 +427,6 @@
                 if (mode === 'cloud') {
                     try {
                         const batch = writeBatch(dbRef.current);
-                        // Clear old matches first conceptually, but overwrite is fine
                         giverIds.forEach((giverId, index) => {
                             const matchRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'matches', giverId);
                             batch.set(matchRef, { receiverId: receiverIds[index] });
@@ -414,8 +440,6 @@
                     localStorage.setItem('xmas_matches', JSON.stringify(newMatches));
                 }
                 
-                // Stay in admin view or go to reveal?
-                // Admin might want to stay in admin panel
                 alert('分配完成！');
                 setIsProcessing(false);
             };
@@ -652,6 +676,11 @@
                                     
                                     {/* Admin & Footer Links */}
                                     <div className="mt-auto pt-8 flex flex-col items-center gap-2 w-full">
+                                        {myParticipantId && (
+                                            <button onClick={handleManualLogout} className="text-xs text-red-400 hover:text-red-600 flex items-center gap-1 py-1 px-3 rounded border border-red-100 hover:border-red-300 transition mb-2">
+                                                <Icons.LogOut size={12}/> 清除登入狀態 (我是新玩家)
+                                            </button>
+                                        )}
                                         <button onClick={() => setView('admin_login')} className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 py-2 px-4 rounded transition">
                                             <Icons.Lock size={12}/> 主辦專區 (Admin)
                                         </button>
@@ -674,7 +703,13 @@
                                     </div>
                                     {(() => {
                                         const me = users.find(u => u.id === myParticipantId);
-                                        if (!me) return <div className="text-center py-10">讀取錯誤，請重整頁面</div>;
+                                        // 這裡就是您可能看到的錯誤畫面，現在有了自動登出，應該會減少出現機率
+                                        if (!me) return (
+                                            <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-4">
+                                                <p>讀取不到您的資料，可能已被重置。</p>
+                                                <button onClick={handleManualLogout} className="px-4 py-2 bg-slate-800 text-white rounded-lg text-sm">清除狀態並返回首頁</button>
+                                            </div>
+                                        );
                                         const isLocked = !!matches[me.id];
 
                                         return (
