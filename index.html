@@ -815,6 +815,7 @@
             const [name, setName] = useState(initialData ? initialData.name : '');
             const [password, setPassword] = useState(initialData ? initialData.password : '');
             const [hasDrawn, setHasDrawn] = useState(false);
+            const [isLocked, setIsLocked] = useState(false); // New state to enforce single stroke
 
             useEffect(() => {
                 const canvas = canvasRef.current;
@@ -835,6 +836,7 @@
                     img.onload = () => {
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                         setHasDrawn(true);
+                        setIsLocked(true); // Lock loaded image immediately
                     }
                 }
             }, [initialData]);
@@ -845,10 +847,43 @@
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
                 return { x: clientX - rect.left, y: clientY - rect.top };
             };
-            const startDraw = (e) => { setIsDrawing(true); setHasDrawn(true); const pos = getPos(e); const ctx = canvasRef.current.getContext('2d'); ctx.beginPath(); ctx.moveTo(pos.x, pos.y); };
-            const draw = (e) => { if (!isDrawing) return; const pos = getPos(e); const ctx = canvasRef.current.getContext('2d'); ctx.lineTo(pos.x, pos.y); ctx.stroke(); };
-            const endDraw = () => setIsDrawing(false);
-            const clearCanvas = () => { const ctx = canvasRef.current.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height); setHasDrawn(false); };
+            
+            const startDraw = (e) => { 
+                if (isLocked) {
+                    // Prevent drawing if locked
+                    return; 
+                }
+                setIsDrawing(true); 
+                setHasDrawn(true); 
+                const pos = getPos(e); 
+                const ctx = canvasRef.current.getContext('2d'); 
+                ctx.beginPath(); 
+                ctx.moveTo(pos.x, pos.y); 
+            };
+            
+            const draw = (e) => { 
+                if (!isDrawing) return; 
+                const pos = getPos(e); 
+                const ctx = canvasRef.current.getContext('2d'); 
+                ctx.lineTo(pos.x, pos.y); 
+                ctx.stroke(); 
+            };
+            
+            const endDraw = () => {
+                if (isDrawing) {
+                    setIsDrawing(false);
+                    setIsLocked(true); // Lock immediately after one stroke
+                }
+            };
+            
+            const clearCanvas = () => { 
+                const ctx = canvasRef.current.getContext('2d'); 
+                ctx.fillStyle = '#ffffff'; 
+                ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height); 
+                setHasDrawn(false); 
+                setIsLocked(false); // Reset lock
+            };
+            
             const handleSave = () => {
                 if (!name.trim()) return alert('請輸入名字！');
                 if (!password.trim()) return alert('請設定密碼，之後查看結果需要用到！');
@@ -872,12 +907,13 @@
                     <div className="flex-1 flex flex-col items-center">
                         <div className="text-sm text-red-600 font-bold mb-2 flex items-center gap-1">
                             <Icons.PenTool size={16}/> 
-                            {initialData ? '可在舊圖上繼續畫，或點重畫' : '挑戰一筆畫！'}
+                            {isLocked ? (hasDrawn ? '筆墨已乾 (只能一筆畫，點擊重畫可重來)' : '挑戰一筆畫！') : '挑戰一筆畫！下筆後不能斷喔'}
                         </div>
-                        <div className="w-full aspect-square border-2 border-dashed border-slate-300 rounded-xl overflow-hidden shadow-inner relative bg-white touch-none">
-                            <canvas ref={canvasRef} className="cursor-crosshair w-full h-full touch-none" onMouseDown={startDraw} onMouseMove={draw} onMouseUp={endDraw} onMouseLeave={endDraw} onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={endDraw} />
+                        <div className={`w-full aspect-square border-2 border-dashed rounded-xl overflow-hidden shadow-inner relative bg-white touch-none ${isLocked ? 'border-red-300 bg-slate-50' : 'border-slate-300'}`}>
+                            <canvas ref={canvasRef} className={`w-full h-full touch-none ${isLocked ? 'cursor-not-allowed' : 'cursor-crosshair'}`} onMouseDown={startDraw} onMouseMove={draw} onMouseUp={endDraw} onMouseLeave={endDraw} onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={endDraw} />
+                            {isLocked && <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/10 text-red-600 font-bold text-sm"></div>}
                         </div>
-                        <div className="flex justify-end w-full mt-2"><button onClick={clearCanvas} className="text-sm text-slate-500 flex items-center gap-1"><Icons.RotateCcw size={14}/> 重畫</button></div>
+                        <div className="flex justify-end w-full mt-2"><button onClick={clearCanvas} className="text-sm text-slate-500 flex items-center gap-1 hover:text-red-600 transition"><Icons.RotateCcw size={14}/> 重畫</button></div>
                     </div>
                     <div className="mt-6 flex gap-3">
                         <button onClick={onCancel} className="flex-1 py-3 border border-slate-300 text-slate-600 rounded-xl">取消</button>
