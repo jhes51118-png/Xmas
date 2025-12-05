@@ -133,6 +133,7 @@
             Sword: SwordIcon,
             Mic: (p) => <Icon {...p} path={<><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></>} />,
             ArrowRight: (p) => <Icon {...p} path={<><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></>} />,
+            ArrowLeft: (p) => <Icon {...p} path={<><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></>} />,
             RotateCw: (p) => <Icon {...p} path={<><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></>} />,
         };
 
@@ -229,9 +230,9 @@
             const [showAdminPasswords, setShowAdminPasswords] = useState(false); 
             
             // Live Event Mode States
-            const [liveReceiver, setLiveReceiver] = useState(null);
+            const [liveHistory, setLiveHistory] = useState([]);
+            const [liveIndex, setLiveIndex] = useState(-1);
             const [liveShowGiver, setLiveShowGiver] = useState(false);
-            const [drawnIds, setDrawnIds] = useState(new Set());
 
             const appRef = useRef(null);
             const authRef = useRef(null);
@@ -361,9 +362,9 @@
                 setRevealData(null);
                 setEditData(null);
                 // Reset Live State
-                setLiveReceiver(null);
+                setLiveHistory([]);
+                setLiveIndex(-1);
                 setLiveShowGiver(false);
-                setDrawnIds(new Set());
                 setView('home');
                 setIsProcessing(false);
             };
@@ -380,9 +381,9 @@
 
             const handleLiveReset = () => {
                 if (confirm('確定要重新開始儀式嗎？\n這將清除已上台紀錄，讓流程回到第一位。')) {
-                    setLiveReceiver(null);
+                    setLiveHistory([]);
+                    setLiveIndex(-1);
                     setLiveShowGiver(false);
-                    setDrawnIds(new Set());
                 }
             };
 
@@ -410,6 +411,14 @@
             const saveUser = async (name, password, drawingData) => {
                 setIsProcessing(true);
                 try {
+                    // Check duplicate name
+                    const isDuplicate = users.some(u => u.name.trim() === name.trim() && u.id !== myParticipantId);
+                    if (isDuplicate) {
+                        alert('此隊員姓名已存在，請使用其他代號！');
+                        setIsProcessing(false);
+                        return;
+                    }
+
                     localStorage.setItem('my_password_backup', password);
 
                     if (editData && editData.id === myParticipantId) {
@@ -531,10 +540,17 @@
             }
 
             // Live Event Functions
-            const pickNextReceiver = () => {
+            const handleNextLive = () => {
+                // If browsing history
+                if (liveIndex < liveHistory.length - 1) {
+                    setLiveIndex(prev => prev + 1);
+                    setLiveShowGiver(false);
+                    return;
+                }
+
+                // New random pick
+                const drawnIds = new Set(liveHistory.map(u => u.id));
                 const allReceivers = Object.values(matches);
-                // In matches: giverId -> receiverId. 
-                // We want to pick a receiver who hasn't been picked (drawnIds).
                 const remaining = allReceivers.filter(rid => !drawnIds.has(rid));
                 
                 if (remaining.length === 0) {
@@ -547,11 +563,21 @@
                 const pickedUser = users.find(u => u.id === pickedId);
 
                 if (pickedUser) {
-                    setLiveReceiver(pickedUser);
+                    const newHistory = [...liveHistory, pickedUser];
+                    setLiveHistory(newHistory);
+                    setLiveIndex(newHistory.length - 1);
                     setLiveShowGiver(false);
-                    setDrawnIds(prev => new Set(prev).add(pickedId));
                 }
             };
+
+            const handlePrevLive = () => {
+                if (liveIndex > 0) {
+                    setLiveIndex(prev => prev - 1);
+                    setLiveShowGiver(false);
+                }
+            }
+
+            const liveReceiver = liveIndex >= 0 && liveHistory.length > 0 ? liveHistory[liveIndex] : null;
 
             const isMe = (uid) => myParticipantId === uid;
 
@@ -596,6 +622,7 @@
 
             if (view === 'admin_live') {
                 const giver = liveReceiver ? users.find(u => matches[u.id] === liveReceiver.id) : null;
+                const isHistoryMode = liveIndex < liveHistory.length - 1;
                 
                 return (
                     <div className="min-h-screen flex flex-col bg-kimetsu-black text-white relative overflow-hidden">
@@ -618,8 +645,8 @@
                                 <div className="text-center space-y-8 animate-fade-in">
                                     <div className="text-6xl text-kimetsu-pink animate-pulse">🌸</div>
                                     <h2 className="text-4xl font-bold tracking-widest">準備開始抽籤</h2>
-                                    <p className="text-slate-400">目前還有 {Object.keys(matches).length - drawnIds.size} 位隊員等待上台</p>
-                                    <button onClick={pickNextReceiver} className="px-8 py-4 bg-kimetsu-green text-white text-2xl font-bold rounded-lg shadow-[0_0_15px_rgba(46,204,113,0.6)] hover:scale-105 transition-transform border-2 border-white tracking-widest">
+                                    <p className="text-slate-400">目前還有 {Object.keys(matches).length - liveHistory.length} 位隊員等待上台</p>
+                                    <button onClick={handleNextLive} className="px-8 py-4 bg-kimetsu-green text-white text-2xl font-bold rounded-lg shadow-[0_0_15px_rgba(46,204,113,0.6)] hover:scale-105 transition-transform border-2 border-white tracking-widest">
                                         隨機召喚隊員
                                     </button>
                                 </div>
@@ -655,9 +682,21 @@
                                                 </div>
                                             )}
 
-                                            <button onClick={pickNextReceiver} className="mt-8 px-6 py-2 border-2 border-white text-white rounded hover:bg-white hover:text-kimetsu-black transition font-bold flex items-center gap-2">
-                                                下一位隊員 <Icons.ArrowRight size={20}/>
-                                            </button>
+                                            <div className="flex gap-2 w-full mt-8">
+                                                <button 
+                                                    onClick={handlePrevLive} 
+                                                    disabled={liveIndex <= 0}
+                                                    className={`flex-1 px-4 py-3 border-2 border-white text-white rounded font-bold flex items-center justify-center gap-2 transition ${liveIndex <= 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white hover:text-kimetsu-black'}`}
+                                                >
+                                                    <Icons.ArrowLeft size={20}/> 上一位
+                                                </button>
+                                                <button 
+                                                    onClick={handleNextLive} 
+                                                    className="flex-1 px-4 py-3 border-2 border-white text-white rounded hover:bg-white hover:text-kimetsu-black transition font-bold flex items-center justify-center gap-2"
+                                                >
+                                                    {isHistoryMode ? '下一位 (歷史)' : '隨機召喚'} <Icons.ArrowRight size={20}/>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
