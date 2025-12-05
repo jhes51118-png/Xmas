@@ -19,6 +19,8 @@
                         'kimetsu-bg': '#f5f6fa', /* Light gray/paper */
                         'kimetsu-pink': '#fd79a8', /* Nezuko Pink */
                         'kimetsu-yellow': '#f1c40f', /* Zenitsu Yellow */
+                        'wood-dark': '#5D4037',
+                        'wood-light': '#8D6E63',
                     },
                     fontFamily: {
                         'kimetsu': ['"Noto Serif TC"', '"Songti TC"', 'serif'] 
@@ -62,6 +64,26 @@
                     user-select: none; /* Non-prefixed version, currently
                                           supported by Chrome, Edge, Opera and Firefox */
         }
+
+        /* Nezuko Box Styles */
+        .nezuko-box {
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .nezuko-door {
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: left;
+        }
+        .nezuko-box.open .nezuko-door {
+            transform: rotateY(-110deg);
+        }
+        .wood-pattern {
+            background-image: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px);
+        }
+        .metal-strap {
+            background: linear-gradient(90deg, #333, #555, #333);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
     </style>
 </head>
 <body class="bg-checkered text-slate-800 font-kimetsu min-h-screen">
@@ -102,6 +124,24 @@
             getFirestore, collection, addDoc, onSnapshot, 
             doc, setDoc, updateDoc, deleteDoc, getDocs, writeBatch, serverTimestamp 
         } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // --- 鬼殺隊階級資料 ---
+        const RANKS = [
+            '癸', '壬', '辛', '庚', '己', '戊', '丁', '丙', '乙', '甲'
+        ];
+        const HASHIRA_TITLES = [
+            '水柱', '蟲柱', '炎柱', '音柱', '岩柱', '戀柱', '霞柱', '蛇柱', '風柱'
+        ];
+
+        const getRandomRank = () => {
+            const roll = Math.random();
+            if (roll < 0.1) { // 10% 機率成為柱
+                return HASHIRA_TITLES[Math.floor(Math.random() * HASHIRA_TITLES.length)];
+            }
+            // 隨機一般階級，偏向低階
+            const index = Math.floor(Math.random() * 5); // 癸~己
+            return RANKS[index];
+        };
 
         // --- 呼吸法樣式設定 ---
         const BREATH_STYLES = {
@@ -200,6 +240,49 @@
             ArrowRight: (p) => <Icon {...p} path={<><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></>} />,
             ArrowLeft: (p) => <Icon {...p} path={<><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></>} />,
             RotateCw: (p) => <Icon {...p} path={<><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></>} />,
+        };
+
+        // --- Nezuko Box Component ---
+        const NezukoBox = ({ children, isLocked }) => {
+            const [isOpen, setIsOpen] = useState(false);
+
+            const handleToggle = () => {
+                if (isLocked) {
+                    alert('尚未解開封印！');
+                    return;
+                }
+                setIsOpen(!isOpen);
+            };
+
+            return (
+                <div 
+                    className={`relative w-full h-full bg-wood-dark border-4 border-black rounded-lg shadow-2xl overflow-hidden cursor-pointer nezuko-box ${isOpen ? 'open' : ''}`}
+                    onClick={handleToggle}
+                >
+                    {/* Content (Drawing) Inside */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-white">
+                        {children}
+                    </div>
+
+                    {/* Door Overlay */}
+                    <div className="absolute inset-0 bg-wood-light flex flex-col justify-between p-2 nezuko-door z-20 wood-pattern border-r-4 border-black">
+                        {/* Metal Straps */}
+                        <div className="w-full h-4 metal-strap rounded"></div>
+                        <div className="w-full h-4 metal-strap rounded"></div>
+                        
+                        {/* Center Pattern */}
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                            <div className="w-16 h-16 border-4 border-black bg-kimetsu-pink rounded-full flex items-center justify-center shadow-lg">
+                                <span className="text-black font-black text-2xl">禰</span>
+                            </div>
+                            <span className="text-white bg-black px-2 py-1 text-xs mt-2 font-bold rounded">{isOpen ? '點擊關閉' : '點擊開箱'}</span>
+                        </div>
+
+                        <div className="w-full h-4 metal-strap rounded"></div>
+                        <div className="w-full h-4 metal-strap rounded"></div>
+                    </div>
+                </div>
+            );
         };
 
         // --- Long Press Button Component ---
@@ -538,9 +621,13 @@
 
                     localStorage.setItem('my_password_backup', password);
 
+                    // Assign Rank
+                    const randomRank = getRandomRank();
+
                     if (editData && editData.id === myParticipantId) {
                          if (mode === 'cloud') {
                             const userRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants', myParticipantId);
+                            // Preserve rank on edit, or maybe re-roll? Let's preserve.
                             await updateDoc(userRef, {
                                 name, password, drawing: drawingData, style, updatedAt: serverTimestamp()
                             });
@@ -557,12 +644,12 @@
                         if (mode === 'cloud') {
                             const userUid = authRef.current?.currentUser?.uid || 'anon';
                             const docRef = await addDoc(collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants'), {
-                                name, password, drawing: drawingData, style, createdAt: serverTimestamp(), uid: userUid
+                                name, password, drawing: drawingData, style, rank: randomRank, createdAt: serverTimestamp(), uid: userUid
                             });
                             localStorage.setItem('my_participant_id', docRef.id);
                             setMyParticipantId(docRef.id);
                         } else {
-                            const newUser = { id: Date.now().toString(), name, password, drawing: drawingData, style, uid: 'local' };
+                            const newUser = { id: Date.now().toString(), name, password, drawing: drawingData, style, rank: randomRank, uid: 'local' };
                             const newUsers = [...users, newUser];
                             setUsers(newUsers);
                             localStorage.setItem('xmas_users', JSON.stringify(newUsers));
@@ -741,6 +828,7 @@
                 const giver = liveReceiver ? users.find(u => matches[u.id] === liveReceiver.id) : null;
                 const isHistoryMode = liveIndex < liveHistory.length - 1;
                 const style = getStyle(liveReceiver?.style || 'default');
+                const rank = liveReceiver?.rank || '癸';
                 
                 return (
                     <div className="min-h-screen flex flex-col bg-kimetsu-black text-white relative overflow-hidden">
@@ -771,16 +859,19 @@
                             ) : (
                                 <div className="w-full max-w-4xl flex flex-col items-center gap-6 animate-slide-up">
                                     <div className="text-center">
-                                        <p className={`tracking-[0.5em] text-lg mb-2 font-bold ${style.text.replace('text-','text-kimetsu-green ')}`}>受贈者 ({style.name}・許願)</p>
+                                        <p className={`tracking-[0.5em] text-lg mb-2 font-bold ${style.text.replace('text-','text-kimetsu-green ')}`}>
+                                            <span className="text-sm border border-white px-2 py-1 rounded mr-2">{rank}</span> 
+                                            受贈者 ({style.name})
+                                        </p>
                                         <h2 className="text-5xl font-black tracking-widest mb-6 border-b-4 border-kimetsu-pink inline-block pb-2">{liveReceiver.name}</h2>
                                     </div>
 
                                     <div className="flex flex-col md:flex-row gap-8 items-center justify-center w-full">
-                                        {/* Drawing Display */}
-                                        <div className={`p-2 rounded-lg shadow-2xl rotate-1 border-4 ${style.border} ${style.bg} w-full max-w-md aspect-square flex items-center justify-center relative`}>
-                                            <div className="absolute -top-3 -left-3 w-8 h-8 bg-kimetsu-green z-10 border border-black text-center leading-7">{style.icon}</div>
-                                            <div className="absolute -bottom-3 -right-3 w-8 h-8 bg-kimetsu-pink z-10 border border-black"></div>
-                                            <img src={liveReceiver.drawing} className="w-full h-full object-contain bg-white rounded" />
+                                        {/* Drawing Display via Nezuko Box */}
+                                        <div className={`w-full max-w-md aspect-square flex items-center justify-center relative transform rotate-1`}>
+                                            <NezukoBox isLocked={false}>
+                                                <img src={liveReceiver.drawing} className="w-full h-full object-contain" />
+                                            </NezukoBox>
                                         </div>
 
                                         {/* Giver Reveal Section */}
@@ -911,10 +1002,14 @@
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                         {users.map(u => {
                                             const style = getStyle(u.style || 'default');
+                                            const rank = u.rank || '癸';
                                             return (
                                                 <div key={u.id} className={`border-4 ${style.border} ${style.bg} rounded p-2 relative group shadow-sm transition-all`}>
-                                                    <div className={`absolute top-0 right-0 p-1 text-xs font-bold ${style.text}`}>{style.icon} {style.name}</div>
-                                                    <div className="aspect-square bg-white border border-slate-300 overflow-hidden mb-2 mt-4">
+                                                    <div className={`absolute top-0 right-0 p-1 text-xs font-bold ${style.text} flex items-center gap-1`}>
+                                                        <span className="border border-current px-1 rounded-sm text-[10px]">{rank}</span>
+                                                        {style.icon} {style.name}
+                                                    </div>
+                                                    <div className="aspect-square bg-white border border-slate-300 overflow-hidden mb-2 mt-6">
                                                         <img src={u.drawing} className="w-full h-full object-contain" />
                                                     </div>
                                                     <div className="flex flex-col">
@@ -1062,18 +1157,22 @@
                                         );
                                         const isLocked = !!matches[me.id];
                                         const style = getStyle(me.style || 'default');
+                                        const rank = me.rank || '癸';
 
                                         return (
                                             <div className="flex-1 flex flex-col items-center">
                                                 <div className={`w-full p-6 rounded shadow-lg border-4 ${style.border} ${style.bg} mb-6 relative`}>
                                                     <div className={`absolute -top-3 -right-3 px-2 py-1 bg-white border-2 ${style.border} rounded text-xs font-bold`}>{style.icon} {style.name}</div>
                                                     <div className="flex justify-between items-center mb-4 border-b-2 border-slate-200 pb-2">
-                                                        <span className={`text-sm font-bold ${style.text}`}>隊員階級: 癸</span>
+                                                        <span className={`text-sm font-bold ${style.text}`}>隊員階級: {rank}</span>
                                                         <span className={`font-bold text-xl ${style.text}`}>{me.name}</span>
                                                     </div>
-                                                    <div className="aspect-square w-full bg-slate-50 rounded border-2 border-slate-300 overflow-hidden relative shadow-inner">
-                                                        <img src={me.drawing} className="w-full h-full object-contain"/>
-                                                        {isLocked && <div className="absolute inset-0 bg-kimetsu-black/50 flex items-center justify-center"><div className="bg-kimetsu-pink text-white px-6 py-2 rounded font-bold border-2 border-white shadow-xl rotate-[-10deg] text-xl">封印</div></div>}
+                                                    
+                                                    {/* Nezuko Box for My Card */}
+                                                    <div className="w-full max-w-md aspect-square flex items-center justify-center relative">
+                                                        <NezukoBox isLocked={isLocked}>
+                                                            <img src={me.drawing} className="w-full h-full object-contain" />
+                                                        </NezukoBox>
                                                     </div>
                                                 </div>
 
@@ -1101,11 +1200,15 @@
                                     <div className="flex-1 overflow-y-auto space-y-4 pr-2">
                                         {users.length === 0 ? <div className="text-center text-slate-500 mt-10 font-bold text-lg bg-white p-8 rounded border-2 border-slate-300">尚無隊員入隊...</div> : users.map((u, idx) => {
                                             const style = getStyle(u.style || 'default');
+                                            const rank = u.rank || '癸';
                                             return (
                                                 <div key={u.id} className={`p-4 rounded flex justify-between items-center border-2 shadow-sm transition-transform hover:translate-x-1 ${isMe(u.id) ? `bg-green-50 border-kimetsu-green` : `${style.bg} ${style.border}`}`}>
                                                     <div className="flex items-center gap-3">
                                                         <span className={`font-bold text-lg ${style.text} font-mono`}>#{idx + 1}</span>
-                                                        <span className={`font-bold text-lg ${style.text}`}>{style.icon} {u.name}</span>
+                                                        <span className={`font-bold text-lg ${style.text}`}>
+                                                            <span className="text-xs border border-current px-1 rounded mr-1">{rank}</span>
+                                                            {style.icon} {u.name}
+                                                        </span>
                                                         {isMe(u.id) && <span className="text-xs bg-kimetsu-black text-white px-2 py-1 rounded font-bold">我</span>}
                                                     </div>
                                                     <span className="text-xs text-slate-500 font-bold border border-slate-300 px-2 py-1 rounded flex items-center gap-1"><Icons.Check size={12}/> 卷軸完成</span>
@@ -1161,8 +1264,11 @@
                                             請準備符合下方卷軸內容的禮物，並於集會時交付！
                                         </div>
                                         
-                                        <div className="bg-white border-4 border-double border-slate-300 rounded p-2 shadow-inner inline-block relative z-10">
-                                            {revealData.receiver ? <img src={revealData.receiver.drawing} alt="Secret Sketch" className="w-64 h-64 object-contain" /> : "Error"}
+                                        <div className="bg-white border-4 border-double border-slate-300 rounded p-2 shadow-inner inline-block relative z-10 w-full max-w-sm aspect-square">
+                                            {/* User Result Nezuko Box */}
+                                            <NezukoBox isLocked={false}>
+                                                {revealData.receiver ? <img src={revealData.receiver.drawing} className="w-full h-full object-contain" /> : "Error"}
+                                            </NezukoBox>
                                         </div>
                                     </div>
                                     <button onClick={() => setView('reveal')} className="w-full py-4 bg-kimetsu-pink text-white font-bold rounded shadow-lg border-b-4 border-pink-700 hover:bg-pink-400 transition active:scale-95 tracking-widest">遵命！(登出)</button>
