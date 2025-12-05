@@ -51,6 +51,17 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hidden-loader { opacity: 0; pointer-events: none; }
+        
+        /* Disable text selection for long press button */
+        .noselect {
+          -webkit-touch-callout: none; /* iOS Safari */
+            -webkit-user-select: none; /* Safari */
+             -khtml-user-select: none; /* Konqueror HTML */
+               -moz-user-select: none; /* Old versions of Firefox */
+                -ms-user-select: none; /* Internet Explorer/Edge */
+                    user-select: none; /* Non-prefixed version, currently
+                                          supported by Chrome, Edge, Opera and Firefox */
+        }
     </style>
 </head>
 <body class="bg-checkered text-slate-800 font-kimetsu min-h-screen">
@@ -135,6 +146,58 @@
             ArrowRight: (p) => <Icon {...p} path={<><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></>} />,
             ArrowLeft: (p) => <Icon {...p} path={<><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></>} />,
             RotateCw: (p) => <Icon {...p} path={<><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></>} />,
+        };
+
+        // --- Long Press Button Component ---
+        const LongPressButton = ({ onComplete, label, icon: Icon, disabled }) => {
+            const [pressing, setPressing] = useState(false);
+            const [progress, setProgress] = useState(0);
+            const intervalRef = useRef(null);
+
+            useEffect(() => {
+                if (pressing && !disabled) {
+                    intervalRef.current = setInterval(() => {
+                        setProgress(p => {
+                            if (p >= 100) {
+                                clearInterval(intervalRef.current);
+                                return 100;
+                            }
+                            return p + 2; 
+                        });
+                    }, 30); // 30ms * 50 = 1.5s approx hold
+                } else {
+                    setProgress(0);
+                    if (intervalRef.current) clearInterval(intervalRef.current);
+                }
+                return () => {
+                    if (intervalRef.current) clearInterval(intervalRef.current);
+                }
+            }, [pressing, disabled]);
+
+            useEffect(() => {
+                if (progress === 100) {
+                    setPressing(false);
+                    onComplete();
+                }
+            }, [progress, onComplete]);
+
+            return (
+                <button
+                    disabled={disabled}
+                    className={`w-full py-3 border-2 text-kimetsu-black rounded font-bold flex items-center justify-center gap-2 shadow-sm tracking-widest relative overflow-hidden noselect transition ${disabled ? 'bg-gray-100 border-gray-300 opacity-50 cursor-not-allowed' : 'bg-white border-kimetsu-black hover:bg-slate-50 cursor-pointer'}`}
+                    onMouseDown={() => setPressing(true)}
+                    onMouseUp={() => setPressing(false)}
+                    onMouseLeave={() => setPressing(false)}
+                    onTouchStart={() => setPressing(true)}
+                    onTouchEnd={() => setPressing(false)}
+                >
+                    <div className="absolute inset-0 bg-red-200 transition-all duration-75 ease-linear" style={{ width: `${progress}%` }}></div>
+                    <div className="relative flex items-center gap-2 z-10">
+                        {Icon && <Icon size={20}/>} 
+                        {pressing ? (progress === 100 ? '已確認' : '請長按以銷毀...') : label}
+                    </div>
+                </button>
+            )
         };
 
         // --- Config Wizard Component ---
@@ -743,9 +806,13 @@
                                     </div>
                                     <div className="space-y-2">
                                         <p className="text-sm text-slate-600 font-bold">活動結束後，銷毀所有卷軸重新開始。</p>
-                                        <button onClick={handleReset} disabled={isProcessing} className="w-full py-3 bg-white border-2 border-kimetsu-black hover:bg-slate-100 text-kimetsu-black rounded font-bold flex items-center justify-center gap-2 shadow-sm tracking-widest">
-                                            <Icons.Trash2 size={20}/> 銷毀所有資料
-                                        </button>
+                                        {/* Updated LongPressButton usage */}
+                                        <LongPressButton 
+                                            label="銷毀所有資料" 
+                                            icon={Icons.Trash2} 
+                                            onComplete={handleReset} 
+                                            disabled={isProcessing}
+                                        />
                                     </div>
                                 </div>
                             </div>
