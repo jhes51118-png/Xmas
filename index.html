@@ -133,6 +133,7 @@
             Sword: SwordIcon,
             Mic: (p) => <Icon {...p} path={<><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></>} />,
             ArrowRight: (p) => <Icon {...p} path={<><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></>} />,
+            RotateCw: (p) => <Icon {...p} path={<><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></>} />,
         };
 
         // --- Config Wizard Component ---
@@ -377,6 +378,14 @@
                 }
             };
 
+            const handleLiveReset = () => {
+                if (confirm('確定要重新開始儀式嗎？\n這將清除已上台紀錄，讓流程回到第一位。')) {
+                    setLiveReceiver(null);
+                    setLiveShowGiver(false);
+                    setDrawnIds(new Set());
+                }
+            };
+
             const startDrawing = () => {
                 if (myParticipantId && users.find(u => u.id === myParticipantId)) {
                     alert('你已經是鬼殺隊的一員了！');
@@ -596,7 +605,12 @@
                         
                         <header className="p-4 flex justify-between items-center z-10">
                             <h1 className="text-2xl font-bold tracking-widest text-kimetsu-green border-b-2 border-white pb-1">柱合會議・禮物交付儀式</h1>
-                            <button onClick={() => setView('admin_dashboard')} className="text-sm border border-white px-3 py-1 rounded hover:bg-white hover:text-kimetsu-black transition">退出儀式</button>
+                            <div className="flex gap-2">
+                                <button onClick={handleLiveReset} className="text-sm border border-red-500 text-red-400 px-3 py-1 rounded hover:bg-red-600 hover:text-white transition font-bold flex items-center gap-1">
+                                    <Icons.RotateCw size={14}/> 重新開始
+                                </button>
+                                <button onClick={() => setView('admin_dashboard')} className="text-sm border border-white px-3 py-1 rounded hover:bg-white hover:text-kimetsu-black transition">退出儀式</button>
+                            </div>
                         </header>
 
                         <div className="flex-1 flex flex-col items-center justify-center p-4 z-10 relative">
