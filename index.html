@@ -57,7 +57,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { 
             getFirestore, collection, addDoc, onSnapshot, 
-            doc, setDoc, deleteDoc, getDocs, writeBatch, serverTimestamp 
+            doc, setDoc, updateDoc, deleteDoc, getDocs, writeBatch, serverTimestamp 
         } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         // --- 簡易圖示元件 (SVG) ---
@@ -85,6 +85,8 @@
             LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />,
             Trash2: (p) => <Icon {...p} path={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></>} />,
             Key: (p) => <Icon {...p} path={<><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></>} />,
+            Image: (p) => <Icon {...p} path={<><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></>} />,
+            Edit: (p) => <Icon {...p} path={<><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></>} />,
         };
 
         // --- Config Wizard Component ---
@@ -175,6 +177,7 @@
             const [adminPasswordInput, setAdminPasswordInput] = useState('');
             const [userPasswordInput, setUserPasswordInput] = useState('');
             const [loginTargetUser, setLoginTargetUser] = useState(null);
+            const [editData, setEditData] = useState(null); // Data for editing
             
             // Firebase refs
             const appRef = useRef(null);
@@ -292,39 +295,75 @@
                 localStorage.removeItem('my_participant_id');
                 setMyParticipantId(null);
                 setRevealData(null);
+                setEditData(null);
                 setView('home'); // Reset goes to home
                 setIsProcessing(false);
             };
 
             const startDrawing = () => {
                 if (myParticipantId && users.find(u => u.id === myParticipantId)) {
+                    // Logic handled in view 'home', this function is for new users
                     alert('你已經參加過了喔！');
                     return;
                 }
+                setEditData(null); // Clear any edit data
                 setView('draw');
+            };
+
+            const editMyCard = () => {
+                 const me = users.find(u => u.id === myParticipantId);
+                 if (me) {
+                     if (matches[me.id]) {
+                         alert('活動已經開始分配禮物，無法修改了！');
+                         return;
+                     }
+                     setEditData(me);
+                     setView('draw');
+                 }
             };
 
             const saveUser = async (name, password, drawingData) => {
                 setIsProcessing(true);
                 try {
-                    if (mode === 'cloud') {
-                        const userUid = authRef.current?.currentUser?.uid || 'anon';
-                        const docRef = await addDoc(collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants'), {
-                            name, password, drawing: drawingData, createdAt: serverTimestamp(), uid: userUid
-                        });
-                        localStorage.setItem('my_participant_id', docRef.id);
-                        setMyParticipantId(docRef.id);
+                    // Check if update or create
+                    if (editData && editData.id === myParticipantId) {
+                         // --- UPDATE MODE ---
+                         if (mode === 'cloud') {
+                            const userRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants', myParticipantId);
+                            await updateDoc(userRef, {
+                                name, password, drawing: drawingData, updatedAt: serverTimestamp()
+                            });
+                         } else {
+                             const updatedUsers = users.map(u => 
+                                u.id === myParticipantId ? { ...u, name, password, drawing: drawingData } : u
+                             );
+                             setUsers(updatedUsers);
+                             localStorage.setItem('xmas_users', JSON.stringify(updatedUsers));
+                         }
+                         alert('修改成功！');
+                         setView('my_card'); // Go back to card view
                     } else {
-                        const newUser = { id: Date.now().toString(), name, password, drawing: drawingData, uid: 'local' };
-                        const newUsers = [...users, newUser];
-                        setUsers(newUsers);
-                        localStorage.setItem('xmas_users', JSON.stringify(newUsers));
-                        localStorage.setItem('my_participant_id', newUser.id);
-                        setMyParticipantId(newUser.id);
+                        // --- CREATE MODE ---
+                        if (mode === 'cloud') {
+                            const userUid = authRef.current?.currentUser?.uid || 'anon';
+                            const docRef = await addDoc(collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants'), {
+                                name, password, drawing: drawingData, createdAt: serverTimestamp(), uid: userUid
+                            });
+                            localStorage.setItem('my_participant_id', docRef.id);
+                            setMyParticipantId(docRef.id);
+                        } else {
+                            const newUser = { id: Date.now().toString(), name, password, drawing: drawingData, uid: 'local' };
+                            const newUsers = [...users, newUser];
+                            setUsers(newUsers);
+                            localStorage.setItem('xmas_users', JSON.stringify(newUsers));
+                            localStorage.setItem('my_participant_id', newUser.id);
+                            setMyParticipantId(newUser.id);
+                        }
+                        setView('home');
                     }
-                    setView('home');
                 } catch (e) { console.error(e); alert('上傳失敗'); }
                 setIsProcessing(false);
+                setEditData(null);
             };
 
             const performMatching = async () => {
@@ -383,18 +422,10 @@
 
             const handleUserLogin = () => {
                 if (!loginTargetUser) return;
-                
-                // Check password
-                // If user doesn't have password set (legacy data), allow empty or prompt? 
-                // Let's assume strict: must match if exists. If no password in DB, any input works? 
-                // Or better: if no password in DB, just allow access.
-                
                 if (loginTargetUser.password && loginTargetUser.password !== userPasswordInput) {
                     alert('密碼錯誤！請輸入您當初設定的密碼。');
                     return;
                 }
-                
-                // Success
                 const receiverId = matches[loginTargetUser.id];
                 if (!receiverId) return alert('尚未分配禮物');
                 
@@ -414,7 +445,7 @@
             const isMe = (uid) => myParticipantId === uid;
 
             const handleAdminLogin = () => {
-                if (adminPasswordInput === 'admin123') { // Simple hardcoded password
+                if (adminPasswordInput === 'admin123') { 
                     setIsAdmin(true);
                     setView('admin_dashboard');
                     setAdminPasswordInput('');
@@ -598,9 +629,9 @@
                                                 <Icons.PenTool size={24}/> 我是新玩家 (開始畫圖)
                                             </button>
                                         ) : (
-                                            <div className="w-full py-4 bg-green-50 border-2 border-green-200 text-green-800 rounded-xl flex items-center justify-center gap-2 font-medium">
-                                                <Icons.Check size={20}/> 你已完成上傳，等待分配
-                                            </div>
+                                            <button onClick={() => setView('my_card')} className="w-full py-4 bg-green-50 border-2 border-green-500 text-green-800 hover:bg-green-100 rounded-xl flex items-center justify-center gap-2 font-bold shadow-md active:scale-95 transition-transform">
+                                                <Icons.Image size={24}/> 查看 / 修改我的許願卡
+                                            </button>
                                         )}
                                         <button onClick={() => setView('participants')} className="w-full py-4 bg-white border-2 border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl shadow-sm flex items-center justify-center gap-3 text-lg font-semibold">
                                             <Icons.Users size={24}/> 查看玩家列表
@@ -634,7 +665,48 @@
                                 </div>
                             )}
 
-                            {view === 'draw' && <DrawingPad onSave={saveUser} onCancel={() => setView('home')} Icons={Icons} />}
+                            {view === 'draw' && <DrawingPad initialData={editData} onSave={saveUser} onCancel={() => setView(editData ? 'my_card' : 'home')} Icons={Icons} />}
+                            
+                            {view === 'my_card' && (
+                                <div className="flex flex-col h-full animate-fade-in">
+                                    <div className="flex items-center justify-center mb-4 relative">
+                                         <h2 className="text-xl font-bold text-center">我的許願卡</h2>
+                                    </div>
+                                    {(() => {
+                                        const me = users.find(u => u.id === myParticipantId);
+                                        if (!me) return <div className="text-center py-10">讀取錯誤，請重整頁面</div>;
+                                        const isLocked = !!matches[me.id];
+
+                                        return (
+                                            <div className="flex-1 flex flex-col items-center">
+                                                <div className="w-full bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6">
+                                                    <div className="flex justify-between items-center mb-2 border-b pb-2">
+                                                        <span className="text-slate-500 text-sm">你的名字</span>
+                                                        <span className="font-bold text-lg">{me.name}</span>
+                                                    </div>
+                                                    <div className="aspect-square w-full bg-slate-50 rounded-lg border border-slate-100 overflow-hidden relative">
+                                                        <img src={me.drawing} className="w-full h-full object-contain"/>
+                                                        {isLocked && <div className="absolute inset-0 bg-slate-900/10 flex items-center justify-center"><span className="bg-black/70 text-white px-3 py-1 rounded-full text-xs">已鎖定</span></div>}
+                                                    </div>
+                                                </div>
+
+                                                {isLocked ? (
+                                                    <div className="w-full p-4 bg-orange-50 text-orange-700 rounded-lg text-sm text-center mb-4 border border-orange-100">
+                                                        <p className="font-bold mb-1">🔒 禮物已分配</p>
+                                                        無法再修改許願卡了！
+                                                    </div>
+                                                ) : (
+                                                    <button onClick={editMyCard} className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md font-bold flex items-center justify-center gap-2 mb-4">
+                                                        <Icons.Edit size={20}/> 重新繪製 / 修改
+                                                    </button>
+                                                )}
+                                                
+                                                <button onClick={() => setView('home')} className="w-full py-3 bg-slate-200 text-slate-700 font-semibold rounded-xl mt-auto">返回首頁</button>
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+                            )}
 
                             {view === 'participants' && (
                                 <div className="flex flex-col h-full">
@@ -702,11 +774,11 @@
             );
         };
 
-        const DrawingPad = ({ onSave, onCancel, Icons }) => {
+        const DrawingPad = ({ onSave, onCancel, Icons, initialData }) => {
             const canvasRef = useRef(null);
             const [isDrawing, setIsDrawing] = useState(false);
-            const [name, setName] = useState('');
-            const [password, setPassword] = useState('');
+            const [name, setName] = useState(initialData ? initialData.name : '');
+            const [password, setPassword] = useState(initialData ? initialData.password : '');
             const [hasDrawn, setHasDrawn] = useState(false);
 
             useEffect(() => {
@@ -716,8 +788,21 @@
                 canvas.height = canvas.parentElement.clientWidth;
                 const ctx = canvas.getContext('2d');
                 ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#334155'; ctx.lineWidth = 4;
-                ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            }, []);
+                
+                // Init background
+                ctx.fillStyle = '#ffffff'; 
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Load initial image if editing
+                if (initialData && initialData.drawing) {
+                    const img = new Image();
+                    img.src = initialData.drawing;
+                    img.onload = () => {
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        setHasDrawn(true);
+                    }
+                }
+            }, [initialData]);
 
             const getPos = (e) => {
                 const rect = canvasRef.current.getBoundingClientRect();
@@ -738,7 +823,7 @@
 
             return (
                 <div className="flex flex-col h-full animate-slide-up">
-                    <h2 className="text-xl font-bold mb-2 text-center">繪製許願卡</h2>
+                    <h2 className="text-xl font-bold mb-2 text-center">{initialData ? '修改許願卡' : '繪製許願卡'}</h2>
                     <div className="mb-2 grid grid-cols-2 gap-2">
                         <div>
                             <label className="block text-xs font-medium text-slate-700 mb-1">名字</label>
@@ -750,7 +835,10 @@
                         </div>
                     </div>
                     <div className="flex-1 flex flex-col items-center">
-                        <div className="text-sm text-red-600 font-bold mb-2 flex items-center gap-1"><Icons.PenTool size={16}/> 挑戰一筆畫！</div>
+                        <div className="text-sm text-red-600 font-bold mb-2 flex items-center gap-1">
+                            <Icons.PenTool size={16}/> 
+                            {initialData ? '可在舊圖上繼續畫，或點重畫' : '挑戰一筆畫！'}
+                        </div>
                         <div className="w-full aspect-square border-2 border-dashed border-slate-300 rounded-xl overflow-hidden shadow-inner relative bg-white touch-none">
                             <canvas ref={canvasRef} className="cursor-crosshair w-full h-full touch-none" onMouseDown={startDraw} onMouseMove={draw} onMouseUp={endDraw} onMouseLeave={endDraw} onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={endDraw} />
                         </div>
@@ -758,7 +846,7 @@
                     </div>
                     <div className="mt-6 flex gap-3">
                         <button onClick={onCancel} className="flex-1 py-3 border border-slate-300 text-slate-600 rounded-xl">取消</button>
-                        <button onClick={handleSave} className="flex-1 py-3 bg-red-600 text-white rounded-xl shadow-md flex justify-center items-center gap-2"><Icons.Save size={18}/> 上傳</button>
+                        <button onClick={handleSave} className="flex-1 py-3 bg-red-600 text-white rounded-xl shadow-md flex justify-center items-center gap-2"><Icons.Save size={18}/> {initialData ? '更新' : '上傳'}</button>
                     </div>
                 </div>
             );
