@@ -370,7 +370,15 @@
 
         // --- Config Wizard Component ---
         const ConfigWizard = ({ onConfigComplete, onOfflineMode }) => {
-            const [inputConfig, setInputConfig] = useState('');
+            const [inputConfig, setInputConfig] = useState(`{
+      apiKey: "AIzaSyBn6SMVHAYM8A_P6Ah2b6bgF416DmCu6EE",
+      authDomain: "christmas-dd507.firebaseapp.com",
+      projectId: "christmas-dd507",
+      storageBucket: "christmas-dd507.firebasestorage.app",
+      messagingSenderId: "1067471433502",
+      appId: "1:1067471433502:web:fe5d0b38e1329775cea30f",
+      measurementId: "G-D5VM0TKZXV"
+    }`);
             const [error, setError] = useState('');
 
             const handleSave = () => {
@@ -430,6 +438,13 @@
                     </div>
                 </div>
             );
+        };
+
+        // --- Helper Function for Timestamp ---
+        const formatTime = (timestamp) => {
+            if (!timestamp || !timestamp.seconds) return '未知時間';
+            const date = new Date(timestamp.seconds * 1000);
+            return `${date.getMonth()+1}/${date.getDate()} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
         };
 
         // --- Drawing Pad Component ---
@@ -1386,6 +1401,7 @@
                                         <button onClick={() => setView('admin_login')} className="text-sm text-kimetsu-black hover:text-kimetsu-green flex items-center gap-2 py-2 px-4 rounded transition font-bold bg-white border border-kimetsu-black shadow-sm">
                                             <Icons.Lock size={16}/> 鬼殺隊總部 (Admin)
                                         </button>
+                                        <span className="text-[10px] text-slate-300 mt-1 font-mono">v1.0</span>
 
                                         {mode === 'offline' && (
                                             <div className="text-xs text-slate-400 font-bold">
@@ -1473,7 +1489,10 @@
                                                         </span>
                                                         {isMe(u.id) && <span className="text-xs bg-kimetsu-black text-white px-2 py-1 rounded font-bold">我</span>}
                                                     </div>
-                                                    <span className="text-xs text-slate-500 font-bold border border-slate-300 px-2 py-1 rounded flex items-center gap-1"><Icons.Check size={12}/> 卷軸完成</span>
+                                                    <div className="flex flex-col items-end">
+                                                        <span className="text-xs text-slate-500 font-bold border border-slate-300 px-2 py-1 rounded flex items-center gap-1 mb-1"><Icons.Check size={12}/> 卷軸完成</span>
+                                                        <span className="text-[10px] text-slate-400">{formatTime(u.updatedAt || u.createdAt)}</span>
+                                                    </div>
                                                 </div>
                                             )
                                         })}
