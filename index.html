@@ -3,45 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>鬼滅之刃一筆畫交換禮物 (連鎖版)</title>
+    <title>鬼滅之刃一筆畫交換禮物 (經典復刻版)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts for a more brush-style look -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'kimetsu-green': '#2ecc71', /* Tanjiro Green */
-                        'kimetsu-dark-green': '#006400',
-                        'kimetsu-black': '#2d3436',
-                        'kimetsu-bg': '#f5f6fa', /* Light gray/paper */
-                        'kimetsu-pink': '#fd79a8', /* Nezuko Pink */
-                        'kimetsu-yellow': '#f1c40f', /* Zenitsu Yellow */
+                        'k-green': '#2ecc71', /* 亮綠色 (按鈕/強調) */
+                        'k-dark-green': '#006400', /* 深綠線條 */
+                        'k-black': '#2d3436', /* 深灰/黑 (Header/按鈕) */
+                        'k-pink': '#fd79a8', /* 禰豆子粉 */
+                        'k-yellow': '#f1c40f', /* 善逸黃 */
                         'wood-dark': '#5D4037',
                         'wood-light': '#8D6E63',
                     },
                     fontFamily: {
-                        'kimetsu': ['"Noto Serif TC"', '"Songti TC"', 'serif'] 
+                        'serif': ['"Noto Serif TC"', 'serif'],
                     },
                     backgroundImage: {
-                        'checkered': "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill-rule='evenodd'%3E%3Cpath d='M0 0h20v20H0V0zm20 20h20v20H20V20z' fill='%232ecc71' opacity='0.4'/%3E%3Cpath d='M20 0h20v20H20V0zM0 20h20v20H0V20z' fill='%232d3436' opacity='0.8'/%3E%3C/g%3E%3C/svg%3E\")"
+                        'paper': "url('https://www.transparenttextures.com/patterns/rice-paper-2.png')",
+                        'wood-pattern': "repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px)",
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } }
                     }
                 }
             }
         }
     </script>
+    
+    <!-- Import Maps: 解決 React 載入錯誤的核心 -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client"
+        }
+    }
+    </script>
     <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <style>
-        body { font-family: 'Noto Serif TC', serif; }
-        .animate-fade-in { animation: fadeIn 0.8s ease-in; }
-        .animate-slide-up { animation: slideUp 0.5s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        body { 
+            font-family: 'Noto Serif TC', serif; 
+            background-color: #f5f6fa; 
+            color: #2d3436;
+        }
         
-        /* Loading Spinner - Nichirin Sword Guard Style */
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #2ecc71; border-radius: 3px; }
+
+        /* Loader */
         #initial-loader { position: fixed; inset: 0; background: #2d3436; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s; }
         .spinner { 
             width: 60px; height: 60px; 
@@ -54,230 +78,124 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hidden-loader { opacity: 0; pointer-events: none; }
         
-        /* Disable text selection for long press button */
-        .noselect {
-          -webkit-touch-callout: none; /* iOS Safari */
-            -webkit-user-select: none; /* Safari */
-             -khtml-user-select: none; /* Konqueror HTML */
-               -moz-user-select: none; /* Old versions of Firefox */
-                -ms-user-select: none; /* Internet Explorer/Edge */
-                    user-select: none; /* Non-prefixed version, currently
-                                          supported by Chrome, Edge, Opera and Firefox */
-        }
+        .noselect { user-select: none; -webkit-user-select: none; }
 
-        /* Nezuko Box Styles */
-        .nezuko-box {
-            perspective: 1000px;
-            cursor: pointer;
-        }
-        .nezuko-door {
-            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            transform-origin: left;
-        }
-        .nezuko-box.open .nezuko-door {
-            transform: rotateY(-110deg);
-        }
-        .wood-pattern {
-            background-image: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px);
-        }
-        .metal-strap {
-            background: linear-gradient(90deg, #333, #555, #333);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.5);
-        }
+        /* Nezuko Box Styles (僅用於現場模式) */
+        .nezuko-box { perspective: 1000px; cursor: pointer; }
+        .nezuko-door { transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: left; }
+        .nezuko-box.open .nezuko-door { transform: rotateY(-110deg); }
+        .metal-strap { background: linear-gradient(90deg, #333, #555, #333); box-shadow: 0 1px 2px rgba(0,0,0,0.5); }
     </style>
 </head>
-<body class="bg-checkered text-slate-800 font-kimetsu min-h-screen">
-    
-    <!-- 初始載入畫面 -->
+<body class="bg-paper min-h-screen overflow-x-hidden">
+
     <div id="initial-loader">
         <div class="spinner"></div>
-        <p class="mt-6 text-kimetsu-green font-bold text-xl tracking-widest">全集中呼吸...連線中...</p>
-        <p id="error-msg" class="mt-2 text-kimetsu-pink text-sm max-w-md text-center hidden"></p>
+        <p class="mt-6 text-k-green font-bold text-xl tracking-[0.3em]">全集中...連線中</p>
+        <p id="error-msg" class="mt-4 text-k-pink text-xs max-w-md text-center hidden px-4"></p>
     </div>
 
     <div id="root"></div>
 
-    <!-- Global Error Handler -->
     <script>
         window.onerror = function(msg, url, line, col, error) {
             const loader = document.getElementById('initial-loader');
             const errText = document.getElementById('error-msg');
             if (loader && errText) {
-                loader.classList.remove('hidden-loader'); 
-                document.querySelector('.spinner').style.display = 'none'; 
+                loader.classList.remove('hidden-loader');
+                document.querySelector('.spinner').style.display = 'none';
                 errText.classList.remove('hidden');
-                errText.innerHTML = `<strong>血鬼術（錯誤）發生：</strong><br>${msg}<br><span style="font-size:10px; color:#ccc">${url}:${line}</span><br><br>請檢查網路連線是否正常。`;
+                errText.innerHTML = `<strong>系統發生錯誤：</strong><br>${msg}<br><span style="font-size:10px; color:#ccc">建議重新整理頁面。</span>`;
             }
             return false;
         };
+        window.addEventListener('unhandledrejection', function(event) {
+            console.warn('Unhandled rejection:', event.reason);
+        });
     </script>
 
-    <!-- React App Script -->
+    <!-- App Logic -->
     <script type="text/babel" data-type="module">
-        import React, { useState, useEffect, useRef } from 'https://esm.sh/react@18?dev';
-        import { createRoot } from 'https://esm.sh/react-dom@18/client?dev';
+        import React, { useState, useEffect, useRef } from 'react';
+        import { createRoot } from 'react-dom/client';
         
-        // Firebase Imports (Web SDK)
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getAuth, signInAnonymously, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { 
             getFirestore, collection, addDoc, onSnapshot, 
             doc, setDoc, updateDoc, deleteDoc, getDocs, writeBatch, serverTimestamp 
         } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-        // --- 鬼殺隊階級資料 ---
-        const RANKS = [
-            '癸', '壬', '辛', '庚', '己', '戊', '丁', '丙', '乙', '甲'
-        ];
-        const HASHIRA_TITLES = [
-            '水柱', '蟲柱', '炎柱', '音柱', '岩柱', '戀柱', '霞柱', '蛇柱', '風柱'
-        ];
+        // --- Constants ---
+        const RANKS = ['癸', '壬', '辛', '庚', '己', '戊', '丁', '丙', '乙', '甲'];
+        const HASHIRA_TITLES = ['水柱', '蟲柱', '炎柱', '音柱', '岩柱', '戀柱', '霞柱', '蛇柱', '風柱'];
 
         const getRandomRank = () => {
-            const roll = Math.random();
-            if (roll < 0.1) { // 10% 機率成為柱
-                return HASHIRA_TITLES[Math.floor(Math.random() * HASHIRA_TITLES.length)];
-            }
-            // 隨機一般階級，偏向低階
-            const index = Math.floor(Math.random() * 5); // 癸~己
-            return RANKS[index];
+            if (Math.random() < 0.1) return HASHIRA_TITLES[Math.floor(Math.random() * HASHIRA_TITLES.length)];
+            return RANKS[Math.floor(Math.random() * 5)];
         };
 
-        // --- 呼吸法樣式設定 ---
         const BREATH_STYLES = {
-            water: { 
-                name: '水之呼吸', 
-                border: 'border-blue-600', 
-                bg: 'bg-blue-50', 
-                text: 'text-blue-800', 
-                ring: 'ring-blue-400',
-                icon: '🌊' 
-            },
-            fire: { 
-                name: '炎之呼吸', 
-                border: 'border-red-600', 
-                bg: 'bg-red-50', 
-                text: 'text-red-800', 
-                ring: 'ring-red-400',
-                icon: '🔥'
-            },
-            thunder: { 
-                name: '雷之呼吸', 
-                border: 'border-yellow-500', 
-                bg: 'bg-yellow-50', 
-                text: 'text-yellow-800', 
-                ring: 'ring-yellow-400',
-                icon: '⚡'
-            },
-            beast: { 
-                name: '獸之呼吸', 
-                border: 'border-stone-600', 
-                bg: 'bg-stone-50', 
-                text: 'text-stone-800', 
-                ring: 'ring-stone-400',
-                icon: '🐗'
-            },
-            insect: { 
-                name: '蟲之呼吸', 
-                border: 'border-purple-600', 
-                bg: 'bg-purple-50', 
-                text: 'text-purple-800', 
-                ring: 'ring-purple-400',
-                icon: '🦋'
-            },
-            default: {
-                name: '普通隊員',
-                border: 'border-kimetsu-black',
-                bg: 'bg-white',
-                text: 'text-kimetsu-black',
-                ring: 'ring-kimetsu-green',
-                icon: '⚔️'
-            }
+            water: { name: '水之呼吸', border: 'border-blue-600', bg: 'bg-blue-50', text: 'text-blue-800', icon: '🌊' },
+            fire: { name: '炎之呼吸', border: 'border-red-600', bg: 'bg-red-50', text: 'text-red-800', icon: '🔥' },
+            thunder: { name: '雷之呼吸', border: 'border-yellow-500', bg: 'bg-yellow-50', text: 'text-yellow-800', icon: '⚡' },
+            beast: { name: '獸之呼吸', border: 'border-stone-600', bg: 'bg-stone-50', text: 'text-stone-800', icon: '🐗' },
+            insect: { name: '蟲之呼吸', border: 'border-purple-600', bg: 'bg-purple-50', text: 'text-purple-800', icon: '🦋' },
+            default: { name: '普通隊員', border: 'border-k-black', bg: 'bg-white', text: 'text-k-black', icon: '⚔️' }
         };
 
         const getStyle = (key) => BREATH_STYLES[key] || BREATH_STYLES.default;
 
-        // --- 簡易圖示元件 (SVG) ---
-        const Icon = ({ path, size = 24, className = "" }) => (
+        // --- Icons (Unified) ---
+        const Icon = ({ d, size = 24, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                {path}
+                <path d={d} />
             </svg>
         );
-
-        // 日輪刀鍔風格的圖示
-        const SwordIcon = ({ size = 24, className = "" }) => (
-             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                <path d="M14.5 17.5L3 6V3h3l11.5 11.5"/>
-                <path d="M13 19l6-6"/>
-                <path d="M16 16l4 4"/>
-                <path d="M19 21l2-2"/>
-            </svg>
-        );
-        
         const Icons = {
-            Gift: (p) => <Icon {...p} path={<><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></>} />,
-            PenTool: (p) => <Icon {...p} path={<><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></>} />, // 這裡可以想像成毛筆
-            Users: (p) => <Icon {...p} path={<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
-            Shuffle: (p) => <Icon {...p} path={<><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l14.2-12.6"/><path d="m22 2-5 5"/><path d="m17 2 5 5"/><path d="M2 6h1.4c1.3 0 2.5.6 3.3 1.7l14.2 12.6"/><path d="m22 22-5-5"/><path d="m17 22 5-5"/></>} />,
-            Eye: (p) => <Icon {...p} path={<><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></>} />,
-            Snowflake: (p) => <Icon {...p} path={<><path d="M12 2v20"/><path d="M2 12h20"/><path d="m4.93 4.93 14.14 14.14"/><path d="m19.07 4.93-14.14 14.14"/></>} />, 
-            RotateCcw: (p) => <Icon {...p} path={<><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></>} />,
-            Save: (p) => <Icon {...p} path={<><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></>} />,
-            Check: (p) => <Icon {...p} path={<polyline points="20 6 9 17 4 12"/>} />,
-            Cloud: (p) => <Icon {...p} path={<path d="M17.5 19c0-3.037-2.463-5.5-5.5-5.5S6.5 15.963 6.5 19 8.963 24.5 12 24.5s5.5-2.463 5.5-5.5z" />} />,
-            WifiOff: (p) => <Icon {...p} path={<><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></>} />,
-            Settings: (p) => <Icon {...p} path={<><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.39a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>} />,
-            Loader2: (p) => <Icon {...p} className={`${p.className} animate-spin`} path={<path d="M21 12a9 9 0 1 1-6.219-8.56" />} />,
-            Lock: (p) => <Icon {...p} path={<><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>} />,
-            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />,
-            Trash2: (p) => <Icon {...p} path={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></>} />,
-            Key: (p) => <Icon {...p} path={<><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></>} />,
-            Image: (p) => <Icon {...p} path={<><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></>} />, // 卷軸樣式
-            Edit: (p) => <Icon {...p} path={<><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></>} />,
-            EyeOff: (p) => <Icon {...p} path={<><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></>} />,
-            Sword: SwordIcon,
-            Mic: (p) => <Icon {...p} path={<><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></>} />,
-            ArrowRight: (p) => <Icon {...p} path={<><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></>} />,
-            ArrowLeft: (p) => <Icon {...p} path={<><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></>} />,
-            RotateCw: (p) => <Icon {...p} path={<><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></>} />,
+            PenTool: (p) => <Icon {...p} d="M12 19l7-7 3 3-7 7-3-3z M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z M2 2l7.586 7.586" />,
+            Users: (p) => <Icon {...p} d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75" />,
+            Eye: (p) => <Icon {...p} d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />,
+            RotateCcw: (p) => <Icon {...p} d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />,
+            Save: (p) => <Icon {...p} d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8" />,
+            Check: (p) => <Icon {...p} d="M20 6L9 17l-5-5" />,
+            Lock: (p) => <Icon {...p} d="M19 11H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2zm-7-4a4 4 0 0 1 4 4v4H8v-4a4 4 0 0 1 4-4z" />,
+            LogOut: (p) => <Icon {...p} d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-12l-5-5 M21 12H9" />,
+            Trash2: (p) => <Icon {...p} d="M3 6h18 M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />,
+            Image: (p) => <Icon {...p} d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z M11 14l3 3 5-5" />,
+            Edit: (p) => <Icon {...p} d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7 M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />,
+            Settings: (p) => <Icon {...p} d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />,
+            ArrowRight: (p) => <Icon {...p} d="M5 12h14 M12 5l7 7-7 7" />,
+            ArrowLeft: (p) => <Icon {...p} d="M19 12H5 M12 19l-7-7 7-7" />,
+            WifiOff: (p) => <Icon {...p} d="M1 1l22 22 M16.72 11.06A10.94 10.94 0 0 1 19 12.55 M5 12.55a10.94 10.94 0 0 1 5.17-2.39 M10.71 5.05A16 16 0 0 1 22.58 9 M1.42 9a15.91 15.91 0 0 1 4.7-2.88 M8.53 16.11a6 6 0 0 1 6.95 0 M12 20h.01" />,
+            Sword: (p) => <Icon {...p} d="M14.5 17.5L3 6V3h3l11.5 11.5 M13 19l6-6 M16 16l4 4 M19 21l2-2" />,
+            Shuffle: (p) => <Icon {...p} d="M16 3h5v5 M4 20L21 3 M21 16v5h-5 M15 15l6 6 M4 4l5 5" />,
+            EyeOff: (p) => <Icon {...p} d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22" />,
+            RotateCw: (p) => <Icon {...p} d="M23 4v6h-6 M1 20v-6h6 M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />,
+            Monitor: (p) => <Icon {...p} d="M20 3H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z M8 21h8 M12 17v4" />,
         };
 
-        // --- Nezuko Box Component ---
+        // --- Components ---
+
+        // Nezuko Box (Used only in Live Mode)
         const NezukoBox = ({ children, isLocked }) => {
             const [isOpen, setIsOpen] = useState(false);
-
             const handleToggle = () => {
-                if (isLocked) {
-                    alert('尚未解開封印！');
-                    return;
-                }
+                if (isLocked) { alert('尚未解開封印！'); return; }
                 setIsOpen(!isOpen);
             };
-
             return (
-                <div 
-                    className={`relative w-full h-full bg-wood-dark border-4 border-black rounded-lg shadow-2xl overflow-hidden cursor-pointer nezuko-box ${isOpen ? 'open' : ''}`}
-                    onClick={handleToggle}
-                >
-                    {/* Content (Drawing) Inside */}
-                    <div className="absolute inset-0 flex items-center justify-center bg-white">
-                        {children}
-                    </div>
-
-                    {/* Door Overlay */}
-                    <div className="absolute inset-0 bg-wood-light flex flex-col justify-between p-2 nezuko-door z-20 wood-pattern border-r-4 border-black">
-                        {/* Metal Straps */}
+                <div className={`relative w-full h-full bg-wood-dark border-4 border-black rounded-lg shadow-2xl overflow-hidden cursor-pointer nezuko-box ${isOpen ? 'open' : ''}`} onClick={handleToggle}>
+                    <div className="absolute inset-0 flex items-center justify-center bg-white">{children}</div>
+                    <div className="absolute inset-0 bg-wood-light flex flex-col justify-between p-2 nezuko-door z-20 bg-cover" style={{backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px)"}}>
                         <div className="w-full h-4 metal-strap rounded"></div>
                         <div className="w-full h-4 metal-strap rounded"></div>
-                        
-                        {/* Center Pattern */}
                         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                            <div className="w-16 h-16 border-4 border-black bg-kimetsu-pink rounded-full flex items-center justify-center shadow-lg">
+                            <div className="w-16 h-16 border-4 border-black bg-k-pink rounded-full flex items-center justify-center shadow-lg">
                                 <span className="text-black font-black text-2xl">禰</span>
                             </div>
                             <span className="text-white bg-black px-2 py-1 text-xs mt-2 font-bold rounded">{isOpen ? '點擊關閉' : '點擊開箱'}</span>
                         </div>
-
                         <div className="w-full h-4 metal-strap rounded"></div>
                         <div className="w-full h-4 metal-strap rounded"></div>
                     </div>
@@ -285,128 +203,52 @@
             );
         };
 
-        // --- Long Press Button Component ---
+        // Long Press Button
         const LongPressButton = ({ onComplete, label, icon: Icon, disabled }) => {
             const [pressing, setPressing] = useState(false);
             const [progress, setProgress] = useState(0);
-            const intervalRef = useRef(null);
-
+            const timer = useRef(null);
             useEffect(() => {
                 if (pressing && !disabled) {
-                    intervalRef.current = setInterval(() => {
-                        setProgress(p => {
-                            if (p >= 100) {
-                                clearInterval(intervalRef.current);
-                                return 100;
-                            }
-                            return p + 2; 
-                        });
-                    }, 30); // 30ms * 50 = 1.5s approx hold
+                    timer.current = setInterval(() => setProgress(p => p >= 100 ? 100 : p + 4), 30);
                 } else {
                     setProgress(0);
-                    if (intervalRef.current) clearInterval(intervalRef.current);
+                    clearInterval(timer.current);
                 }
-                return () => {
-                    if (intervalRef.current) clearInterval(intervalRef.current);
-                }
+                return () => { if (timer.current) clearInterval(timer.current); }
             }, [pressing, disabled]);
-
-            useEffect(() => {
-                if (progress === 100) {
-                    setPressing(false);
-                    onComplete();
-                }
-            }, [progress, onComplete]);
-
+            useEffect(() => { if (progress === 100) { setPressing(false); onComplete(); } }, [progress, onComplete]);
             return (
-                <button
-                    disabled={disabled}
-                    className={`w-full py-3 border-2 text-kimetsu-black rounded font-bold flex items-center justify-center gap-2 shadow-sm tracking-widest relative overflow-hidden noselect transition ${disabled ? 'bg-gray-100 border-gray-300 opacity-50 cursor-not-allowed' : 'bg-white border-kimetsu-black hover:bg-slate-50 cursor-pointer'}`}
-                    onMouseDown={() => setPressing(true)}
-                    onMouseUp={() => setPressing(false)}
-                    onMouseLeave={() => setPressing(false)}
-                    onTouchStart={() => setPressing(true)}
-                    onTouchEnd={() => setPressing(false)}
-                >
+                <button disabled={disabled} className={`w-full py-3 border-2 border-red-600 text-red-600 bg-white rounded font-bold flex items-center justify-center gap-2 shadow-sm tracking-widest relative overflow-hidden noselect transition ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-50 cursor-pointer'}`}
+                    onMouseDown={() => setPressing(true)} onMouseUp={() => setPressing(false)} onMouseLeave={() => setPressing(false)} onTouchStart={() => setPressing(true)} onTouchEnd={() => setPressing(false)}>
                     <div className="absolute inset-0 bg-red-200 transition-all duration-75 ease-linear" style={{ width: `${progress}%` }}></div>
-                    <div className="relative flex items-center gap-2 z-10">
-                        {Icon && <Icon size={20}/>} 
-                        {pressing ? (progress === 100 ? '已確認' : '請長按以銷毀...') : label}
-                    </div>
+                    <div className="relative flex items-center gap-2 z-10">{Icon && <Icon size={20}/>} {pressing ? (progress === 100 ? '已確認' : '請長按以銷毀...') : label}</div>
                 </button>
             )
         };
 
-        // --- Config Wizard Component ---
         const ConfigWizard = ({ onConfigComplete, onOfflineMode }) => {
-            const [inputConfig, setInputConfig] = useState('');
-            const [error, setError] = useState('');
-
-            const handleSave = () => {
+            const [val, setVal] = useState('');
+            const [err, setErr] = useState('');
+            const save = () => {
                 try {
-                    let configStr = inputConfig.trim();
-                    configStr = configStr.replace(/^(const|let|var|export\s+const)\s+\w+\s*=\s*/, '');
-                    configStr = configStr.replace(/;$/, '');
-                    
-                    let config;
-                    try {
-                        config = JSON.parse(configStr);
-                    } catch (e1) {
-                        try {
-                            let jsStr = configStr;
-                            if (!jsStr.startsWith('{')) {
-                                jsStr = `{${jsStr}}`;
-                            }
-                            const fn = new Function(`return ${jsStr}`);
-                            config = fn();
-                        } catch (e2) {
-                            throw new Error("無法解析內容，請檢查格式。");
-                        }
-                    }
-
-                    if (!config || typeof config !== 'object') throw new Error("設定必須是物件格式");
-                    if (!config.apiKey) throw new Error("缺少 apiKey");
-                    
-                    localStorage.setItem('fb_config_override', JSON.stringify(config));
-                    onConfigComplete(config);
-                } catch(e) {
-                    setError('無法解析：' + e.message + '。建議直接從 Firebase Console 複製整段 config 物件。');
-                }
+                    let s = val.trim().replace(/^(const|let|var|export\s+const)\s+\w+\s*=\s*/, '').replace(/;$/, '');
+                    let c; try { c = JSON.parse(s); } catch { c = new Function(`return {${s}}`)(); }
+                    if(!c || !c.apiKey) throw new Error("格式錯誤，找不到 apiKey");
+                    localStorage.setItem('fb_config_override', JSON.stringify(c));
+                    onConfigComplete(c);
+                } catch(e) { setErr(e.message); }
             };
-
             return (
-                <div className="flex flex-col items-center justify-center min-h-screen p-4">
-                    <div className="bg-white p-8 rounded-lg shadow-2xl max-w-lg w-full border-4 border-kimetsu-black relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-kimetsu-green"></div>
-                        <div className="flex justify-center mb-4 text-kimetsu-black"><Icons.Settings size={48} /></div>
-                        <h2 className="text-2xl font-bold text-center mb-2 text-kimetsu-black tracking-widest">鬼殺隊・總部連線設定</h2>
-                        <p className="text-slate-600 text-center mb-6 font-bold">偵測不到鎹鴉信號。請輸入 Firebase Config 連線，或選擇離線修煉。</p>
-                        
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-kimetsu-black mb-1">輸入密令 (Firebase Config JSON):</label>
-                                <textarea 
-                                    className="w-full h-32 p-3 border-2 border-kimetsu-black rounded text-xs font-mono bg-kimetsu-bg focus:ring-2 ring-kimetsu-green outline-none"
-                                    placeholder='const firebaseConfig = { ... };'
-                                    value={inputConfig}
-                                    onChange={e => setInputConfig(e.target.value)}
-                                ></textarea>
-                                {error && <p className="text-kimetsu-pink text-xs mt-1 whitespace-pre-wrap font-bold">{error}</p>}
-                            </div>
-                            
-                            <button onClick={handleSave} className="w-full py-3 bg-kimetsu-black hover:bg-slate-800 text-white rounded font-bold transition border-b-4 border-slate-900 tracking-widest">
-                                建立連線
-                            </button>
-
-                            <div className="relative my-4">
-                                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-300"></div></div>
-                                <div className="relative flex justify-center text-sm"><span className="px-2 bg-white text-slate-500 font-bold">或</span></div>
-                            </div>
-
-                            <button onClick={onOfflineMode} className="w-full py-3 bg-kimetsu-green hover:bg-green-500 text-white rounded font-bold flex items-center justify-center gap-2 transition border-b-4 border-green-700 tracking-widest">
-                                <Icons.WifiOff size={20} />
-                                離線修煉 (單機)
-                            </button>
+                <div className="flex flex-col items-center justify-center min-h-screen p-4 relative z-10">
+                    <div className="bg-white p-8 w-full max-w-lg border-4 border-k-black relative shadow-2xl transform rotate-1">
+                        <div className="flex justify-center mb-4 text-k-black"><Icons.Settings size={48} /></div>
+                        <h2 className="text-2xl font-bold text-center mb-6 text-k-black tracking-widest">鬼殺隊・總部連線</h2>
+                        <textarea className="w-full h-32 p-3 border-2 border-k-black rounded text-xs font-mono bg-gray-50 focus:ring-2 ring-k-green outline-none text-black mb-4" value={val} onChange={e=>setVal(e.target.value)} placeholder="貼上 Firebase Config..."></textarea>
+                        {err && <p className="text-red-600 text-xs mb-2">{err}</p>}
+                        <div className="space-y-3">
+                            <button onClick={save} className="w-full py-3 bg-k-black text-white font-bold rounded transition hover:bg-gray-800">連線</button>
+                            <button onClick={onOfflineMode} className="w-full py-3 bg-k-green text-white font-bold rounded transition hover:bg-green-600">離線模式</button>
                         </div>
                     </div>
                 </div>
@@ -415,1048 +257,642 @@
 
         // --- Main App ---
         const App = () => {
-            const [mode, setMode] = useState('loading'); // loading, setup, cloud, offline
-            const [view, setView] = useState('home'); 
+            const [mode, setMode] = useState('loading');
+            const [view, setView] = useState('home');
             const [users, setUsers] = useState([]);
             const [matches, setMatches] = useState({});
-            const [myParticipantId, setMyParticipantId] = useState(localStorage.getItem('my_participant_id'));
-            const [revealData, setRevealData] = useState(null);
-            const [isProcessing, setIsProcessing] = useState(false);
-            const [isAdmin, setIsAdmin] = useState(false);
-            const [adminPasswordInput, setAdminPasswordInput] = useState('');
-            const [userPasswordInput, setUserPasswordInput] = useState('');
-            const [loginTargetUser, setLoginTargetUser] = useState(null);
-            const [editData, setEditData] = useState(null); 
-            const [showAdminPasswords, setShowAdminPasswords] = useState(false); 
+            const [myId, setMyId] = useState(localStorage.getItem('pid'));
+            const [reveal, setReveal] = useState(null);
+            const [loading, setLoading] = useState(false);
             
-            // Live Event Mode States
-            const [liveHistory, setLiveHistory] = useState([]);
-            const [liveIndex, setLiveIndex] = useState(-1);
-            const [liveShowGiver, setLiveShowGiver] = useState(false);
+            const [adminPwd, setAdminPwd] = useState('');
+            const [userPwd, setUserPwd] = useState('');
+            const [targetUser, setTargetUser] = useState(null);
+            const [editData, setEditData] = useState(null);
+            const [showPwd, setShowPwd] = useState(false);
+            
+            // Live Event State
+            const [remoteLiveState, setRemoteLiveState] = useState(null);
+            
+            // Admin Local State (synced to remote)
+            const [liveHistory, setLiveHistory] = useState([]); // Used by admin to track chain locally before push
+            // Ideally, admin should just read remote state too, but for chain logic we need history.
+            // Let's simplify: Admin calculates next, pushes to Firestore. Spectator just reads.
 
             const appRef = useRef(null);
-            const authRef = useRef(null);
             const dbRef = useRef(null);
             const appId = 'default-app-id';
 
-            // 1. Initial Config Check
             useEffect(() => {
-                const initSystem = async () => {
-                    const loader = document.getElementById('initial-loader');
-                    if(loader) loader.classList.add('hidden-loader');
-
-                    let config = null;
+                const init = async () => {
+                    const l = document.getElementById('initial-loader');
+                    if(l) l.classList.add('hidden-loader');
                     try {
-                        if (typeof __firebase_config !== 'undefined') {
-                            config = JSON.parse(__firebase_config);
-                        } else {
-                            const saved = localStorage.getItem('fb_config_override');
-                            if(saved) config = JSON.parse(saved);
-                        }
-
-                        if (config && config.apiKey) {
-                            try {
-                                appRef.current = initializeApp(config);
-                                authRef.current = getAuth(appRef.current);
-                                dbRef.current = getFirestore(appRef.current);
-                                
-                                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                                    await signInWithCustomToken(authRef.current, __initial_auth_token);
-                                } else {
-                                    await signInAnonymously(authRef.current);
-                                }
-                                
-                                setMode('cloud');
-                            } catch (err) {
-                                console.error("Firebase Init Failed", err);
-                                setMode('setup'); 
-                            }
-                        } else {
-                            setMode('setup');
-                        }
-                    } catch (e) {
-                        console.log("Config parse error", e);
-                        setMode('setup');
-                    }
+                        let c = null;
+                        if(typeof __firebase_config !== 'undefined') c = JSON.parse(__firebase_config);
+                        else { const s = localStorage.getItem('fb_config_override'); if(s) c = JSON.parse(s); }
+                        if(c && c.apiKey) {
+                            appRef.current = initializeApp(c);
+                            dbRef.current = getFirestore(appRef.current);
+                            const auth = getAuth(appRef.current);
+                            if(typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
+                            else await signInAnonymously(auth);
+                            setMode('cloud');
+                        } else setMode('setup');
+                    } catch(e) { console.error(e); setMode('setup'); }
                 };
-                initSystem();
+                init();
             }, []);
 
-            // 2. Data Sync
+            // Sync Data
             useEffect(() => {
-                if (mode !== 'cloud' || !dbRef.current) return;
-
-                const participantsRef = collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants');
-                const unsubUsers = onSnapshot(participantsRef, (snapshot) => {
-                    const usersList = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                    usersList.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
-                    setUsers(usersList);
-                    
-                    if (localStorage.getItem('my_participant_id')) {
-                         const currentMyId = localStorage.getItem('my_participant_id');
-                         const exists = usersList.find(u => u.id === currentMyId);
-                         if (!exists) {
-                             console.log("Auto-logout: User no longer exists.");
-                             localStorage.removeItem('my_participant_id');
-                             setMyParticipantId(null);
-                             localStorage.removeItem('my_password_backup');
-                         }
+                if(mode !== 'cloud' || !dbRef.current) return;
+                
+                const unsubU = onSnapshot(collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants'), s => {
+                    const list = s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
+                    setUsers(list);
+                    if(localStorage.getItem('pid') && !list.find(u=>u.id===localStorage.getItem('pid'))) {
+                        localStorage.removeItem('pid'); setMyId(null); localStorage.removeItem('pwd_bk');
                     }
-                }, err => console.error(err));
+                });
+                
+                const unsubM = onSnapshot(collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'matches'), s => {
+                    const m={}; s.forEach(d => m[d.id] = d.data().receiverId); setMatches(m);
+                });
 
-                const matchesRef = collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'matches');
-                const unsubMatches = onSnapshot(matchesRef, (snapshot) => {
-                    const matchesMap = {};
-                    snapshot.docs.forEach(d => matchesMap[d.id] = d.data().receiverId);
-                    setMatches(matchesMap);
-                }, err => console.error(err));
+                // Live State Sync
+                const unsubLive = onSnapshot(doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'liveState', 'main'), s => {
+                    if(s.exists()) setRemoteLiveState(s.data());
+                    else setRemoteLiveState(null);
+                });
 
-                return () => { unsubUsers(); unsubMatches(); };
+                return () => { unsubU(); unsubM(); unsubLive(); };
             }, [mode]);
 
-            // 3. Local Data Sync
+            // Local Fallback
             useEffect(() => {
-                if (mode !== 'offline') return;
-                const savedUsers = localStorage.getItem('xmas_users');
-                const savedMatches = localStorage.getItem('xmas_matches');
-                if (savedUsers) setUsers(JSON.parse(savedUsers));
-                if (savedMatches) setMatches(JSON.parse(savedMatches));
+                if(mode !== 'offline') return;
+                const u = localStorage.getItem('xmas_users'); if(u) setUsers(JSON.parse(u));
+                const m = localStorage.getItem('xmatches'); if(m) setMatches(JSON.parse(m));
             }, [mode]);
 
-            // Handlers
-            const handleOfflineMode = () => {
-                setMode('offline');
-                setView('home');
-            };
-
-            const handleConfigComplete = (config) => {
-                window.location.reload();
-            };
-
-            const handleReset = async () => {
-                if (!confirm('【警告】確定要銷毀所有卷軸？\n所有隊員的紀錄將無法復原！')) return;
-                setIsProcessing(true);
-                
-                if (mode === 'cloud') {
-                    try {
-                        const usersSnap = await getDocs(collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants'));
-                        const batch1 = writeBatch(dbRef.current);
-                        usersSnap.docs.forEach((d) => batch1.delete(d.ref));
-                        await batch1.commit();
-
-                        const matchesSnap = await getDocs(collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'matches'));
-                        const batch2 = writeBatch(dbRef.current);
-                        matchesSnap.docs.forEach((d) => batch2.delete(d.ref));
-                        await batch2.commit();
-                    } catch (e) { alert('重置失敗'); }
+            const resetAll = async () => {
+                setLoading(true);
+                if(mode==='cloud') {
+                    const b = writeBatch(dbRef.current);
+                    const u = await getDocs(collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants'));
+                    u.forEach(d=>b.delete(d.ref));
+                    const m = await getDocs(collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'matches'));
+                    m.forEach(d=>b.delete(d.ref));
+                    // Reset Live State
+                    b.set(doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'liveState', 'main'), { 
+                        currentReceiverId: null, 
+                        showGiver: false,
+                        drawnIds: []
+                    });
+                    await b.commit();
                 } else {
-                    localStorage.removeItem('xmas_users');
-                    localStorage.removeItem('xmas_matches');
-                    setUsers([]);
-                    setMatches({});
+                    localStorage.removeItem('xmas_users'); localStorage.removeItem('xmatches');
+                    setUsers([]); setMatches({});
                 }
-                
-                localStorage.removeItem('my_participant_id');
-                localStorage.removeItem('my_password_backup');
-                setMyParticipantId(null);
-                setRevealData(null);
-                setEditData(null);
-                // Reset Live State
-                setLiveHistory([]);
-                setLiveIndex(-1);
-                setLiveShowGiver(false);
-                setView('home');
-                setIsProcessing(false);
+                localStorage.removeItem('pid'); setMyId(null);
+                setView('home'); setLoading(false);
             };
 
-            const handleManualLogout = () => {
-                if (confirm('確定要隱退並清除登入狀態嗎？(雲端卷軸不會消失)')) {
-                    localStorage.removeItem('my_participant_id');
-                    localStorage.removeItem('my_password_backup'); 
-                    setMyParticipantId(null);
-                    setEditData(null);
-                    setView('home');
+            const doMatch = async () => {
+                if(users.length<2) return alert('人數不足');
+                if(Object.keys(matches).length>0 && !confirm('重新分配？')) return;
+                setLoading(true);
+                let g = users.map(u=>u.id), r = [...g], v=false;
+                while(!v) {
+                    for(let i=r.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; }
+                    v=true; for(let i=0;i<g.length;i++) if(g[i]===r[i]) v=false;
                 }
-            };
-
-            const handleLiveReset = () => {
-                if (confirm('確定要重新開始儀式嗎？\n這將清除已上台紀錄，讓流程回到第一位。')) {
-                    setLiveHistory([]);
-                    setLiveIndex(-1);
-                    setLiveShowGiver(false);
-                }
-            };
-
-            const startDrawing = () => {
-                if (myParticipantId && users.find(u => u.id === myParticipantId)) {
-                    alert('你已經是鬼殺隊的一員了！');
-                    return;
-                }
-                setEditData(null); 
-                setView('draw');
-            };
-
-            const editMyCard = () => {
-                 const me = users.find(u => u.id === myParticipantId);
-                 if (me) {
-                     if (matches[me.id]) {
-                         alert('任務已經分配，卷軸無法修改了！');
-                         return;
-                     }
-                     setEditData(me);
-                     setView('draw');
-                 }
-            };
-
-            const saveUser = async (name, password, drawingData, style) => {
-                setIsProcessing(true);
-                try {
-                    // Check duplicate name
-                    const isDuplicate = users.some(u => u.name.trim() === name.trim() && u.id !== myParticipantId);
-                    if (isDuplicate) {
-                        alert('此隊員姓名已存在，請使用其他代號！');
-                        setIsProcessing(false);
-                        return;
-                    }
-
-                    localStorage.setItem('my_password_backup', password);
-
-                    // Assign Rank
-                    const randomRank = getRandomRank();
-
-                    if (editData && editData.id === myParticipantId) {
-                         if (mode === 'cloud') {
-                            const userRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants', myParticipantId);
-                            // Preserve rank on edit, or maybe re-roll? Let's preserve.
-                            await updateDoc(userRef, {
-                                name, password, drawing: drawingData, style, updatedAt: serverTimestamp()
-                            });
-                         } else {
-                             const updatedUsers = users.map(u => 
-                                u.id === myParticipantId ? { ...u, name, password, drawing: drawingData, style } : u
-                             );
-                             setUsers(updatedUsers);
-                             localStorage.setItem('xmas_users', JSON.stringify(updatedUsers));
-                         }
-                         alert('卷軸修復完成！');
-                         setView('my_card'); 
-                    } else {
-                        if (mode === 'cloud') {
-                            const userUid = authRef.current?.currentUser?.uid || 'anon';
-                            const docRef = await addDoc(collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants'), {
-                                name, password, drawing: drawingData, style, rank: randomRank, createdAt: serverTimestamp(), uid: userUid
-                            });
-                            localStorage.setItem('my_participant_id', docRef.id);
-                            setMyParticipantId(docRef.id);
-                        } else {
-                            const newUser = { id: Date.now().toString(), name, password, drawing: drawingData, style, rank: randomRank, uid: 'local' };
-                            const newUsers = [...users, newUser];
-                            setUsers(newUsers);
-                            localStorage.setItem('xmas_users', JSON.stringify(newUsers));
-                            localStorage.setItem('my_participant_id', newUser.id);
-                            setMyParticipantId(newUser.id);
-                        }
-                        setView('home');
-                    }
-                } catch (e) { console.error(e); alert('傳送失敗，鎹鴉迷路了'); }
-                setIsProcessing(false);
-                setEditData(null);
-            };
-
-            const performMatching = async () => {
-                if (users.length < 2) { alert('隊員人數不足，無法執行任務！'); return; }
-                if (Object.keys(matches).length > 0 && !confirm('任務已分配，確定要重新指派嗎？')) return;
-                
-                setIsProcessing(true);
-                let giverIds = users.map(u => u.id);
-                let receiverIds = [...giverIds];
-                let isValid = false;
-
-                let attempts = 0;
-                while (!isValid && attempts < 100) {
-                    for (let i = receiverIds.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [receiverIds[i], receiverIds[j]] = [receiverIds[j], receiverIds[i]];
-                    }
-                    isValid = true;
-                    for (let i = 0; i < giverIds.length; i++) {
-                        if (giverIds[i] === receiverIds[i]) { isValid = false; break; }
-                    }
-                    attempts++;
-                }
-
-                if (!isValid) {
-                     const shifted = [...giverIds];
-                     const first = shifted.shift();
-                     shifted.push(first);
-                     receiverIds = shifted;
-                }
-
-                if (mode === 'cloud') {
-                    try {
-                        const batch = writeBatch(dbRef.current);
-                        giverIds.forEach((giverId, index) => {
-                            const matchRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'matches', giverId);
-                            batch.set(matchRef, { receiverId: receiverIds[index] });
-                        });
-                        await batch.commit();
-                    } catch (e) { alert('指派失敗: ' + e.message); }
+                if(mode==='cloud') {
+                    const b = writeBatch(dbRef.current);
+                    g.forEach((gid,i)=>b.set(doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'matches', gid), {receiverId:r[i]}));
+                    await b.commit();
                 } else {
-                    const newMatches = {};
-                    giverIds.forEach((gid, i) => newMatches[gid] = receiverIds[i]);
-                    setMatches(newMatches);
-                    localStorage.setItem('xmas_matches', JSON.stringify(newMatches));
+                    const nm={}; g.forEach((gid,i)=>nm[gid]=r[i]);
+                    setMatches(nm); localStorage.setItem('xmatches', JSON.stringify(nm));
                 }
-                
-                alert('任務指派完成！');
-                setIsProcessing(false);
+                alert('分配完成'); setLoading(false);
             };
 
-            const handleUserLogin = () => {
-                if (!loginTargetUser) return;
-                if (loginTargetUser.password && loginTargetUser.password !== userPasswordInput) {
-                    alert('呼吸亂了！密碼錯誤。');
-                    return;
+            const saveMe = async (name, pwd, img, style) => {
+                setLoading(true);
+                if(users.some(u => u.name.trim() === name.trim() && u.id !== myId)) {
+                    alert('名稱重複'); setLoading(false); return;
                 }
+                localStorage.setItem('pwd_bk', pwd);
+                localStorage.setItem('style_bk', style);
+                const rank = getRandomRank();
+                const d = { name, password: pwd, drawing: img, style, rank, uid: 'anon', createdAt: serverTimestamp() };
                 
-                // Login successful
-                // Update local identity
-                localStorage.setItem('my_participant_id', loginTargetUser.id);
-                localStorage.setItem('my_password_backup', userPasswordInput); // Also save password for auto-fill later
-                setMyParticipantId(loginTargetUser.id);
-
-                const receiverId = matches[loginTargetUser.id];
-                
-                if (!receiverId) {
-                    // Not matched yet -> Go to My Card to allow editing
+                if(myId) {
+                    if(mode==='cloud') await updateDoc(doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants', myId), { ...d, rank: undefined });
+                    else {
+                        const nu = users.map(u=>u.id===myId?{...u, name, pwd, img, style}:u);
+                        setUsers(nu); localStorage.setItem('xusers', JSON.stringify(nu));
+                    }
                     setView('my_card');
                 } else {
-                    // Matched -> Show Result
-                    const receiver = users.find(u => u.id === receiverId);
-                    setRevealData({ giver: loginTargetUser, receiver });
-                    setLoginTargetUser(null);
-                    setUserPasswordInput('');
+                    if(mode==='cloud') {
+                        const ref = await addDoc(collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants'), d);
+                        localStorage.setItem('pid', ref.id); setMyId(ref.id);
+                    } else {
+                        const id = Date.now().toString();
+                        const nu = [...users, {...d, id}];
+                        setUsers(nu); localStorage.setItem('xusers', JSON.stringify(nu));
+                        localStorage.setItem('pid', id); setMyId(id);
+                    }
+                    setView('home');
+                }
+                setLoading(false); setEditData(null);
+            };
+
+            const loginUser = () => {
+                if(targetUser.password !== userPwd) return alert('密碼錯誤');
+                localStorage.setItem('pid', targetUser.id);
+                localStorage.setItem('pwd_bk', userPwd);
+                setMyId(targetUser.id);
+                if(!matches[targetUser.id]) setView('my_card');
+                else {
+                    const r = users.find(u=>u.id===matches[targetUser.id]);
+                    setReveal({g:targetUser, r});
                     setView('check_result');
                 }
-            }
+                setTargetUser(null);
+            };
 
-            const promptUserLogin = (user) => {
-                setLoginTargetUser(user);
-                if (isMe(user.id)) {
-                    const savedPwd = localStorage.getItem('my_password_backup');
-                    if(savedPwd) {
-                        setUserPasswordInput(savedPwd);
-                    } else {
-                        setUserPasswordInput('');
-                    }
-                } else {
-                    setUserPasswordInput('');
-                }
-                setView('user_login');
-            }
+            // --- LIVE EVENT CONTROL (Admin Only) ---
+            
+            // Helper to update live state in Firestore
+            const updateLiveState = async (receiverId, showGiver, newDrawnIds) => {
+                if (mode !== 'cloud') return;
+                await setDoc(doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'liveState', 'main'), {
+                    currentReceiverId: receiverId,
+                    showGiver: showGiver,
+                    drawnIds: newDrawnIds || (remoteLiveState?.drawnIds || [])
+                });
+            };
 
-            // Live Event Functions
-            const handleNextLive = () => {
-                // 1. If browsing history, just go next
-                if (liveIndex < liveHistory.length - 1) {
-                    setLiveIndex(prev => prev + 1);
-                    setLiveShowGiver(false);
-                    return;
-                }
-
-                // 2. Logic to pick new user
-                const drawnIds = new Set(liveHistory.map(u => u.id));
-                const allReceivers = Object.values(matches);
-                // Users who haven't been on stage as receiver yet
-                const remaining = users.filter(u => !drawnIds.has(u.id));
+            const adminNextLive = async () => {
+                // Logic similar to local state but pushing to Firestore
+                const drawnIds = new Set(remoteLiveState?.drawnIds || []);
+                const currentId = remoteLiveState?.currentReceiverId;
                 
-                if (remaining.length === 0) {
-                    alert('所有隊員都已上台！任務圓滿達成！');
-                    return;
-                }
-
                 let nextUser = null;
 
-                // CHAIN LOGIC: Try to find the person who GAVE the gift to the current receiver
-                if (liveHistory.length > 0) {
-                    const currentReceiver = liveHistory[liveHistory.length - 1];
-                    // Find who gave to currentReceiver. matches structure is { giverId: receiverId }
-                    // We need to find Key where Value === currentReceiver.id
-                    const giverId = Object.keys(matches).find(key => matches[key] === currentReceiver.id);
-                    
-                    // If this giver hasn't been a receiver yet, they are next!
+                // Chain Logic
+                if (currentId) {
+                    // Who gave to current?
+                    const giverId = Object.keys(matches).find(gid => matches[gid] === currentId);
                     if (giverId && !drawnIds.has(giverId)) {
                         nextUser = users.find(u => u.id === giverId);
                     }
                 }
 
-                // Fallback: If no chain (first person, or chain broken/looped), pick random
+                // Random fallback
                 if (!nextUser) {
-                    const randomIndex = Math.floor(Math.random() * remaining.length);
-                    nextUser = remaining[randomIndex];
+                    const remaining = users.filter(u => !drawnIds.has(u.id));
+                    if (remaining.length === 0) return alert('全員已上台');
+                    nextUser = remaining[Math.floor(Math.random() * remaining.length)];
                 }
 
                 if (nextUser) {
-                    const newHistory = [...liveHistory, nextUser];
-                    setLiveHistory(newHistory);
-                    setLiveIndex(newHistory.length - 1);
-                    setLiveShowGiver(false);
+                    const newDrawn = [...(remoteLiveState?.drawnIds || []), nextUser.id];
+                    await updateLiveState(nextUser.id, false, newDrawn);
                 }
             };
 
-            const handlePrevLive = () => {
-                if (liveIndex > 0) {
-                    setLiveIndex(prev => prev - 1);
-                    setLiveShowGiver(false);
-                }
-            }
-
-            const liveReceiver = liveIndex >= 0 && liveHistory.length > 0 ? liveHistory[liveIndex] : null;
-
-            const isMe = (uid) => myParticipantId === uid;
-
-            const handleAdminLogin = () => {
-                if (adminPasswordInput === 'admin123') { 
-                    setIsAdmin(true);
-                    setView('admin_dashboard');
-                    setAdminPasswordInput('');
-                } else {
-                    alert('暗號錯誤');
+            const adminToggleReveal = async () => {
+                if (!remoteLiveState) return;
+                await updateLiveState(remoteLiveState.currentReceiverId, true, null);
+            };
+            
+            const adminResetLive = async () => {
+                if(confirm('重置現場儀式？')) {
+                    await updateLiveState(null, false, []);
                 }
             };
 
-            // Render Modes
-            if (mode === 'loading') return null;
-            if (mode === 'setup') return <ConfigWizard onConfigComplete={handleConfigComplete} onOfflineMode={handleOfflineMode} />;
+            // Determine current live display based on View
+            // If admin_live or spectator_live, we use remoteLiveState
+            const currentLiveReceiver = remoteLiveState?.currentReceiverId ? users.find(u => u.id === remoteLiveState.currentReceiverId) : null;
+            const currentLiveGiver = currentLiveReceiver ? users.find(u => matches[u.id] === currentLiveReceiver.id) : null;
+            const isLiveGiverShown = remoteLiveState?.showGiver || false;
 
-            // --- Admin Views ---
-            if (view === 'admin_login') {
-                return (
-                    <div className="min-h-screen flex items-center justify-center p-4">
-                        <div className="bg-white p-8 rounded shadow-2xl max-w-sm w-full border-4 border-kimetsu-black relative">
-                            <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-kimetsu-black tracking-widest border-b-2 border-kimetsu-green pb-2">
-                                <Icons.Lock className="text-kimetsu-black"/> 主公大人登入
-                            </h2>
-                            <p className="text-slate-600 text-sm mb-4 font-bold">請輸入暗號進入產屋敷宅邸。</p>
-                            <input 
-                                type="password" 
-                                value={adminPasswordInput}
-                                onChange={e => setAdminPasswordInput(e.target.value)}
-                                className="w-full p-3 border-2 border-kimetsu-black rounded mb-4 outline-none focus:ring-2 ring-kimetsu-green bg-kimetsu-bg text-center tracking-widest font-bold"
-                                placeholder="暗號 (預設: admin123)"
-                            />
-                            <div className="flex gap-2">
-                                <button onClick={() => setView('home')} className="flex-1 py-2 bg-slate-200 text-slate-700 rounded font-bold hover:bg-slate-300 transition">返回</button>
-                                <button onClick={handleAdminLogin} className="flex-1 py-2 bg-kimetsu-black text-white rounded font-bold hover:bg-slate-800 transition border-b-4 border-slate-900">登入</button>
+
+            if(mode==='loading') return null;
+            if(mode==='setup') return <ConfigWizard onConfigComplete={()=>window.location.reload()} onOfflineMode={()=>{setMode('offline'); setView('home');}}/>;
+
+            // Common wrapper for consistent styling
+            const Wrapper = ({ children }) => (
+                <div className="min-h-screen relative bg-[#f0f0f0] font-serif overflow-hidden text-[#2d3436]">
+                    <div className="fixed inset-0 pointer-events-none opacity-50 bg-paper z-0"></div>
+                    <div className="relative z-10 w-full max-w-md mx-auto min-h-screen bg-white/95 shadow-2xl flex flex-col">
+                        <header className="bg-k-black text-white p-4 flex justify-between items-center shadow-md z-20">
+                            <div className="flex items-center gap-2 text-k-green font-bold tracking-widest text-lg">
+                                <Icons.Sword/> 鬼滅之刃交換道場
                             </div>
-                        </div>
-                    </div>
-                );
-            }
-
-            if (view === 'admin_live') {
-                const giver = liveReceiver ? users.find(u => matches[u.id] === liveReceiver.id) : null;
-                const isHistoryMode = liveIndex < liveHistory.length - 1;
-                const style = getStyle(liveReceiver?.style || 'default');
-                const rank = liveReceiver?.rank || '癸';
-                
-                // Determine next button label logic
-                let nextButtonLabel = "隨機召喚";
-                if (isHistoryMode) {
-                    nextButtonLabel = "下一位 (歷史)";
-                } else {
-                    if (liveReceiver) {
-                         // Check if next is chained
-                         const currentReceiverId = liveReceiver.id;
-                         const nextGiverId = Object.keys(matches).find(key => matches[key] === currentReceiverId);
-                         const drawnIds = new Set(liveHistory.map(u => u.id));
-                         
-                         if (nextGiverId && !drawnIds.has(nextGiverId)) {
-                             nextButtonLabel = "召喚這位送禮者 (連鎖)";
-                         } else {
-                             nextButtonLabel = "隨機召喚 (新回合)";
-                         }
-                    } else {
-                        nextButtonLabel = "隨機召喚第一位";
-                    }
-                }
-                
-                return (
-                    <div className="min-h-screen flex flex-col bg-kimetsu-black text-white relative overflow-hidden">
-                        {/* Decorative Patterns */}
-                        <div className="absolute top-0 left-0 w-full h-4 bg-kimetsu-green"></div>
-                        <div className="absolute bottom-0 left-0 w-full h-4 bg-kimetsu-green"></div>
-                        
-                        <header className="p-4 flex justify-between items-center z-10">
-                            <h1 className="text-2xl font-bold tracking-widest text-kimetsu-green border-b-2 border-white pb-1">柱合會議・禮物交付儀式</h1>
-                            <div className="flex gap-2">
-                                <button onClick={handleLiveReset} className="text-sm border border-red-500 text-red-400 px-3 py-1 rounded hover:bg-red-600 hover:text-white transition font-bold flex items-center gap-1">
-                                    <Icons.RotateCw size={14}/> 重新開始
-                                </button>
-                                <button onClick={() => setView('admin_dashboard')} className="text-sm border border-white px-3 py-1 rounded hover:bg-white hover:text-kimetsu-black transition">退出儀式</button>
+                            <div className="flex gap-2 items-center">
+                                {mode==='cloud' && <span className="text-xs border border-k-green text-k-green px-2 py-1 rounded">連線中</span>}
                             </div>
                         </header>
-
-                        <div className="flex-1 flex flex-col items-center justify-center p-4 z-10 relative">
-                            {!liveReceiver ? (
-                                <div className="text-center space-y-8 animate-fade-in">
-                                    <div className="text-6xl text-kimetsu-pink animate-pulse">🌸</div>
-                                    <h2 className="text-4xl font-bold tracking-widest">準備開始抽籤</h2>
-                                    <p className="text-slate-400">目前還有 {Object.keys(matches).length - liveHistory.length} 位隊員等待上台</p>
-                                    <button onClick={handleNextLive} className="px-8 py-4 bg-kimetsu-green text-white text-2xl font-bold rounded-lg shadow-[0_0_15px_rgba(46,204,113,0.6)] hover:scale-105 transition-transform border-2 border-white tracking-widest">
-                                        {nextButtonLabel}
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="w-full max-w-4xl flex flex-col items-center gap-6 animate-slide-up">
-                                    <div className="text-center">
-                                        <p className={`tracking-[0.5em] text-lg mb-2 font-bold ${style.text.replace('text-','text-kimetsu-green ')}`}>
-                                            <span className="text-sm border border-white px-2 py-1 rounded mr-2">{rank}</span> 
-                                            受贈者 ({style.name})
-                                        </p>
-                                        <h2 className="text-5xl font-black tracking-widest mb-6 border-b-4 border-kimetsu-pink inline-block pb-2">{liveReceiver.name}</h2>
-                                    </div>
-
-                                    <div className="flex flex-col md:flex-row gap-8 items-center justify-center w-full">
-                                        {/* Drawing Display via Nezuko Box */}
-                                        <div className={`w-full max-w-md aspect-square flex items-center justify-center relative transform rotate-1`}>
-                                            <NezukoBox isLocked={false}>
-                                                <img src={liveReceiver.drawing} className="w-full h-full object-contain" />
-                                            </NezukoBox>
-                                        </div>
-
-                                        {/* Giver Reveal Section */}
-                                        <div className="flex flex-col items-center gap-6 min-w-[280px]">
-                                            <div className="text-6xl text-white">⬅️</div>
-                                            
-                                            {!liveShowGiver ? (
-                                                <button onClick={() => setLiveShowGiver(true)} className="w-full py-4 bg-kimetsu-pink hover:bg-pink-600 text-white rounded-lg font-bold text-xl shadow-lg transition-transform hover:scale-105 border-b-4 border-pink-800 tracking-widest">
-                                                    揭曉送禮者
-                                                </button>
-                                            ) : (
-                                                <div className="w-full text-center animate-fade-in">
-                                                    <p className="text-sm text-slate-400 mb-1">送禮之呼吸・壹之型</p>
-                                                    <div className="bg-white text-kimetsu-black text-3xl font-black py-4 px-6 rounded border-4 border-kimetsu-green shadow-[0_0_20px_rgba(255,255,255,0.5)] tracking-widest">
-                                                        {giver ? giver.name : "未知"}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            <div className="flex gap-2 w-full mt-8">
-                                                <button 
-                                                    onClick={handlePrevLive} 
-                                                    disabled={liveIndex <= 0}
-                                                    className={`flex-1 px-4 py-3 border-2 border-white text-white rounded font-bold flex items-center justify-center gap-2 transition ${liveIndex <= 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white hover:text-kimetsu-black'}`}
-                                                >
-                                                    <Icons.ArrowLeft size={20}/> 上一位
-                                                </button>
-                                                <button 
-                                                    onClick={handleNextLive} 
-                                                    className="flex-1 px-4 py-3 border-2 border-white text-white rounded hover:bg-white hover:text-kimetsu-black transition font-bold flex items-center justify-center gap-2"
-                                                >
-                                                    {nextButtonLabel} <Icons.ArrowRight size={20}/>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                );
-            }
-
-            if (view === 'admin_dashboard') {
-                return (
-                    <div className="min-h-screen flex flex-col">
-                         <header className="bg-kimetsu-black text-white p-4 shadow-md flex justify-between items-center sticky top-0 z-20 border-b-4 border-kimetsu-green">
-                            <div className="flex items-center gap-2">
-                                <Icons.Settings className="text-kimetsu-green" />
-                                <h1 className="text-lg font-bold tracking-widest">鬼殺隊總部後台</h1>
-                            </div>
-                            <button onClick={() => { setIsAdmin(false); setView('home'); }} className="text-xs bg-slate-800 px-3 py-1.5 rounded flex items-center gap-1 hover:bg-slate-700 transition border border-slate-600 font-bold">
-                                <Icons.LogOut size={14}/> 離開
-                            </button>
-                        </header>
-                        <div className="p-4 max-w-5xl mx-auto w-full space-y-6">
-                            
-                            {/* Live Event Button */}
-                            <div className="bg-gradient-to-r from-kimetsu-black to-slate-800 p-6 rounded shadow-lg border-2 border-kimetsu-green relative overflow-hidden text-white flex justify-between items-center">
-                                <div>
-                                    <h3 className="text-2xl font-bold tracking-widest text-kimetsu-green mb-1">柱合會議・現場模式</h3>
-                                    <p className="text-sm text-slate-300">開啟大螢幕，進行現場隨機抽籤與禮物交付儀式。</p>
-                                </div>
-                                <button onClick={() => setView('admin_live')} className="px-6 py-3 bg-kimetsu-pink hover:bg-pink-600 text-white font-bold rounded shadow-lg border-2 border-white flex items-center gap-2 transition-transform hover:scale-105">
-                                    <Icons.Mic size={20}/> 進入會場
-                                </button>
-                            </div>
-
-                            {/* Control Panel */}
-                            <div className="bg-white p-6 rounded shadow-lg border-2 border-kimetsu-black relative">
-                                <h3 className="font-bold text-kimetsu-black mb-4 border-b-2 border-kimetsu-green pb-2 tracking-widest">任務指派</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <p className="text-sm text-slate-600 font-bold">當所有劍士完成卷軸後，進行任務分配。</p>
-                                        <button onClick={performMatching} disabled={isProcessing} className="w-full py-3 bg-kimetsu-green hover:bg-green-600 text-white rounded font-bold shadow-md flex items-center justify-center gap-2 border-b-4 border-green-800 tracking-widest">
-                                            <Icons.Shuffle size={20}/> {Object.keys(matches).length > 0 ? '重新指派任務' : '開始指派任務'}
-                                        </button>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <p className="text-sm text-slate-600 font-bold">活動結束後，銷毀所有卷軸重新開始。</p>
-                                        {/* Updated LongPressButton usage */}
-                                        <LongPressButton 
-                                            label="銷毀所有資料" 
-                                            icon={Icons.Trash2} 
-                                            onComplete={handleReset} 
-                                            disabled={isProcessing}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Match List */}
-                            {Object.keys(matches).length > 0 && (
-                                <div className="bg-white p-6 rounded shadow-lg border-2 border-kimetsu-black">
-                                    <h3 className="font-bold text-kimetsu-black mb-4 border-b-2 border-kimetsu-green pb-2 tracking-widest">任務名單 (僅主公可見)</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm font-bold">
-                                        {users.map(u => {
-                                            const recId = matches[u.id];
-                                            const rec = users.find(r => r.id === recId);
-                                            return (
-                                                <div key={u.id} className="flex justify-between p-2 bg-kimetsu-bg rounded border border-slate-300">
-                                                    <span>🗡️ <span className="text-kimetsu-dark-green">{u.name}</span></span>
-                                                    <span className="text-slate-400 mx-2">➜ 贈與 ➜</span>
-                                                    <span><span className="text-kimetsu-black">{rec?.name}</span> 🎁</span>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Gallery */}
-                            <div className="bg-white p-6 rounded shadow-lg border-2 border-kimetsu-black">
-                                <div className="flex justify-between items-end mb-4 border-b-2 border-kimetsu-green pb-2">
-                                    <h3 className="font-bold text-kimetsu-black tracking-widest">隊員卷軸 ({users.length}人)</h3>
-                                    <button 
-                                        onClick={() => setShowAdminPasswords(!showAdminPasswords)}
-                                        className={`text-xs flex items-center gap-1 px-3 py-1 rounded transition font-bold border-2 ${showAdminPasswords ? 'bg-kimetsu-pink text-white border-kimetsu-pink' : 'bg-white text-slate-500 border-slate-300'}`}
-                                    >
-                                        {showAdminPasswords ? <Icons.EyeOff size={14}/> : <Icons.Eye size={14}/>}
-                                        {showAdminPasswords ? '隱藏密碼' : '顯示密碼(救援用)'}
-                                    </button>
-                                </div>
-                                
-                                {users.length === 0 ? (
-                                    <p className="text-center text-slate-400 py-8 font-bold">目前尚無隊員加入...</p>
-                                ) : (
-                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                        {users.map(u => {
-                                            const style = getStyle(u.style || 'default');
-                                            const rank = u.rank || '癸';
-                                            return (
-                                                <div key={u.id} className={`border-4 ${style.border} ${style.bg} rounded p-2 relative group shadow-sm transition-all`}>
-                                                    <div className={`absolute top-0 right-0 p-1 text-xs font-bold ${style.text} flex items-center gap-1`}>
-                                                        <span className="border border-current px-1 rounded-sm text-[10px]">{rank}</span>
-                                                        {style.icon} {style.name}
-                                                    </div>
-                                                    <div className="aspect-square bg-white border border-slate-300 overflow-hidden mb-2 mt-6">
-                                                        <img src={u.drawing} className="w-full h-full object-contain" />
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <div className="flex justify-between items-center mb-1">
-                                                            <span className={`font-bold text-sm truncate ${style.text}`}>{u.name}</span>
-                                                            {matches[u.id] && <span className="text-[10px] bg-kimetsu-green text-white px-2 py-0.5 rounded font-bold">已指派</span>}
-                                                        </div>
-                                                        {showAdminPasswords && (
-                                                            <div className="bg-red-50 text-red-600 text-[10px] p-1 rounded font-mono break-all border border-red-200 font-bold">
-                                                                {u.password}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
-
-            // --- User Login View ---
-            if (view === 'user_login') {
-                return (
-                    <div className="min-h-screen flex items-center justify-center p-4">
-                        <div className="bg-white p-8 rounded shadow-2xl max-w-sm w-full border-4 border-kimetsu-black relative">
-                            <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-kimetsu-black tracking-widest border-b-2 border-kimetsu-green pb-2">
-                                <Icons.Lock className="text-kimetsu-green"/> 隊員身份驗證
-                            </h2>
-                            <p className="text-kimetsu-black font-bold mb-1">歡迎回來，{loginTargetUser?.name}！</p>
-                            <p className="text-slate-500 text-xs mb-4">請輸入密碼以解開卷軸。</p>
-                            <input 
-                                type="password" 
-                                value={userPasswordInput}
-                                onChange={e => setUserPasswordInput(e.target.value)}
-                                className="w-full p-3 border-2 border-kimetsu-black rounded mb-4 outline-none focus:ring-2 ring-kimetsu-green bg-kimetsu-bg text-center font-bold tracking-widest"
-                                placeholder="輸入密碼"
-                            />
-                            <div className="flex gap-2">
-                                <button onClick={() => setView('reveal')} className="flex-1 py-2 bg-slate-200 text-slate-600 rounded font-bold hover:bg-slate-300 transition">取消</button>
-                                <button onClick={handleUserLogin} className="flex-1 py-2 bg-kimetsu-black text-white rounded font-bold hover:bg-slate-800 transition border-b-4 border-slate-900">解開卷軸</button>
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
-
-            // Main Public App UI
-            return (
-                <div className="min-h-screen relative overflow-hidden flex flex-col items-center">
-                    
-                    <div className="relative z-10 w-full max-w-md min-h-screen bg-kimetsu-bg shadow-2xl flex flex-col border-x-4 border-kimetsu-black">
-                        <header className="bg-kimetsu-black p-4 text-white shadow-md flex justify-between items-center border-b-4 border-kimetsu-green">
-                            <div className="flex items-center gap-2">
-                                <Icons.Sword className="text-kimetsu-green drop-shadow-md" size={28} />
-                                <h1 className="text-xl font-bold tracking-widest text-kimetsu-green">鬼滅之刃交換道場</h1>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                {mode === 'cloud' && <span className="text-xs bg-slate-700 px-2 py-1 rounded flex items-center gap-1 font-bold border border-slate-500 text-kimetsu-green"><Icons.Cloud size={12}/> 連線中</span>}
-                            </div>
-                        </header>
-
-                        <main className="flex-1 p-6 flex flex-col relative bg-[url('https://www.transparenttextures.com/patterns/rice-paper.png')]">
-                            {isProcessing && <div className="absolute inset-0 z-50 bg-white/80 flex items-center justify-center"><div className="spinner"></div></div>}
-
-                            {view === 'home' && (
-                                <div className="flex flex-col items-center justify-center h-full gap-8 animate-fade-in relative">
-                                    <div className="text-center space-y-4">
-                                        <div className="inline-block p-4 border-4 border-kimetsu-black bg-white shadow-lg rotate-1">
-                                            <h2 className="text-3xl font-bold text-kimetsu-black tracking-widest border-2 border-kimetsu-green p-2">全集中・交換之呼吸</h2>
-                                        </div>
-                                        <div className="bg-white px-6 py-2 rounded border-2 border-kimetsu-black shadow-sm inline-block">
-                                            <p className="text-kimetsu-black font-bold">現任隊員： <span className="text-kimetsu-pink text-2xl font-black">{users.length}</span> 名</p>
-                                        </div>
-                                    </div>
-                                    <div className="w-full space-y-4 mt-4">
-                                        {!myParticipantId ? (
-                                            <button onClick={startDrawing} className="w-full py-4 bg-kimetsu-green hover:bg-green-500 text-white rounded shadow-lg flex items-center justify-center gap-3 text-lg font-bold active:scale-95 transition-transform border-b-4 border-green-800 tracking-widest relative overflow-hidden group">
-                                                <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                                                <Icons.PenTool size={24}/> 入隊考核 (繪製卷軸)
-                                            </button>
-                                        ) : (
-                                            <button onClick={() => setView('my_card')} className="w-full py-4 bg-white border-4 border-kimetsu-green text-kimetsu-dark-green hover:bg-green-50 rounded flex items-center justify-center gap-2 font-bold shadow-md active:scale-95 transition-transform tracking-widest">
-                                                <Icons.Image size={24}/> 查看我的任務卷軸
-                                            </button>
-                                        )}
-                                        <button onClick={() => setView('participants')} className="w-full py-4 bg-kimetsu-black border-2 border-slate-600 hover:bg-slate-800 text-white rounded shadow-lg flex items-center justify-center gap-3 text-lg font-bold transition-transform active:scale-95 tracking-widest">
-                                            <Icons.Users size={24}/> 查看隊員名冊
-                                        </button>
-                                        
-                                        {/* Task Assignment Button: Always Visible if Users exist */}
-                                        {users.length > 0 && (
-                                            <button onClick={() => setView('reveal')} className={`w-full py-4 ${Object.keys(matches).length > 0 ? 'bg-kimetsu-pink hover:bg-pink-400 border-pink-600' : 'bg-kimetsu-black hover:bg-slate-800 border-slate-900'} text-white rounded shadow-lg flex items-center justify-center gap-3 text-lg font-bold mt-8 ${Object.keys(matches).length > 0 ? 'animate-pulse' : ''} border-b-4 active:scale-95 transition-transform tracking-widest`}>
-                                                {Object.keys(matches).length > 0 ? <><Icons.Eye size={24}/> 任務下達！確認目標</> : <><Icons.Lock size={24}/> 隊員集合！確認卷軸</>}
-                                            </button>
-                                        )}
-                                    </div>
-                                    
-                                    {/* Admin & Footer Links */}
-                                    <div className="mt-auto pt-8 flex flex-col items-center gap-3 w-full">
-                                        {myParticipantId && (
-                                            <button onClick={handleManualLogout} className="text-xs text-slate-500 hover:text-kimetsu-black flex items-center gap-1 py-2 px-4 rounded border-2 border-slate-300 hover:border-kimetsu-black transition mb-2 font-bold">
-                                                <Icons.LogOut size={14}/> 隱退 (清除狀態)
-                                            </button>
-                                        )}
-                                        <button onClick={() => setView('admin_login')} className="text-sm text-kimetsu-black hover:text-kimetsu-green flex items-center gap-2 py-2 px-4 rounded transition font-bold bg-white border border-kimetsu-black shadow-sm">
-                                            <Icons.Lock size={16}/> 鬼殺隊總部 (Admin)
-                                        </button>
-
-                                        {mode === 'offline' && (
-                                            <div className="text-xs text-slate-400 font-bold">
-                                                <button onClick={()=>{localStorage.removeItem('fb_config_override');window.location.reload()}} className="underline ml-1 hover:text-kimetsu-black transition">重設連線</button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
-                            {view === 'draw' && <DrawingPad initialData={editData} onSave={saveUser} onCancel={() => setView(editData ? 'my_card' : 'home')} Icons={Icons} />}
-                            
-                            {view === 'my_card' && (
-                                <div className="flex flex-col h-full animate-fade-in">
-                                    <div className="flex items-center justify-center mb-4">
-                                         <h2 className="text-2xl font-bold text-center text-kimetsu-black tracking-widest border-b-4 border-kimetsu-green pb-1">我的任務卷軸</h2>
-                                    </div>
-                                    {(() => {
-                                        const me = users.find(u => u.id === myParticipantId);
-                                        if (!me) return (
-                                            <div className="flex flex-col items-center justify-center py-10 text-slate-500 gap-4 bg-white rounded border-2 border-kimetsu-black p-8 shadow-md">
-                                                <p className="font-bold text-lg">找不到卷軸，可能已被銷毀。</p>
-                                                <button onClick={handleManualLogout} className="px-6 py-3 bg-kimetsu-black text-white rounded text-sm font-bold shadow-md border-b-4 border-slate-700 hover:bg-slate-800 transition">返回首頁</button>
-                                            </div>
-                                        );
-                                        const isLocked = !!matches[me.id];
-                                        const style = getStyle(me.style || 'default');
-                                        const rank = me.rank || '癸';
-
-                                        return (
-                                            <div className="flex-1 flex flex-col items-center">
-                                                <div className={`w-full p-6 rounded shadow-lg border-4 ${style.border} ${style.bg} mb-6 relative`}>
-                                                    <div className={`absolute -top-3 -right-3 px-2 py-1 bg-white border-2 ${style.border} rounded text-xs font-bold`}>{style.icon} {style.name}</div>
-                                                    <div className="flex justify-between items-center mb-4 border-b-2 border-slate-200 pb-2">
-                                                        <span className={`text-sm font-bold ${style.text}`}>隊員階級: {rank}</span>
-                                                        <span className={`font-bold text-xl ${style.text}`}>{me.name}</span>
-                                                    </div>
-                                                    
-                                                    {/* Nezuko Box for My Card */}
-                                                    <div className="w-full max-w-md aspect-square flex items-center justify-center relative">
-                                                        <NezukoBox isLocked={isLocked}>
-                                                            <img src={me.drawing} className="w-full h-full object-contain" />
-                                                        </NezukoBox>
-                                                    </div>
-                                                </div>
-
-                                                {isLocked ? (
-                                                    <div className="w-full p-6 bg-slate-100 text-slate-600 rounded text-sm text-center mb-6 border-l-4 border-kimetsu-black shadow-md">
-                                                        <p className="font-bold mb-2 text-lg text-kimetsu-black">🔒 任務已下達！</p>
-                                                        無法再修改卷軸內容！
-                                                    </div>
-                                                ) : (
-                                                    <button onClick={editMyCard} className="w-full py-4 bg-kimetsu-black hover:bg-slate-800 text-white rounded shadow-md font-bold flex items-center justify-center gap-2 mb-6 border-b-4 border-slate-900 active:scale-95 transition-transform tracking-widest">
-                                                        <Icons.Edit size={24}/> 修改卷軸
-                                                    </button>
-                                                )}
-                                                
-                                                <button onClick={() => setView('home')} className="w-full py-4 bg-white text-kimetsu-black font-bold rounded mt-auto border-2 border-kimetsu-black hover:bg-slate-100 transition shadow-sm active:scale-95 tracking-widest">返回道場</button>
-                                            </div>
-                                        );
-                                    })()}
-                                </div>
-                            )}
-
-                            {view === 'participants' && (
-                                <div className="flex flex-col h-full">
-                                    <h2 className="text-2xl font-bold mb-6 flex items-center gap-3 text-kimetsu-black border-l-4 border-kimetsu-green pl-3 tracking-widest">鬼殺隊名冊</h2>
-                                    <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-                                        {users.length === 0 ? <div className="text-center text-slate-500 mt-10 font-bold text-lg bg-white p-8 rounded border-2 border-slate-300">尚無隊員入隊...</div> : users.map((u, idx) => {
-                                            const style = getStyle(u.style || 'default');
-                                            const rank = u.rank || '癸';
-                                            return (
-                                                <div key={u.id} className={`p-4 rounded flex justify-between items-center border-2 shadow-sm transition-transform hover:translate-x-1 ${isMe(u.id) ? `bg-green-50 border-kimetsu-green` : `${style.bg} ${style.border}`}`}>
-                                                    <div className="flex items-center gap-3">
-                                                        <span className={`font-bold text-lg ${style.text} font-mono`}>#{idx + 1}</span>
-                                                        <span className={`font-bold text-lg ${style.text}`}>
-                                                            <span className="text-xs border border-current px-1 rounded mr-1">{rank}</span>
-                                                            {style.icon} {u.name}
-                                                        </span>
-                                                        {isMe(u.id) && <span className="text-xs bg-kimetsu-black text-white px-2 py-1 rounded font-bold">我</span>}
-                                                    </div>
-                                                    <span className="text-xs text-slate-500 font-bold border border-slate-300 px-2 py-1 rounded flex items-center gap-1"><Icons.Check size={12}/> 卷軸完成</span>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                    <button onClick={() => setView('home')} className="mt-6 w-full py-4 bg-kimetsu-black text-white font-bold rounded border-b-4 border-slate-900 hover:bg-slate-800 transition shadow-md active:scale-95 tracking-widest">返回道場</button>
-                                </div>
-                            )}
-
-                            {view === 'reveal' && (
-                                <div className="flex flex-col h-full">
-                                    <div className="text-center mb-8">
-                                        <h2 className="text-3xl font-bold text-kimetsu-black tracking-widest border-b-2 border-kimetsu-green inline-block pb-2">
-                                            {Object.keys(matches).length > 0 ? "任務下達" : "卷軸確認"}
-                                        </h2>
-                                        <p className="text-slate-600 font-bold mt-4">請點選你的名字解開卷軸</p>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4 overflow-y-auto pb-6 pr-2">
-                                        {users.map((u) => {
-                                            const style = getStyle(u.style || 'default');
-                                            return (
-                                                <button key={u.id} onClick={() => promptUserLogin(u)} className={`p-6 border-2 rounded shadow-md flex flex-col items-center justify-center aspect-square transition-all relative group active:scale-95 ${isMe(u.id) ? 'bg-green-50 border-kimetsu-green ring-2 ring-green-200' : `${style.bg} ${style.border} hover:opacity-90`}`}>
-                                                    {isMe(u.id) && <div className="absolute top-2 right-2 text-white bg-kimetsu-black px-2 py-0.5 rounded text-xs font-bold">我</div>}
-                                                    <Icons.Lock size={32} className={`${isMe(u.id) ? 'text-kimetsu-green' : style.text} mb-3 group-hover:scale-110 transition-transform`} />
-                                                    <span className={`font-bold ${style.text} text-lg truncate w-full text-center`}>{u.name}</span>
-                                                </button>
-                                            )
-                                        })}
-                                    </div>
-                                    <button onClick={() => setView('home')} className="mt-auto w-full py-4 bg-kimetsu-black text-white font-bold rounded border-b-4 border-slate-900 hover:bg-slate-800 transition shadow-md active:scale-95 tracking-widest">返回道場</button>
-                                </div>
-                            )}
-
-                            {view === 'check_result' && revealData && (
-                                <div className="flex flex-col h-full items-center justify-center text-center animate-fade-in">
-                                    <div className="mb-8 p-4 border-y-4 border-kimetsu-green w-full bg-kimetsu-black">
-                                        <span className="text-xs text-kimetsu-green uppercase tracking-widest font-bold block mb-1">TO: 隊員</span>
-                                        <h2 className="text-3xl font-extrabold text-white drop-shadow-sm">{revealData.giver.name}</h2>
-                                    </div>
-                                    <div className="w-full bg-white p-8 rounded shadow-2xl border-4 border-kimetsu-black mb-8 relative overflow-hidden">
-                                        <div className="absolute -top-10 -right-10 w-24 h-24 bg-kimetsu-pink rotate-45 opacity-50"></div>
-                                        <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-kimetsu-green rotate-45 opacity-50"></div>
-                                        
-                                        <p className="text-slate-500 mb-4 font-bold text-lg">你要贈送禮物的對象是：</p>
-                                        
-                                        {/* Masked Name */}
-                                        <div className="text-3xl font-black text-kimetsu-black mb-6 bg-kimetsu-bg py-4 px-8 rounded border-2 border-dashed border-kimetsu-black relative z-10 tracking-widest">
-                                            ??? (神秘隊員)
-                                        </div>
-                                        
-                                        <div className="mb-6 bg-orange-50 border-l-4 border-orange-500 p-3 text-orange-700 font-bold text-sm text-left">
-                                            <span className="block mb-1 text-lg">⚠️ 主公指令：</span>
-                                            請準備符合下方卷軸內容的禮物，並於集會時交付！
-                                        </div>
-                                        
-                                        <div className="bg-white border-4 border-double border-slate-300 rounded p-2 shadow-inner inline-block relative z-10 w-full max-w-sm aspect-square">
-                                            {/* User Result Nezuko Box */}
-                                            <NezukoBox isLocked={false}>
-                                                {revealData.receiver ? <img src={revealData.receiver.drawing} className="w-full h-full object-contain" /> : "Error"}
-                                            </NezukoBox>
-                                        </div>
-                                    </div>
-                                    <button onClick={() => setView('reveal')} className="w-full py-4 bg-kimetsu-pink text-white font-bold rounded shadow-lg border-b-4 border-pink-700 hover:bg-pink-400 transition active:scale-95 tracking-widest">遵命！(登出)</button>
-                                </div>
-                            )}
+                        <main className="flex-1 flex flex-col relative overflow-hidden bg-[url('https://www.transparenttextures.com/patterns/rice-paper.png')]">
+                            {children}
                         </main>
                     </div>
                 </div>
             );
+
+            // Live View Renderer (Shared by Admin and Spectator)
+            // Admin has controls, Spectator does not.
+            const LiveStage = ({ isAdminControl }) => (
+                <div className="min-h-screen bg-k-black text-white flex flex-col relative overflow-hidden font-serif">
+                    <div className="absolute top-0 left-0 w-full h-2 bg-k-green"></div>
+                    <header className="p-4 z-20 flex justify-between items-center bg-black/50 backdrop-blur">
+                        <h1 className="text-2xl font-bold tracking-widest flex items-center gap-2 text-k-green"><Icons.Users/> 禮物交付儀式 {isAdminControl ? '(主控)' : '(觀看)'}</h1>
+                        <div className="flex gap-2">
+                             {isAdminControl && <button onClick={adminResetLive} className="border border-red-500 text-red-500 px-3 py-1 rounded text-sm hover:bg-red-900 hover:text-white transition flex items-center gap-1"><Icons.RotateCcw size={14}/>重置</button>}
+                            <button onClick={()=>setView(isAdminControl ? 'admin_dash' : 'home')} className="border px-3 py-1 rounded text-sm hover:bg-white hover:text-black transition">退出</button>
+                        </div>
+                    </header>
+                    <div className="flex-1 flex flex-col items-center justify-center relative z-10 p-4">
+                        {!currentLiveReceiver ? (
+                            <div className="text-center space-y-8 animate-fade-in">
+                                <div className="text-6xl text-k-pink animate-pulse">🌸</div>
+                                <h2 className="text-4xl font-bold tracking-widest">
+                                    {isAdminControl ? '準備開始抽籤' : '等待儀式開始...'}
+                                </h2>
+                                <p className="text-slate-400">剩餘 {users.length - (remoteLiveState?.drawnIds?.length || 0)} 位隊員</p>
+                                {isAdminControl && (
+                                    <button onClick={adminNextLive} className="px-8 py-4 bg-k-green text-white text-2xl font-bold rounded shadow-lg hover:scale-105 transition-transform border-2 border-white tracking-widest">召喚第一位</button>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="w-full max-w-6xl grid md:grid-cols-2 gap-12 items-center animate-fade-in">
+                                <div className="flex flex-col items-center">
+                                    <div className="text-k-green tracking-[0.5em] font-bold mb-2 text-lg bg-black/50 px-4 py-1 rounded">受贈者</div>
+                                    <h2 className="text-5xl font-black tracking-widest mb-8 border-b-4 border-k-pink inline-block pb-2">{currentLiveReceiver.name}</h2>
+                                    <div className="w-full max-w-md aspect-square relative transform rotate-1">
+                                        <NezukoBox isLocked={false}><img src={currentLiveReceiver.drawing} className="w-full h-full object-contain bg-white rounded" /></NezukoBox>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col items-center justify-center bg-white/10 p-8 rounded border border-white/20 backdrop-blur-sm shadow-2xl">
+                                    <p className="text-gray-300 text-lg mb-6 font-bold">這份禮物來自...</p>
+                                    {!isLiveGiverShown ? (
+                                        isAdminControl ? (
+                                            <button onClick={adminToggleReveal} className="w-full py-6 bg-k-pink hover:bg-pink-600 text-white rounded font-bold text-xl shadow-lg transition-transform hover:scale-105 border-b-4 border-pink-800 tracking-widest">揭曉送禮者</button>
+                                        ) : (
+                                            <div className="text-2xl font-bold text-gray-400 animate-pulse">等待揭曉...</div>
+                                        )
+                                    ) : (
+                                        <div className="w-full text-center animate-fade-in">
+                                            <div className="text-6xl mb-4">👺</div>
+                                            <div className="bg-white text-k-black text-4xl font-black py-4 px-8 rounded border-4 border-k-green shadow-[0_0_20px_rgba(255,255,255,0.5)] tracking-widest">{liveGiver ? liveGiver.name : "未知"}</div>
+                                        </div>
+                                    )}
+                                    
+                                    {isAdminControl && (
+                                        <div className="flex w-full gap-4 mt-12 justify-center">
+                                            <button onClick={adminNextLive} className="px-8 py-3 bg-k-green text-white font-bold rounded shadow-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2 border-b-4 border-green-800 active:border-b-0 active:translate-y-1">
+                                                接龍下一位 <Icons.ArrowRight/>
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+
+            // --- View Routing ---
+
+            if (view === 'admin_live') return <LiveStage isAdminControl={true} />;
+            if (view === 'spectator_live') return <LiveStage isAdminControl={false} />;
+
+            if(view === 'home') return (
+                <Wrapper>
+                    <div className="flex flex-col items-center justify-center h-full gap-6 py-12 animate-fade-in p-6">
+                        <div className="bg-white border-4 border-k-black p-2 shadow-xl w-full max-w-sm transform rotate-1">
+                            <div className="border-2 border-k-green p-6 text-center">
+                                <h1 className="text-3xl font-black tracking-[0.2em] text-k-black">全集中・交換之呼吸</h1>
+                            </div>
+                        </div>
+                        <div className="bg-white border-2 border-k-black px-8 py-4 shadow-md rounded">
+                            <p className="font-bold text-lg text-k-black">現任隊員：<span className="text-k-pink font-black text-2xl mx-1">{users.length}</span> 名</p>
+                        </div>
+                        <div className="w-full space-y-4 mt-4">
+                            {!myId ? (
+                                <button onClick={()=>{setEditData(null); setView('draw');}} className="w-full py-5 bg-k-green text-white rounded shadow-lg font-bold text-xl flex items-center justify-center gap-3 border-b-4 border-green-800 active:border-b-0 active:translate-y-1 transition-all">
+                                    <Icons.PenTool size={24}/> 入隊考核 (繪製卷軸)
+                                </button>
+                            ) : (
+                                <button onClick={()=>setView('my_card')} className="w-full py-5 bg-white border-2 border-k-green text-k-green rounded font-bold text-xl flex items-center justify-center gap-3 shadow-lg hover:bg-green-50 transition-transform active:scale-95">
+                                    <Icons.Image size={24}/> 查看我的任務卷軸
+                                </button>
+                            )}
+                            <button onClick={()=>setView('list')} className="w-full py-5 bg-k-black text-white rounded font-bold text-xl flex items-center justify-center gap-3 shadow-lg hover:bg-gray-800 transition-transform active:scale-95">
+                                <Icons.Users size={24}/> 查看隊員名冊
+                            </button>
+                            
+                            {/* Task Button */}
+                            {users.length > 0 && (
+                                <div className="w-full space-y-2 mt-6">
+                                    <button onClick={() => setView('reveal')} className={`w-full py-4 border-2 ${Object.keys(matches).length > 0 ? 'bg-k-pink border-pink-400 text-white' : 'bg-gray-100 border-gray-300 text-gray-500'} rounded font-bold flex justify-center gap-2 transition`}>
+                                        {Object.keys(matches).length > 0 ? <><Icons.Eye size={20}/> 任務下達！確認目標</> : <><Icons.Lock size={20}/> 隊員集合！確認卷軸</>}
+                                    </button>
+                                    
+                                    {/* Spectator Mode Button */}
+                                    <button onClick={() => setView('spectator_live')} className="w-full py-3 bg-k-yellow text-k-black rounded font-bold shadow flex items-center justify-center gap-2 hover:bg-yellow-400 transition border-b-4 border-yellow-600 active:border-b-0 active:translate-y-1">
+                                        <Icons.Monitor size={20}/> 進入會場 (觀看模式)
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                        <div className="mt-auto pt-8 w-full flex flex-col items-center gap-4">
+                            {myId && <button onClick={()=>{if(confirm('隱退?')) {localStorage.removeItem('pid'); setMyId(null);}}} className="text-xs text-gray-400 border-b border-gray-300 pb-1">解除隊員身份</button>}
+                            <button onClick={() => setView('admin_login')} className="bg-white border border-k-black px-6 py-2 rounded text-sm font-bold text-k-black hover:bg-gray-50 transition flex items-center gap-2 shadow-sm">
+                                <Icons.Lock size={14}/> 鬼殺隊總部 (Admin)
+                            </button>
+                        </div>
+                    </div>
+                </Wrapper>
+            );
+
+            if(view === 'list') return (
+                <Wrapper>
+                    <div className="p-4 h-full flex flex-col">
+                        <h2 className="text-xl font-bold mb-4 text-center border-b-2 border-k-green pb-2 inline-block mx-auto">隊員名冊</h2>
+                        <div className="grid grid-cols-2 gap-4 overflow-y-auto flex-1 pb-4">
+                            {users.map((u,i) => {
+                                const s = getStyle(u.style);
+                                return (
+                                    <div key={u.id} className={`p-2 rounded border-2 shadow-sm flex flex-col items-center bg-white ${s.border} relative`}>
+                                        <div className="absolute top-1 left-2 text-xs font-mono text-gray-400 font-bold">#{i+1}</div>
+                                        <div className="w-full aspect-square bg-gray-50 rounded mb-2 overflow-hidden border border-gray-200 mt-5">
+                                            <img src={u.drawing} className="w-full h-full object-contain" />
+                                        </div>
+                                        <div className="text-xs text-gray-500 mb-1 flex items-center gap-1">{s.icon} {s.name}</div>
+                                        <div className={`font-bold text-sm truncate w-full text-center ${s.text}`}>{u.name}</div>
+                                        {u.id === myId && <span className="absolute top-1 right-1 bg-k-black text-white text-[10px] px-1.5 py-0.5 rounded">我</span>}
+                                    </div>
+                                )
+                            })}
+                        </div>
+                        <button onClick={()=>setView('home')} className="mt-4 w-full py-3 bg-white border-2 border-k-black text-k-black font-bold rounded hover:bg-gray-100">返回</button>
+                    </div>
+                </Wrapper>
+            );
+
+            if(view === 'draw') return (
+                <Wrapper>
+                    <div className="p-4 h-full flex flex-col">
+                        <DrawingPad initialData={editData} onSave={saveMe} onCancel={()=>setView(editData?'my_card':'home')} />
+                    </div>
+                </Wrapper>
+            );
+
+            if(view === 'my_card') return (
+                <Wrapper>
+                    <div className="p-4 h-full flex flex-col items-center">
+                        {(() => {
+                            const me = users.find(u=>u.id===myId);
+                            if(!me) return <div className="text-center mt-10">資料已遺失</div>;
+                            const isLocked = !!matches[me.id];
+                            const style = getStyle(me.style);
+                            return (
+                                <>
+                                    <h2 className="text-xl font-bold mb-4 text-k-black flex items-center gap-2">我的卷軸</h2>
+                                    <div className={`w-full p-6 mb-6 bg-white border-4 ${style.border} ${style.bg} relative rounded shadow-lg`}>
+                                        <div className="flex justify-between items-center mb-4 border-b-2 border-black/10 pb-2">
+                                            <span className={`text-sm font-bold ${style.text} bg-white/80 px-2 rounded border border-black/10`}>階級: {me.rank}</span>
+                                            <span className={`font-bold text-xl ${style.text}`}>{me.name}</span>
+                                        </div>
+                                        <div className={`aspect-square bg-white border-2 ${style.border} relative shadow-inner rounded overflow-hidden`}>
+                                            <img src={me.drawing} className="w-full h-full object-contain"/>
+                                            {isLocked && <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-3xl tracking-widest border-4 border-white m-4">封 印</div>}
+                                        </div>
+                                    </div>
+                                    {!isLocked ? (
+                                        <button onClick={()=>{setEditData(me); setView('draw');}} className="w-full py-4 bg-k-black text-white font-bold rounded shadow-lg active:scale-95 transition-transform">修改卷軸</button>
+                                    ) : (
+                                        <div className="w-full p-4 bg-gray-200 text-gray-600 text-center font-bold rounded border-2 border-gray-300">任務已下達，無法修改</div>
+                                    )}
+                                    <button onClick={()=>setView('home')} className="mt-auto w-full py-3 text-gray-500 font-bold hover:text-k-black">返回</button>
+                                </>
+                            )
+                        })()}
+                    </div>
+                </Wrapper>
+            );
+
+            if(view === 'reveal') return (
+                <Wrapper>
+                    <div className="p-4 h-full flex flex-col">
+                        <div className="text-center mb-6">
+                            <h2 className="text-xl font-bold text-k-black tracking-widest">{Object.keys(matches).length>0?'任務下達':'卷軸確認'}</h2>
+                            <p className="text-sm text-gray-500 mt-1">點擊名字解開</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 overflow-y-auto pb-6 flex-1">
+                            {users.map(u => {
+                                const s = getStyle(u.style);
+                                return (
+                                    <button key={u.id} onClick={()=>{setTargetUser(u); setUserPwd(myId===u.id?localStorage.getItem('pwd_bk')||'':''); setView('login');}} 
+                                        className={`relative p-4 rounded border-2 bg-white shadow-sm hover:bg-gray-50 transition-transform active:scale-95 flex flex-col items-center gap-2 aspect-square justify-center ${s.border}`}>
+                                        {myId===u.id && <div className="absolute top-2 right-2 w-3 h-3 bg-k-green rounded-full border border-white"></div>}
+                                        <Icons.Lock className="text-gray-300"/>
+                                        <span className={`font-bold ${s.text} truncate w-full text-center`}>{u.name}</span>
+                                    </button>
+                                )
+                            })}
+                        </div>
+                        <button onClick={()=>setView('home')} className="mt-auto w-full py-3 bg-white border-2 border-k-black font-bold rounded">返回</button>
+                    </div>
+                </Wrapper>
+            );
+
+            if(view === 'login') return (
+                <Wrapper>
+                    <div className="flex flex-col items-center justify-center h-full p-6">
+                        <div className="p-8 w-full bg-white border-4 border-k-black rounded shadow-xl">
+                            <h2 className="text-xl font-bold text-center mb-6 text-k-green">身分驗證</h2>
+                            <p className="text-center mb-4 font-bold text-k-black">{targetUser.name}</p>
+                            <input type="password" value={userPwd} onChange={e=>setUserPwd(e.target.value)} className="w-full p-3 text-center border-2 border-gray-300 rounded mb-6 tracking-[0.5em] font-bold text-xl outline-none focus:border-k-green" placeholder="••••"/>
+                            <div className="flex gap-3">
+                                <button onClick={()=>setView('reveal')} className="flex-1 py-3 bg-gray-200 font-bold rounded">取消</button>
+                                <button onClick={loginUser} className="flex-1 py-3 bg-k-black text-white font-bold rounded border-b-4 border-black active:border-b-0 active:translate-y-1 transition-all">解開</button>
+                            </div>
+                        </div>
+                    </div>
+                </Wrapper>
+            );
+
+            if(view === 'check_result' && reveal) return (
+                <Wrapper>
+                    <div className="flex flex-col h-full items-center justify-center animate-fade-in p-6">
+                        <div className="w-full bg-k-black text-white p-4 text-center rounded-t-xl border-b-4 border-k-green">
+                            <div className="text-xs text-k-green mb-1">TO: 隊員</div>
+                            <div className="text-2xl font-bold">{reveal.g.name}</div>
+                        </div>
+                        <div className="p-8 w-full rounded-b-xl mb-6 text-center bg-white border-x-4 border-b-4 border-k-dark shadow-xl">
+                            <p className="text-gray-500 mb-2 font-bold">你的送禮對象是</p>
+                            <div className="text-3xl font-black text-k-pink mb-6 tracking-widest">{reveal.r ? "??? (神秘隊員)" : "錯誤"}</div>
+                            <div className="bg-gray-100 p-2 border-2 border-dashed border-gray-300 rounded relative">
+                                {reveal.r && <img src={reveal.r.drawing} className="w-full" />}
+                            </div>
+                            <p className="text-xs text-gray-400 mt-2">請依照指示準備禮物</p>
+                        </div>
+                        <button onClick={()=>setView('reveal')} className="w-full py-4 bg-k-pink text-white font-bold rounded shadow-lg hover:bg-pink-500 transition-transform">遵命 (登出)</button>
+                    </div>
+                </Wrapper>
+            );
+
+            if(view === 'admin_login') return (
+                <Wrapper>
+                    <div className="flex flex-col items-center justify-center h-full p-6">
+                        <div className="p-8 w-full bg-white border-4 border-k-black rounded shadow-xl">
+                            <h2 className="text-xl font-bold text-center mb-6">主公大人</h2>
+                            <input type="password" value={adminPwd} onChange={e=>setAdminPwd(e.target.value)} className="w-full p-3 text-center border-2 border-gray-300 rounded mb-6 font-bold" placeholder="暗號"/>
+                            <button onClick={()=>{if(adminPwd==='admin123'){setView('admin_dash');setAdminPwd('');}else alert('錯誤');}} className="w-full py-3 bg-k-black text-white font-bold rounded hover:bg-black">進入</button>
+                            <button onClick={()=>setView('home')} className="w-full py-3 mt-2 text-gray-400 text-sm">返回</button>
+                        </div>
+                    </div>
+                </Wrapper>
+            );
+
+            if(view === 'admin_dash') return (
+                <Wrapper>
+                    <div className="flex justify-between items-center mb-6 p-4 border-b border-gray-300">
+                        <h2 className="text-xl font-bold">總部後台</h2>
+                        <button onClick={()=>setView('home')} className="text-sm bg-gray-200 px-3 py-1 rounded">離開</button>
+                    </div>
+                    <div className="space-y-6 overflow-y-auto flex-1 pb-10 px-4">
+                        <div className="bg-k-black p-6 rounded shadow-lg text-white flex justify-between items-center border-l-4 border-k-green">
+                            <div><h3 className="font-bold text-xl text-k-green">現場儀式</h3><p className="text-xs opacity-70">開啟大螢幕抽籤</p></div>
+                            <button onClick={()=>setView('admin_live')} className="px-6 py-2 bg-k-pink rounded font-bold shadow hover:bg-pink-500 text-white">進入</button>
+                        </div>
+                        
+                        <div className="p-6 bg-white rounded shadow-md border border-gray-200">
+                            <h3 className="font-bold border-b pb-2 mb-4">任務指派</h3>
+                            <div className="space-y-3">
+                                <button onClick={doMatch} disabled={loading} className="w-full py-3 bg-k-green text-white font-bold rounded shadow-sm hover:bg-green-600">{Object.keys(matches).length>0?'重新分配':'開始分配'}</button>
+                                <LongPressButton label="銷毀資料" icon={Icons.Trash2} onComplete={resetAll} disabled={loading}/>
+                            </div>
+                        </div>
+
+                        <div className="p-6 bg-white rounded shadow-md border border-gray-200">
+                            <div className="flex justify-between mb-4"><h3 className="font-bold">隊員資料</h3><button onClick={()=>setShowPwd(!showPwd)} className="text-xs bg-gray-200 px-2 rounded">{showPwd?'隱藏':'顯示密碼'}</button></div>
+                            <div className="grid grid-cols-2 gap-3">
+                                {users.map(u=>(
+                                    <div key={u.id} className="border p-2 rounded bg-white text-center">
+                                        <div className="aspect-square bg-gray-50 mb-2 border border-gray-200 rounded overflow-hidden"><img src={u.drawing} className="w-full h-full object-contain"/></div>
+                                        <div className="font-bold text-sm truncate">{u.name}</div>
+                                        {showPwd && <div className="text-xs text-red-500">{u.password}</div>}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </Wrapper>
+            );
+
+            return null;
         };
 
-        const DrawingPad = ({ onSave, onCancel, Icons, initialData }) => {
+        const DrawingPad = ({ initialData, onSave, onCancel }) => {
             const canvasRef = useRef(null);
-            const [isDrawing, setIsDrawing] = useState(false);
-            const [name, setName] = useState(initialData ? initialData.name : '');
-            const [password, setPassword] = useState(initialData ? initialData.password : '');
-            const [style, setStyle] = useState(initialData ? (initialData.style || 'water') : 'water');
-            const [hasDrawn, setHasDrawn] = useState(false);
+            const [name, setName] = useState(initialData?.name||'');
+            const [pwd, setPwd] = useState(initialData?.password||'');
+            const [style, setStyle] = useState(() => initialData?.style || localStorage.getItem('style_bk') || 'water');
+            const [isDrawn, setIsDrawn] = useState(false);
             const [isLocked, setIsLocked] = useState(false);
 
             useEffect(() => {
-                const canvas = canvasRef.current;
-                if(!canvas) return;
-                canvas.width = canvas.parentElement.clientWidth;
-                canvas.height = canvas.parentElement.clientWidth;
-                const ctx = canvas.getContext('2d');
-                ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#000000'; // Sumi Ink Black
-                ctx.lineWidth = 6; 
-                
-                // Init background
-                ctx.fillStyle = '#ffffff'; 
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                if (initialData && initialData.drawing) {
-                    const img = new Image();
-                    img.src = initialData.drawing;
-                    img.onload = () => {
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        setHasDrawn(true);
-                        setIsLocked(true); 
-                    }
+                const c = canvasRef.current;
+                const ctx = c.getContext('2d');
+                c.width = c.parentElement.clientWidth;
+                c.height = c.parentElement.clientWidth;
+                ctx.fillStyle = '#fff'; ctx.fillRect(0,0,c.width,c.height);
+                ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#000'; ctx.lineWidth=6;
+                if(initialData?.drawing) {
+                    const i = new Image(); i.src = initialData.drawing;
+                    i.onload = () => { ctx.drawImage(i,0,0,c.width,c.height); setIsDrawn(true); setIsLocked(true); };
                 }
             }, [initialData]);
 
             const getPos = (e) => {
-                const rect = canvasRef.current.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                return { x: clientX - rect.left, y: clientY - rect.top };
-            };
-            
-            const startDraw = (e) => { 
-                if (isLocked) { return; }
-                setIsDrawing(true); 
-                setHasDrawn(true); 
-                const pos = getPos(e); 
-                const ctx = canvasRef.current.getContext('2d'); 
-                ctx.beginPath(); 
-                ctx.moveTo(pos.x, pos.y); 
-            };
-            
-            const draw = (e) => { 
-                if (!isDrawing) return; 
-                const pos = getPos(e); 
-                const ctx = canvasRef.current.getContext('2d'); 
-                ctx.lineTo(pos.x, pos.y); 
-                ctx.stroke(); 
-            };
-            
-            const endDraw = () => {
-                if (isDrawing) {
-                    setIsDrawing(false);
-                    setIsLocked(true); 
-                }
-            };
-            
-            const clearCanvas = () => { 
-                const ctx = canvasRef.current.getContext('2d'); 
-                ctx.fillStyle = '#ffffff'; 
-                ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height); 
-                setHasDrawn(false); 
-                setIsLocked(false); 
-            };
-            
-            const handleSave = () => {
-                if (!name.trim()) return alert('請輸入隊員姓名！');
-                if (!password.trim()) return alert('請設定密碼，以免卷軸被鬼偷看！');
-                if (!hasDrawn) return alert('請繪製卷軸內容！');
-                onSave(name, password.trim(), canvasRef.current.toDataURL('image/png'), style);
-            };
+                const r = canvasRef.current.getBoundingClientRect();
+                const x = (e.touches?e.touches[0].clientX:e.clientX) - r.left;
+                const y = (e.touches?e.touches[0].clientY:e.clientY) - r.top;
+                return {x,y};
+            }
+            const start = (e) => {
+                if(isLocked) return;
+                const ctx = canvasRef.current.getContext('2d');
+                const {x,y} = getPos(e);
+                ctx.beginPath(); ctx.moveTo(x,y);
+                setIsDrawn(true);
+            }
+            const move = (e) => {
+                if(isLocked || (e.buttons!==1 && !e.touches)) return;
+                const ctx = canvasRef.current.getContext('2d');
+                const {x,y} = getPos(e);
+                ctx.lineTo(x,y); ctx.stroke();
+            }
+            const end = () => { if(isDrawn && !isLocked) setIsLocked(true); }
+            const clear = () => {
+                const c = canvasRef.current; const ctx = c.getContext('2d');
+                ctx.fillRect(0,0,c.width,c.height); setIsDrawn(false); setIsLocked(false);
+            }
+            const save = () => {
+                if(!name || !pwd) return alert('請填寫完整');
+                if(!isDrawn) return alert('請畫圖');
+                onSave(name, pwd, canvasRef.current.toDataURL(), style);
+            }
 
-            const currentStyle = getStyle(style);
+            const currStyle = getStyle(style);
 
             return (
-                <div className="flex flex-col h-full animate-slide-up font-kimetsu">
-                    <h2 className="text-2xl font-bold mb-4 text-center text-kimetsu-black tracking-widest border-b-4 border-kimetsu-green pb-2 bg-white shadow-sm">{initialData ? '修改卷軸' : '繪製卷軸'}</h2>
-                    
-                    <div className="mb-4 space-y-3">
-                        {/* Style Selector */}
-                        <div>
-                            <label className="block text-sm font-bold text-kimetsu-black mb-1">選擇呼吸法流派</label>
-                            <div className="grid grid-cols-5 gap-1">
-                                {Object.entries(BREATH_STYLES).filter(([k]) => k !== 'default').map(([k, s]) => (
-                                    <button 
-                                        key={k}
-                                        onClick={() => setStyle(k)}
-                                        className={`p-1 rounded border-2 flex flex-col items-center justify-center transition-all ${style === k ? `border-kimetsu-black bg-white scale-105 shadow-md ${s.text}` : 'border-transparent opacity-60 hover:opacity-100'}`}
-                                    >
-                                        <span className="text-xl">{s.icon}</span>
-                                        <span className="text-[10px] font-bold mt-1">{s.name.substring(0,1)}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
-                                <label className="block text-sm font-bold text-kimetsu-black mb-1">隊員姓名</label>
-                                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：炭治郎" className={`w-full p-2 border-2 ${currentStyle.border} rounded outline-none focus:ring-2 ${currentStyle.ring} text-center font-bold`} />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-kimetsu-black mb-1">設定密碼</label>
-                                <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="解鎖用" className={`w-full p-2 border-2 ${currentStyle.border} rounded outline-none focus:ring-2 ${currentStyle.ring} text-center font-bold`} />
-                            </div>
+                <div className="flex flex-col h-full animate-slide-up">
+                    <h2 className="text-xl font-bold mb-4 text-center text-k-black flex items-center justify-center gap-2"><Icons.PenTool/> 繪製卷軸</h2>
+                    <div className="mb-4">
+                        <label className="block text-xs font-bold mb-1 text-gray-500">呼吸流派</label>
+                        <div className="flex gap-1 overflow-x-auto pb-2">
+                            {Object.keys(STYLES).map(k => (
+                                <button key={k} onClick={()=>setStyle(k)} className={`flex-shrink-0 p-2 border-2 rounded ${style===k?'border-k-black bg-white scale-105':'border-transparent opacity-50'} transition-all`}>
+                                    <div className="text-2xl">{getStyle(k).icon}</div>
+                                </button>
+                            ))}
                         </div>
                     </div>
-
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                        <input value={name} onChange={e=>setName(e.target.value)} className={`p-2 border-2 ${currStyle.border} rounded text-center font-bold outline-none`} placeholder="隊員名" />
+                        <input value={pwd} onChange={e=>setPwd(e.target.value)} className={`p-2 border-2 ${currStyle.border} rounded text-center font-bold outline-none`} placeholder="密碼" />
+                    </div>
                     <div className="flex-1 flex flex-col items-center">
-                        <div className={`text-sm font-bold mb-3 flex items-center gap-2 px-4 py-2 rounded border-2 shadow-sm transition-colors ${isLocked ? 'bg-red-100 text-red-600 border-red-300' : `${currentStyle.bg} ${currentStyle.text} ${currentStyle.border}`}`}>
+                        <div className={`text-sm font-bold mb-3 flex items-center gap-2 px-4 py-2 rounded border-2 shadow-sm transition-colors ${isLocked ? 'bg-red-100 text-red-600 border-red-300' : `${currStyle.bg} ${currStyle.text} ${currStyle.border}`}`}>
                             <Icons.PenTool size={18}/> 
-                            {isLocked ? (hasDrawn ? '墨跡已乾！(一筆入魂，點擊重畫可重來)' : '全集中・一筆繪製！') : '全集中・一筆繪製！下筆後不能斷'}
+                            {isLocked ? '墨跡已乾！(一筆入魂)' : '全集中・一筆繪製！'}
                         </div>
-                        <div className={`w-full aspect-square border-4 border-double rounded overflow-hidden shadow-2xl relative bg-white touch-none transition-colors ${isLocked ? 'border-red-400' : currentStyle.border}`}>
-                            <canvas ref={canvasRef} className={`w-full h-full touch-none ${isLocked ? 'cursor-not-allowed' : 'cursor-crosshair'}`} onMouseDown={startDraw} onMouseMove={draw} onMouseUp={endDraw} onMouseLeave={endDraw} onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={endDraw} />
-                            {isLocked && <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/10 text-red-600 font-extrabold text-2xl tracking-[1em] writing-vertical-rl">封印</div>}
+                        <div className={`w-full aspect-square border-4 ${currStyle.border} rounded overflow-hidden relative shadow-lg ${isLocked?'opacity-90':''}`}>
+                            <canvas ref={canvasRef} className="w-full h-full touch-none cursor-crosshair" 
+                                onMouseDown={start} onMouseMove={move} onMouseUp={end} onMouseLeave={end}
+                                onTouchStart={start} onTouchMove={move} onTouchEnd={end}
+                            />
+                            {isLocked && <div className="absolute inset-0 bg-black/10 flex items-center justify-center pointer-events-none text-red-600 font-black text-2xl tracking-[1em] opacity-50">封印</div>}
                         </div>
-                        <div className="flex justify-end w-full mt-4"><button onClick={clearCanvas} className={`text-sm flex items-center gap-2 transition font-bold bg-white px-4 py-2 rounded border shadow-sm ${currentStyle.text} ${currentStyle.border} hover:bg-slate-50`}><Icons.RotateCcw size={16}/> 呼吸重置 (重畫)</button></div>
+                        <div className="w-full flex justify-end mt-2"><button onClick={clear} className="text-sm text-gray-500 font-bold px-3 py-1 border rounded hover:bg-gray-100 flex items-center gap-1"><Icons.RotateCcw size={14}/> 重畫</button></div>
                     </div>
-                    <div className="mt-6 flex gap-4">
-                        <button onClick={onCancel} className="flex-1 py-4 border-2 border-kimetsu-black text-kimetsu-black rounded font-bold hover:bg-slate-100 transition shadow-sm active:scale-95 tracking-widest">取消</button>
-                        <button onClick={handleSave} className="flex-1 py-4 bg-kimetsu-green text-white rounded shadow-md flex justify-center items-center gap-3 font-bold border-b-4 border-green-800 hover:bg-green-600 transition active:scale-95 tracking-widest"><Icons.Save size={20}/> {initialData ? '修復卷軸' : '傳送卷軸'}</button>
+                    <div className="mt-4 flex gap-3">
+                        <button onClick={onCancel} className="flex-1 py-3 border-2 border-gray-400 text-gray-600 font-bold rounded-lg">取消</button>
+                        <button onClick={save} className="flex-1 py-3 bg-k-green text-white font-bold rounded-lg shadow-md border-b-4 border-green-900 active:translate-y-1 active:border-b-0 transition-all">傳送</button>
                     </div>
                 </div>
-            );
+            )
         };
 
         const root = createRoot(document.getElementById('root'));
