@@ -8,6 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts for a more brush-style look -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- HTML2Canvas & jsPDF for Backup -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -241,6 +244,7 @@
             Tv: (p) => <Icon {...p} path={<><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></>} />,
             Play: (p) => <Icon {...p} path={<polygon points="5 3 19 12 5 21 5 3" />} />,
             Square: (p) => <Icon {...p} path={<rect x="3" y="3" width="18" height="18" rx="2" ry="2" />} />,
+            FileDown: (p) => <Icon {...p} path={<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></>} />
         };
 
         // --- Nezuko Box Component (Updated: Controlled + Visual State) ---
@@ -751,6 +755,43 @@
                 setView('home');
                 setIsProcessing(false);
             };
+            
+            // Function to generate PDF backup
+            const handleGeneratePDF = async () => {
+                if (!confirm('是否要下載當前畫面備份？')) return;
+                setIsProcessing(true);
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+
+                    const element = document.body;
+                    const canvas = await window.html2canvas(element, {
+                        scrollY: -window.scrollY, 
+                        useCORS: true,
+                        scale: 2 
+                    });
+
+                    const imgData = canvas.toDataURL('image/png');
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({
+                        orientation: 'p',
+                        unit: 'pt',
+                        format: [canvas.width, canvas.height] 
+                    });
+
+                    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+                    
+                    pdf.setFontSize(48);
+                    pdf.setTextColor(255, 0, 0);
+                    pdf.text(`備份時間: ${new Date().toLocaleString()}`, 40, 80);
+
+                    pdf.save(`鬼殺隊名冊備份_${new Date().toISOString().split('T')[0]}.pdf`);
+                } catch (err) {
+                    console.error(err);
+                    alert("備份失敗: " + err.message);
+                } finally {
+                    setIsProcessing(false);
+                }
+            };
 
             const handleManualLogout = () => {
                 if (confirm('確定要隱退並清除登入狀態嗎？(雲端卷軸不會消失)')) {
@@ -1095,7 +1136,8 @@
                             <div className="flex gap-2">
                                 {!isSpectator && (
                                    <div className="flex gap-2">
-                                       <button onClick={toggleLiveStatus} className={`text-sm border ${isLiveStarted ? 'border-red-500 text-red-400 hover:bg-red-600' : 'border-green-500 text-green-400 hover:bg-green-600'} px-3 py-1 rounded hover:text-white transition font-bold flex items-center gap-1`}>
+                                        {/* Start button only appears here when entered */}
+                                        <button onClick={toggleLiveStatus} className={`text-sm border ${isLiveStarted ? 'border-red-500 text-red-400 hover:bg-red-600' : 'border-green-500 text-green-400 hover:bg-green-600'} px-3 py-1 rounded hover:text-white transition font-bold flex items-center gap-1`}>
                                             {isLiveStarted ? <><Icons.Square size={14}/> 關閉直播</> : <><Icons.Play size={14}/> 開啟直播</>}
                                         </button>
                                         <button onClick={handleLiveReset} className="text-sm border border-slate-400 text-slate-300 px-3 py-1 rounded hover:bg-slate-600 hover:text-white transition font-bold flex items-center gap-1">
@@ -1214,7 +1256,11 @@
                                     <h3 className="text-2xl font-bold tracking-widest text-kimetsu-green mb-1">柱合會議・現場模式</h3>
                                     <p className="text-sm text-slate-300">開啟大螢幕，進行現場隨機抽籤與禮物交付儀式。</p>
                                 </div>
-                                <button onClick={() => setView('admin_live')} className="px-6 py-3 bg-kimetsu-pink hover:bg-pink-600 text-white font-bold rounded shadow-lg border-2 border-white flex items-center gap-2 transition-transform hover:scale-105">
+                                {/* Start button removed from dashboard, moved inside Live View */}
+                                <button onClick={async () => {
+                                    setView('admin_live');
+                                    // Auto-start removed, wait for manual start inside
+                                }} className="px-6 py-3 bg-kimetsu-pink hover:bg-pink-600 text-white font-bold rounded shadow-lg border-2 border-white flex items-center gap-2 transition-transform hover:scale-105">
                                     <Icons.Mic size={20}/> 進入會場
                                 </button>
                             </div>
@@ -1230,6 +1276,10 @@
                                     </div>
                                     <div className="space-y-2">
                                         <p className="text-sm text-slate-600 font-bold">活動結束後，銷毀所有卷軸重新開始。</p>
+                                        {/* Updated LongPressButton usage */}
+                                        <button onClick={handleGeneratePDF} disabled={isProcessing} className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded font-bold shadow-md flex items-center justify-center gap-2 border-b-4 border-blue-800 tracking-widest mb-2">
+                                            <Icons.FileDown size={20}/> 一鍵備份 PDF
+                                        </button>
                                         <LongPressButton 
                                             label="銷毀所有資料" 
                                             icon={Icons.Trash2} 
@@ -1239,7 +1289,8 @@
                                     </div>
                                 </div>
                             </div>
-                            {/* ... (Rest of dashboard components: Match List, Gallery) ... */}
+
+                            {/* Match List */}
                             {Object.keys(matches).length > 0 && (
                                 <div className="bg-white p-6 rounded shadow-lg border-2 border-kimetsu-black">
                                     <h3 className="font-bold text-kimetsu-black mb-4 border-b-2 border-kimetsu-green pb-2 tracking-widest">任務名單 (僅主公可見)</h3>
@@ -1259,6 +1310,7 @@
                                 </div>
                             )}
 
+                            {/* Gallery */}
                             <div className="bg-white p-6 rounded shadow-lg border-2 border-kimetsu-black">
                                 <div className="flex justify-between items-end mb-4 border-b-2 border-kimetsu-green pb-2">
                                     <h3 className="font-bold text-kimetsu-black tracking-widest">隊員卷軸 ({users.length}人)</h3>
@@ -1377,12 +1429,14 @@
                                             <Icons.Users size={24}/> 查看隊員名冊
                                         </button>
                                         
+                                        {/* Task Assignment Button: Always Visible if Users exist */}
                                         {users.length > 0 && (
                                             <>
                                                 <button onClick={() => setView('reveal')} className={`w-full py-4 ${Object.keys(matches).length > 0 ? 'bg-kimetsu-pink hover:bg-pink-400 border-pink-600' : 'bg-kimetsu-black hover:bg-slate-800 border-slate-900'} text-white rounded shadow-lg flex items-center justify-center gap-3 text-lg font-bold mt-8 ${Object.keys(matches).length > 0 ? 'animate-pulse' : ''} border-b-4 active:scale-95 transition-transform tracking-widest`}>
                                                     {Object.keys(matches).length > 0 ? <><Icons.Eye size={24}/> 任務下達！確認目標</> : <><Icons.Lock size={24}/> 隊員集合！確認卷軸</>}
                                                 </button>
                                                 
+                                                {/* NEW SPECTATOR BUTTON */}
                                                 <button onClick={async () => {
                                                     setView('spectator_live');
                                                 }} className="w-full py-4 bg-blue-600 hover:bg-blue-500 border-blue-800 text-white rounded shadow-lg flex items-center justify-center gap-3 text-lg font-bold border-b-4 active:scale-95 transition-transform tracking-widest mt-2">
