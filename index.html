@@ -243,22 +243,25 @@
             Tv: (p) => <Icon {...p} path={<><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></>} />,
         };
 
-        // --- Nezuko Box Component ---
-        const NezukoBox = ({ children, isLocked }) => {
-            const [isOpen, setIsOpen] = useState(false);
-
-            const handleToggle = () => {
+        // --- Nezuko Box Component (Updated: Controlled) ---
+        const NezukoBox = ({ children, isLocked, isOpen, onClick }) => {
+            // Note: Removed internal state 'isOpen'. Now controlled by props or parent logic.
+            // If onClick is provided, it handles the toggle.
+            
+            const handleClick = () => {
                 if (isLocked) {
                     alert('尚未解開封印！');
                     return;
                 }
-                setIsOpen(!isOpen);
+                if (onClick) {
+                    onClick();
+                }
             };
 
             return (
                 <div 
                     className={`relative w-full h-full bg-wood-dark border-4 border-black rounded-lg shadow-2xl overflow-hidden cursor-pointer nezuko-box ${isOpen ? 'open' : ''}`}
-                    onClick={handleToggle}
+                    onClick={handleClick}
                 >
                     {/* Content (Drawing) Inside */}
                     <div className="absolute inset-0 flex items-center justify-center bg-white">
@@ -431,9 +434,11 @@
             const [showAdminPasswords, setShowAdminPasswords] = useState(false); 
             
             // Live Event Mode States
-            const [liveHistory, setLiveHistory] = useState([]);
+            // IMPORTANT: liveHistory now stores ONLY user IDs to save space and avoid 1MB limit errors
+            const [liveHistory, setLiveHistory] = useState([]); 
             const [liveIndex, setLiveIndex] = useState(-1);
             const [liveShowGiver, setLiveShowGiver] = useState(false);
+            const [liveBoxOpen, setLiveBoxOpen] = useState(false); // New: Sync box state
 
             const appRef = useRef(null);
             const authRef = useRef(null);
@@ -523,11 +528,13 @@
                         setLiveHistory(data.history || []);
                         setLiveIndex(data.currentIndex || -1);
                         setLiveShowGiver(data.showGiver || false);
+                        setLiveBoxOpen(data.boxOpen || false); // Sync Box Open State
                     } else {
                         // Reset if doc doesn't exist
                         setLiveHistory([]);
                         setLiveIndex(-1);
                         setLiveShowGiver(false);
+                        setLiveBoxOpen(false);
                     }
                 });
 
@@ -544,18 +551,20 @@
             }, [mode]);
 
             // Helper to update live state in Firestore (for Admin)
-            const updateLiveState = async (newHistory, newIndex, newShowGiver) => {
+            const updateLiveState = async (newHistory, newIndex, newShowGiver, newBoxOpen) => {
                  // Optimistic update locally
                  setLiveHistory(newHistory);
                  setLiveIndex(newIndex);
                  setLiveShowGiver(newShowGiver);
+                 setLiveBoxOpen(newBoxOpen);
 
                  if (mode === 'cloud' && dbRef.current) {
                      const liveStateRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'live_status', 'main');
                      await setDoc(liveStateRef, {
                          history: newHistory,
                          currentIndex: newIndex,
-                         showGiver: newShowGiver
+                         showGiver: newShowGiver,
+                         boxOpen: newBoxOpen
                      }, { merge: true });
                  }
             };
@@ -606,6 +615,7 @@
                 setLiveHistory([]);
                 setLiveIndex(-1);
                 setLiveShowGiver(false);
+                setLiveBoxOpen(false);
                 setView('home');
                 setIsProcessing(false);
             };
@@ -622,7 +632,7 @@
 
             const handleLiveReset = async () => {
                 if (confirm('確定要重新開始儀式嗎？\n這將清除已上台紀錄，讓流程回到第一位。')) {
-                    await updateLiveState([], -1, false);
+                    await updateLiveState([], -1, false, false);
                 }
             };
 
@@ -798,12 +808,13 @@
             const handleNextLive = async () => {
                 // 1. If browsing history, just go next
                 if (liveIndex < liveHistory.length - 1) {
-                    await updateLiveState(liveHistory, liveIndex + 1, false);
+                    await updateLiveState(liveHistory, liveIndex + 1, false, false);
                     return;
                 }
 
                 // 2. Logic to pick new user
-                const drawnIds = new Set(liveHistory.map(u => u.id));
+                // NOTE: liveHistory now contains IDs only!
+                const drawnIds = new Set(liveHistory);
                 const allReceivers = Object.values(matches);
                 // Users who haven't been on stage as receiver yet
                 const remaining = users.filter(u => !drawnIds.has(u.id));
@@ -817,10 +828,10 @@
 
                 // CHAIN LOGIC: Try to find the person who GAVE the gift to the current receiver
                 if (liveHistory.length > 0) {
-                    const currentReceiver = liveHistory[liveHistory.length - 1];
+                    const currentReceiverId = liveHistory[liveHistory.length - 1]; // This is ID now
                     // Find who gave to currentReceiver. matches structure is { giverId: receiverId }
-                    // We need to find Key where Value === currentReceiver.id
-                    const giverId = Object.keys(matches).find(key => matches[key] === currentReceiver.id);
+                    // We need to find Key where Value === currentReceiverId
+                    const giverId = Object.keys(matches).find(key => matches[key] === currentReceiverId);
                     
                     // If this giver hasn't been a receiver yet, they are next!
                     if (giverId && !drawnIds.has(giverId)) {
@@ -835,22 +846,29 @@
                 }
 
                 if (nextUser) {
-                    const newHistory = [...liveHistory, nextUser];
-                    await updateLiveState(newHistory, newHistory.length - 1, false);
+                    // Push ID only!
+                    const newHistory = [...liveHistory, nextUser.id];
+                    await updateLiveState(newHistory, newHistory.length - 1, false, false);
                 }
             };
 
             const handlePrevLive = async () => {
                 if (liveIndex > 0) {
-                     await updateLiveState(liveHistory, liveIndex - 1, false);
+                     await updateLiveState(liveHistory, liveIndex - 1, false, false);
                 }
             }
 
             const toggleLiveReveal = async () => {
-                 await updateLiveState(liveHistory, liveIndex, true);
+                 await updateLiveState(liveHistory, liveIndex, true, liveBoxOpen);
             }
 
-            const liveReceiver = liveIndex >= 0 && liveHistory.length > 0 ? liveHistory[liveIndex] : null;
+            const toggleBoxOpen = async () => {
+                await updateLiveState(liveHistory, liveIndex, liveShowGiver, !liveBoxOpen);
+            }
+
+            // Derive current live receiver object from ID
+            const liveReceiverId = liveIndex >= 0 && liveHistory.length > 0 ? liveHistory[liveIndex] : null;
+            const liveReceiver = liveReceiverId ? users.find(u => u.id === liveReceiverId) : null;
 
             const isMe = (uid) => myParticipantId === uid;
 
@@ -910,7 +928,7 @@
                          // Check if next is chained
                          const currentReceiverId = liveReceiver.id;
                          const nextGiverId = Object.keys(matches).find(key => matches[key] === currentReceiverId);
-                         const drawnIds = new Set(liveHistory.map(u => u.id));
+                         const drawnIds = new Set(liveHistory);
                          
                          if (nextGiverId && !drawnIds.has(nextGiverId)) {
                              nextButtonLabel = "召喚這位送禮者 (連鎖)";
@@ -922,6 +940,7 @@
                     }
                 }
                 
+                // Use a local internal NezukoBox state for "My Card" view, but here we use the controlled prop
                 return (
                     <div className="min-h-screen flex flex-col bg-kimetsu-black text-white relative overflow-hidden">
                         {/* Decorative Patterns */}
@@ -969,7 +988,12 @@
                                     <div className="flex flex-col md:flex-row gap-8 items-center justify-center w-full">
                                         {/* Drawing Display via Nezuko Box */}
                                         <div className={`w-full max-w-md aspect-square flex items-center justify-center relative transform rotate-1`}>
-                                            <NezukoBox isLocked={false}>
+                                            {/* NezukoBox is now controlled via props */}
+                                            <NezukoBox 
+                                                isLocked={false} 
+                                                isOpen={liveBoxOpen} 
+                                                onClick={isSpectator ? null : toggleBoxOpen}
+                                            >
                                                 <img src={liveReceiver.drawing} className="w-full h-full object-contain" />
                                             </NezukoBox>
                                         </div>
@@ -1156,9 +1180,10 @@
                                 type="password" 
                                 value={userPasswordInput}
                                 onChange={e => setUserPasswordInput(e.target.value)}
-                                className="w-full p-3 border-2 border-kimetsu-black rounded mb-4 outline-none focus:ring-2 ring-kimetsu-green bg-kimetsu-bg text-center font-bold tracking-widest"
+                                className="w-full p-3 border-2 border-kimetsu-black rounded mb-2 outline-none focus:ring-2 ring-kimetsu-green bg-kimetsu-bg text-center font-bold tracking-widest"
                                 placeholder="輸入密碼"
                             />
+                            <p className="text-center text-[10px] text-slate-400 mb-4 font-bold">若密碼真的忘記了，請洽小恩</p>
                             <div className="flex gap-2">
                                 <button onClick={() => setView('reveal')} className="flex-1 py-2 bg-slate-200 text-slate-600 rounded font-bold hover:bg-slate-300 transition">取消</button>
                                 <button onClick={handleUserLogin} className="flex-1 py-2 bg-kimetsu-black text-white rounded font-bold hover:bg-slate-800 transition border-b-4 border-slate-900">解開卷軸</button>
@@ -1274,12 +1299,11 @@
                                                         <span className={`font-bold text-xl ${style.text}`}>{me.name}</span>
                                                     </div>
                                                     
-                                                    {/* Nezuko Box for My Card */}
-                                                    <div className="w-full max-w-md aspect-square flex items-center justify-center relative">
-                                                        <NezukoBox isLocked={isLocked}>
-                                                            <img src={me.drawing} className="w-full h-full object-contain" />
-                                                        </NezukoBox>
-                                                    </div>
+                                                    {/* Nezuko Box for My Card - This one uses local controlled state via wrapper or just simple toggle */}
+                                                    {/* We use a simple wrapper here for local toggling since it's "My Card" view */}
+                                                    <LocalNezukoBox isLocked={isLocked}>
+                                                        <img src={me.drawing} className="w-full h-full object-contain" />
+                                                    </LocalNezukoBox>
                                                 </div>
 
                                                 {isLocked ? (
@@ -1374,9 +1398,9 @@
                                         
                                         <div className="bg-white border-4 border-double border-slate-300 rounded p-2 shadow-inner inline-block relative z-10 w-full max-w-sm aspect-square">
                                             {/* User Result Nezuko Box */}
-                                            <NezukoBox isLocked={false}>
+                                            <LocalNezukoBox isLocked={false}>
                                                 {revealData.receiver ? <img src={revealData.receiver.drawing} className="w-full h-full object-contain" /> : "Error"}
-                                            </NezukoBox>
+                                            </LocalNezukoBox>
                                         </div>
                                     </div>
                                     <button onClick={() => setView('reveal')} className="w-full py-4 bg-kimetsu-pink text-white font-bold rounded shadow-lg border-b-4 border-pink-700 hover:bg-pink-400 transition active:scale-95 tracking-widest">遵命！(登出)</button>
@@ -1385,6 +1409,20 @@
                         </main>
                     </div>
                 </div>
+            );
+        };
+
+        // --- Helper wrapper for Local Nezuko Box usage (My Card / Check Result) ---
+        const LocalNezukoBox = ({ children, isLocked }) => {
+            const [isOpen, setIsOpen] = useState(false);
+            return (
+                <NezukoBox 
+                    isLocked={isLocked} 
+                    isOpen={isOpen} 
+                    onClick={() => setIsOpen(!isOpen)}
+                >
+                    {children}
+                </NezukoBox>
             );
         };
 
