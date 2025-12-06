@@ -676,7 +676,7 @@
                         setLiveHistory(data.history || []);
                         setLiveIndex(data.currentIndex !== undefined ? data.currentIndex : -1);
                         setLiveShowGiver(data.showGiver || false);
-                        setIsLiveStarted(data.isStarted || false); // Sync isStarted
+                        setIsLiveStarted(data.isStarted || false); 
                     } else {
                         setLiveHistory([]);
                         setLiveIndex(-1);
@@ -756,34 +756,35 @@
                 setIsProcessing(false);
             };
             
-            // Function to generate PDF backup
             const handleGeneratePDF = async () => {
                 if (!confirm('是否要下載當前畫面備份？')) return;
                 setIsProcessing(true);
                 try {
                     await new Promise(resolve => setTimeout(resolve, 100));
-
                     const element = document.body;
                     const canvas = await window.html2canvas(element, {
                         scrollY: -window.scrollY, 
                         useCORS: true,
                         scale: 2 
                     });
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.save();
+                    ctx.globalAlpha = 0.8;
+                    ctx.font = "bold 30px 'Noto Serif TC', serif"; 
+                    ctx.fillStyle = "red";
+                    ctx.textAlign = "right";
+                    ctx.fillText(`備份時間: ${new Date().toLocaleString()}`, canvas.width - 40, 60); 
+                    ctx.restore();
 
                     const imgData = canvas.toDataURL('image/png');
                     const { jsPDF } = window.jspdf;
                     const pdf = new jsPDF({
-                        orientation: 'p',
-                        unit: 'pt',
+                        orientation: canvas.width > canvas.height ? 'l' : 'p',
+                        unit: 'px',
                         format: [canvas.width, canvas.height] 
                     });
-
                     pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-                    
-                    pdf.setFontSize(48);
-                    pdf.setTextColor(255, 0, 0);
-                    pdf.text(`備份時間: ${new Date().toLocaleString()}`, 40, 80);
-
                     pdf.save(`鬼殺隊名冊備份_${new Date().toISOString().split('T')[0]}.pdf`);
                 } catch (err) {
                     console.error(err);
@@ -810,9 +811,7 @@
             };
             
             const toggleLiveStatus = async () => {
-                 // Toggle start status
                  if (!isLiveStarted) {
-                     // Start Live: If no one drawn yet, draw first one
                      if (liveHistory.length === 0) {
                         const remaining = users;
                         if (remaining.length === 0) {
@@ -823,11 +822,9 @@
                         const nextUser = remaining[randomIndex];
                         await updateLiveState([nextUser.id], 0, false, true);
                      } else {
-                        // Resume
                         await updateLiveState(liveHistory, liveIndex, liveShowGiver, true);
                      }
                  } else {
-                     // Stop Live
                      await updateLiveState(liveHistory, liveIndex, liveShowGiver, false);
                  }
             }
@@ -1310,7 +1307,6 @@
                                 </div>
                             )}
 
-                            {/* Gallery */}
                             <div className="bg-white p-6 rounded shadow-lg border-2 border-kimetsu-black">
                                 <div className="flex justify-between items-end mb-4 border-b-2 border-kimetsu-green pb-2">
                                     <h3 className="font-bold text-kimetsu-black tracking-widest">隊員卷軸 ({users.length}人)</h3>
@@ -1339,9 +1335,9 @@
                                                     <div className="aspect-square bg-white border border-slate-300 overflow-hidden mb-2 mt-6">
                                                         <img src={u.drawing} className="w-full h-full object-contain" />
                                                     </div>
-                                                    <div className="flex flex-col">
+                                                    <div className="flex flex-col pb-1">
                                                         <div className="flex justify-between items-center mb-1">
-                                                            <span className={`font-bold text-sm truncate ${style.text}`}>{u.name}</span>
+                                                            <span className={`font-bold text-sm truncate ${style.text} leading-relaxed py-0.5`}>{u.name}</span>
                                                             {matches[u.id] && <span className="text-[10px] bg-kimetsu-green text-white px-2 py-0.5 rounded font-bold">已指派</span>}
                                                         </div>
                                                         {showAdminPasswords && (
