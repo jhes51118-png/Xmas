@@ -240,6 +240,7 @@
             ArrowRight: (p) => <Icon {...p} path={<><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></>} />,
             ArrowLeft: (p) => <Icon {...p} path={<><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></>} />,
             RotateCw: (p) => <Icon {...p} path={<><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></>} />,
+            Tv: (p) => <Icon {...p} path={<><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></>} />,
         };
 
         // --- Nezuko Box Component ---
@@ -437,7 +438,8 @@
             const appRef = useRef(null);
             const authRef = useRef(null);
             const dbRef = useRef(null);
-            const appId = 'default-app-id';
+            // Use global app ID if available, otherwise default
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
             // 1. Initial Config Check
             useEffect(() => {
@@ -511,7 +513,25 @@
                     setMatches(matchesMap);
                 }, err => console.error(err));
 
-                return () => { unsubUsers(); unsubMatches(); };
+                // Add listener for Live State (for spectators and admin sync)
+                // Path MUST have even number of segments: collection/doc/collection/doc...
+                // Previous error was caused by stopping at 'live_status' (collection)
+                const liveStateRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'live_status', 'main');
+                const unsubLive = onSnapshot(liveStateRef, (doc) => {
+                    if (doc.exists()) {
+                        const data = doc.data();
+                        setLiveHistory(data.history || []);
+                        setLiveIndex(data.currentIndex || -1);
+                        setLiveShowGiver(data.showGiver || false);
+                    } else {
+                        // Reset if doc doesn't exist
+                        setLiveHistory([]);
+                        setLiveIndex(-1);
+                        setLiveShowGiver(false);
+                    }
+                });
+
+                return () => { unsubUsers(); unsubMatches(); unsubLive(); };
             }, [mode]);
 
             // 3. Local Data Sync
@@ -522,6 +542,23 @@
                 if (savedUsers) setUsers(JSON.parse(savedUsers));
                 if (savedMatches) setMatches(JSON.parse(savedMatches));
             }, [mode]);
+
+            // Helper to update live state in Firestore (for Admin)
+            const updateLiveState = async (newHistory, newIndex, newShowGiver) => {
+                 // Optimistic update locally
+                 setLiveHistory(newHistory);
+                 setLiveIndex(newIndex);
+                 setLiveShowGiver(newShowGiver);
+
+                 if (mode === 'cloud' && dbRef.current) {
+                     const liveStateRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'live_status', 'main');
+                     await setDoc(liveStateRef, {
+                         history: newHistory,
+                         currentIndex: newIndex,
+                         showGiver: newShowGiver
+                     }, { merge: true });
+                 }
+            };
 
             // Handlers
             const handleOfflineMode = () => {
@@ -548,6 +585,10 @@
                         const batch2 = writeBatch(dbRef.current);
                         matchesSnap.docs.forEach((d) => batch2.delete(d.ref));
                         await batch2.commit();
+                        
+                        // Also clear live state
+                        await deleteDoc(doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'live_status', 'main'));
+
                     } catch (e) { alert('重置失敗'); }
                 } else {
                     localStorage.removeItem('xmas_users');
@@ -579,11 +620,9 @@
                 }
             };
 
-            const handleLiveReset = () => {
+            const handleLiveReset = async () => {
                 if (confirm('確定要重新開始儀式嗎？\n這將清除已上台紀錄，讓流程回到第一位。')) {
-                    setLiveHistory([]);
-                    setLiveIndex(-1);
-                    setLiveShowGiver(false);
+                    await updateLiveState([], -1, false);
                 }
             };
 
@@ -756,11 +795,10 @@
             }
 
             // Live Event Functions
-            const handleNextLive = () => {
+            const handleNextLive = async () => {
                 // 1. If browsing history, just go next
                 if (liveIndex < liveHistory.length - 1) {
-                    setLiveIndex(prev => prev + 1);
-                    setLiveShowGiver(false);
+                    await updateLiveState(liveHistory, liveIndex + 1, false);
                     return;
                 }
 
@@ -798,17 +836,18 @@
 
                 if (nextUser) {
                     const newHistory = [...liveHistory, nextUser];
-                    setLiveHistory(newHistory);
-                    setLiveIndex(newHistory.length - 1);
-                    setLiveShowGiver(false);
+                    await updateLiveState(newHistory, newHistory.length - 1, false);
                 }
             };
 
-            const handlePrevLive = () => {
+            const handlePrevLive = async () => {
                 if (liveIndex > 0) {
-                    setLiveIndex(prev => prev - 1);
-                    setLiveShowGiver(false);
+                     await updateLiveState(liveHistory, liveIndex - 1, false);
                 }
+            }
+
+            const toggleLiveReveal = async () => {
+                 await updateLiveState(liveHistory, liveIndex, true);
             }
 
             const liveReceiver = liveIndex >= 0 && liveHistory.length > 0 ? liveHistory[liveIndex] : null;
@@ -854,7 +893,9 @@
                 );
             }
 
-            if (view === 'admin_live') {
+            // Shared View for Admin and Spectator
+            if (view === 'admin_live' || view === 'spectator_live') {
+                const isSpectator = view === 'spectator_live';
                 const giver = liveReceiver ? users.find(u => matches[u.id] === liveReceiver.id) : null;
                 const isHistoryMode = liveIndex < liveHistory.length - 1;
                 const style = getStyle(liveReceiver?.style || 'default');
@@ -888,12 +929,16 @@
                         <div className="absolute bottom-0 left-0 w-full h-4 bg-kimetsu-green"></div>
                         
                         <header className="p-4 flex justify-between items-center z-10">
-                            <h1 className="text-2xl font-bold tracking-widest text-kimetsu-green border-b-2 border-white pb-1">柱合會議・禮物交付儀式</h1>
+                            <h1 className="text-2xl font-bold tracking-widest text-kimetsu-green border-b-2 border-white pb-1">
+                                {isSpectator ? "柱合會議・現場轉播" : "柱合會議・禮物交付儀式"}
+                            </h1>
                             <div className="flex gap-2">
-                                <button onClick={handleLiveReset} className="text-sm border border-red-500 text-red-400 px-3 py-1 rounded hover:bg-red-600 hover:text-white transition font-bold flex items-center gap-1">
-                                    <Icons.RotateCw size={14}/> 重新開始
-                                </button>
-                                <button onClick={() => setView('admin_dashboard')} className="text-sm border border-white px-3 py-1 rounded hover:bg-white hover:text-kimetsu-black transition">退出儀式</button>
+                                {!isSpectator && (
+                                    <button onClick={handleLiveReset} className="text-sm border border-red-500 text-red-400 px-3 py-1 rounded hover:bg-red-600 hover:text-white transition font-bold flex items-center gap-1">
+                                        <Icons.RotateCw size={14}/> 重新開始
+                                    </button>
+                                )}
+                                <button onClick={() => setView(isSpectator ? 'home' : 'admin_dashboard')} className="text-sm border border-white px-3 py-1 rounded hover:bg-white hover:text-kimetsu-black transition">退出儀式</button>
                             </div>
                         </header>
 
@@ -901,11 +946,15 @@
                             {!liveReceiver ? (
                                 <div className="text-center space-y-8 animate-fade-in">
                                     <div className="text-6xl text-kimetsu-pink animate-pulse">🌸</div>
-                                    <h2 className="text-4xl font-bold tracking-widest">準備開始抽籤</h2>
+                                    <h2 className="text-4xl font-bold tracking-widest">
+                                        {isSpectator ? "等待主公抽籤中..." : "準備開始抽籤"}
+                                    </h2>
                                     <p className="text-slate-400">目前還有 {Object.keys(matches).length - liveHistory.length} 位隊員等待上台</p>
-                                    <button onClick={handleNextLive} className="px-8 py-4 bg-kimetsu-green text-white text-2xl font-bold rounded-lg shadow-[0_0_15px_rgba(46,204,113,0.6)] hover:scale-105 transition-transform border-2 border-white tracking-widest">
-                                        {nextButtonLabel}
-                                    </button>
+                                    {!isSpectator && (
+                                        <button onClick={handleNextLive} className="px-8 py-4 bg-kimetsu-green text-white text-2xl font-bold rounded-lg shadow-[0_0_15px_rgba(46,204,113,0.6)] hover:scale-105 transition-transform border-2 border-white tracking-widest">
+                                            {nextButtonLabel}
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="w-full max-w-4xl flex flex-col items-center gap-6 animate-slide-up">
@@ -930,9 +979,15 @@
                                             <div className="text-6xl text-white">⬅️</div>
                                             
                                             {!liveShowGiver ? (
-                                                <button onClick={() => setLiveShowGiver(true)} className="w-full py-4 bg-kimetsu-pink hover:bg-pink-600 text-white rounded-lg font-bold text-xl shadow-lg transition-transform hover:scale-105 border-b-4 border-pink-800 tracking-widest">
-                                                    揭曉送禮者
-                                                </button>
+                                                isSpectator ? (
+                                                    <div className="w-full py-4 border-2 border-dashed border-slate-600 text-slate-400 rounded-lg font-bold text-xl text-center">
+                                                        等待揭曉...
+                                                    </div>
+                                                ) : (
+                                                    <button onClick={toggleLiveReveal} className="w-full py-4 bg-kimetsu-pink hover:bg-pink-600 text-white rounded-lg font-bold text-xl shadow-lg transition-transform hover:scale-105 border-b-4 border-pink-800 tracking-widest">
+                                                        揭曉送禮者
+                                                    </button>
+                                                )
                                             ) : (
                                                 <div className="w-full text-center animate-fade-in">
                                                     <p className="text-sm text-slate-400 mb-1">送禮之呼吸・壹之型</p>
@@ -942,21 +997,23 @@
                                                 </div>
                                             )}
 
-                                            <div className="flex gap-2 w-full mt-8">
-                                                <button 
-                                                    onClick={handlePrevLive} 
-                                                    disabled={liveIndex <= 0}
-                                                    className={`flex-1 px-4 py-3 border-2 border-white text-white rounded font-bold flex items-center justify-center gap-2 transition ${liveIndex <= 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white hover:text-kimetsu-black'}`}
-                                                >
-                                                    <Icons.ArrowLeft size={20}/> 上一位
-                                                </button>
-                                                <button 
-                                                    onClick={handleNextLive} 
-                                                    className="flex-1 px-4 py-3 border-2 border-white text-white rounded hover:bg-white hover:text-kimetsu-black transition font-bold flex items-center justify-center gap-2"
-                                                >
-                                                    {nextButtonLabel} <Icons.ArrowRight size={20}/>
-                                                </button>
-                                            </div>
+                                            {!isSpectator && (
+                                                <div className="flex gap-2 w-full mt-8">
+                                                    <button 
+                                                        onClick={handlePrevLive} 
+                                                        disabled={liveIndex <= 0}
+                                                        className={`flex-1 px-4 py-3 border-2 border-white text-white rounded font-bold flex items-center justify-center gap-2 transition ${liveIndex <= 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white hover:text-kimetsu-black'}`}
+                                                    >
+                                                        <Icons.ArrowLeft size={20}/> 上一位
+                                                    </button>
+                                                    <button 
+                                                        onClick={handleNextLive} 
+                                                        className="flex-1 px-4 py-3 border-2 border-white text-white rounded hover:bg-white hover:text-kimetsu-black transition font-bold flex items-center justify-center gap-2"
+                                                    >
+                                                        {nextButtonLabel} <Icons.ArrowRight size={20}/>
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -1156,9 +1213,16 @@
                                         
                                         {/* Task Assignment Button: Always Visible if Users exist */}
                                         {users.length > 0 && (
-                                            <button onClick={() => setView('reveal')} className={`w-full py-4 ${Object.keys(matches).length > 0 ? 'bg-kimetsu-pink hover:bg-pink-400 border-pink-600' : 'bg-kimetsu-black hover:bg-slate-800 border-slate-900'} text-white rounded shadow-lg flex items-center justify-center gap-3 text-lg font-bold mt-8 ${Object.keys(matches).length > 0 ? 'animate-pulse' : ''} border-b-4 active:scale-95 transition-transform tracking-widest`}>
-                                                {Object.keys(matches).length > 0 ? <><Icons.Eye size={24}/> 任務下達！確認目標</> : <><Icons.Lock size={24}/> 隊員集合！確認卷軸</>}
-                                            </button>
+                                            <>
+                                                <button onClick={() => setView('reveal')} className={`w-full py-4 ${Object.keys(matches).length > 0 ? 'bg-kimetsu-pink hover:bg-pink-400 border-pink-600' : 'bg-kimetsu-black hover:bg-slate-800 border-slate-900'} text-white rounded shadow-lg flex items-center justify-center gap-3 text-lg font-bold mt-8 ${Object.keys(matches).length > 0 ? 'animate-pulse' : ''} border-b-4 active:scale-95 transition-transform tracking-widest`}>
+                                                    {Object.keys(matches).length > 0 ? <><Icons.Eye size={24}/> 任務下達！確認目標</> : <><Icons.Lock size={24}/> 隊員集合！確認卷軸</>}
+                                                </button>
+                                                
+                                                {/* NEW SPECTATOR BUTTON */}
+                                                <button onClick={() => setView('spectator_live')} className="w-full py-4 bg-blue-600 hover:bg-blue-500 border-blue-800 text-white rounded shadow-lg flex items-center justify-center gap-3 text-lg font-bold border-b-4 active:scale-95 transition-transform tracking-widest mt-2">
+                                                    <Icons.Tv size={24}/> 進入會場 (觀看模式)
+                                                </button>
+                                            </>
                                         )}
                                     </div>
                                     
