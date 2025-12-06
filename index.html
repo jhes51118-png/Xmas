@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>鬼滅之刃一筆畫交換禮物 (經典完全版)</title>
+    <title>鬼滅之刃交換道場</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -13,13 +13,12 @@
             theme: {
                 extend: {
                     colors: {
-                        'k-green': '#2ecc71', /* Tanjiro Green (Bright) */
-                        'k-dark-green': '#006400', /* Darker Green */
-                        'k-black': '#2d3436', /* Ink Black */
-                        'k-pink': '#fd79a8', /* Nezuko Pink */
-                        'k-yellow': '#f1c40f', /* Zenitsu Yellow */
-                        'k-blue': '#0984e3', /* Giyu Blue */
-                        'k-gray': '#636e72', /* Stone Gray */
+                        'k-green': '#2ecc71', /* 炭治郎綠 (亮) */
+                        'k-dark-green': '#006400', /* 炭治郎綠 (暗) */
+                        'k-black': '#2d3436', /* 隊服黑 */
+                        'k-pink': '#fd79a8', /* 禰豆子粉 */
+                        'k-yellow': '#f1c40f', /* 善逸黃 */
+                        'k-gray': '#636e72',
                         'wood-dark': '#5D4037',
                         'wood-light': '#8D6E63',
                     },
@@ -27,9 +26,10 @@
                         'serif': ['"Noto Serif TC"', 'serif'],
                     },
                     backgroundImage: {
-                        // 經典市松紋 (SVG Data URI)
+                        // 經典市松紋
                         'checkered': "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill-rule='evenodd'%3E%3Cpath d='M0 0h20v20H0V0zm20 20h20v20H20V20z' fill='%232ecc71' opacity='0.4'/%3E%3Cpath d='M20 0h20v20H20V0zM0 20h20v20H0V20z' fill='%232d3436' opacity='0.8'/%3E%3C/g%3E%3C/svg%3E\")",
-                        'rice-paper': "url('https://www.transparenttextures.com/patterns/rice-paper-2.png')",
+                        // 紙張質感
+                        'paper': "url('https://www.transparenttextures.com/patterns/rice-paper-2.png')",
                     },
                     animation: {
                         'fade-in': 'fadeIn 0.5s ease-out',
@@ -43,10 +43,8 @@
             }
         }
     </script>
-    <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- Import Maps: Fixes Script Error / Module issues -->
+    <!-- Import Maps: 解決 React 載入錯誤 -->
     <script type="importmap">
     {
         "imports": {
@@ -55,11 +53,17 @@
         }
     }
     </script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        body { font-family: 'Noto Serif TC', serif; background-color: #2d3436; color: #2d3436; }
+        body { 
+            font-family: 'Noto Serif TC', serif; 
+            background-color: #2d3436; 
+            color: #2d3436;
+        }
         
-        /* Loading Spinner - Nichirin Tsuba */
+        /* Loading Spinner */
         #initial-loader { position: fixed; inset: 0; background: #2d3436; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s; }
         .spinner { 
             width: 60px; height: 60px; 
@@ -74,12 +78,11 @@
         
         .noselect { user-select: none; -webkit-user-select: none; }
 
-        /* Nezuko Box Styles */
+        /* Nezuko Box Styles (僅用於現場儀式) */
         .nezuko-box { perspective: 1000px; cursor: pointer; }
-        .nezuko-door { transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: left; }
+        .nezuko-door { transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: left; }
         .nezuko-box.open .nezuko-door { transform: rotateY(-110deg); }
         .wood-pattern { background-image: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px); }
-        .metal-strap { background: linear-gradient(90deg, #333, #555, #333); box-shadow: 0 1px 2px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body class="bg-checkered min-h-screen overflow-x-hidden">
@@ -100,7 +103,7 @@
                 loader.classList.remove('hidden-loader');
                 document.querySelector('.spinner').style.display = 'none';
                 errText.classList.remove('hidden');
-                errText.innerHTML = `<strong>系統發生錯誤：</strong><br>${msg}<br><span style="opacity:0.7; font-size:10px;">請嘗試重新整理頁面。<br>若為 Script error，通常是網路載入問題。</span>`;
+                errText.innerHTML = `<strong>系統發生錯誤：</strong><br>${msg}<br><span style="font-size:10px; color:#ccc">建議重新整理頁面。</span>`;
             }
             return false;
         };
@@ -120,30 +123,32 @@
 
         // --- Constants ---
         const RANKS = ['癸', '壬', '辛', '庚', '己', '戊', '丁', '丙', '乙', '甲'];
-        const HASHIRA = ['水柱', '蟲柱', '炎柱', '音柱', '岩柱', '戀柱', '霞柱', '蛇柱', '風柱'];
+        const HASHIRA_TITLES = ['水柱', '蟲柱', '炎柱', '音柱', '岩柱', '戀柱', '霞柱', '蛇柱', '風柱'];
 
         const getRandomRank = () => {
-            if (Math.random() < 0.1) return HASHIRA[Math.floor(Math.random() * HASHIRA.length)];
+            if (Math.random() < 0.1) return HASHIRA_TITLES[Math.floor(Math.random() * HASHIRA_TITLES.length)];
             return RANKS[Math.floor(Math.random() * 5)];
         };
 
-        const STYLES = {
-            water: { name: '水之呼吸', bg: 'bg-blue-50', border: 'border-k-blue', text: 'text-k-blue', icon: '🌊' },
-            fire: { name: '炎之呼吸', bg: 'bg-red-50', border: 'border-red-600', text: 'text-red-700', icon: '🔥' },
-            thunder: { name: '雷之呼吸', bg: 'bg-yellow-50', border: 'border-k-yellow', text: 'text-yellow-700', icon: '⚡' },
-            beast: { name: '獸之呼吸', bg: 'bg-gray-100', border: 'border-k-gray', text: 'text-k-gray', icon: '🐗' },
-            insect: { name: '蟲之呼吸', bg: 'bg-purple-50', border: 'border-purple-600', text: 'text-purple-800', icon: '🦋' },
-            default: { name: '普通隊員', bg: 'bg-white', border: 'border-k-black', text: 'text-k-black', icon: '⚔️' }
+        // 呼吸法樣式 (經典版: 邊框顏色區分)
+        const BREATH_STYLES = {
+            water: { name: '水之呼吸', border: 'border-blue-600', bg: 'bg-blue-50', text: 'text-blue-800', icon: '🌊' },
+            fire: { name: '炎之呼吸', border: 'border-red-600', bg: 'bg-red-50', text: 'text-red-800', icon: '🔥' },
+            thunder: { name: '雷之呼吸', border: 'border-yellow-500', bg: 'bg-yellow-50', text: 'text-yellow-800', icon: '⚡' },
+            beast: { name: '獸之呼吸', border: 'border-stone-600', bg: 'bg-stone-50', text: 'text-stone-800', icon: '🐗' },
+            insect: { name: '蟲之呼吸', border: 'border-purple-600', bg: 'bg-purple-50', text: 'text-purple-800', icon: '🦋' },
+            default: { name: '普通隊員', border: 'border-k-black', bg: 'bg-white', text: 'text-k-black', icon: '⚔️' }
         };
 
-        const getStyle = (key) => STYLES[key] || STYLES.default;
+        const getStyle = (key) => BREATH_STYLES[key] || BREATH_STYLES.default;
 
-        // --- Icons ---
+        // --- Icons (Unified) ---
         const Icon = ({ d, size = 24, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
                 <path d={d} />
             </svg>
         );
+
         const Icons = {
             PenTool: (p) => <Icon {...p} d="M12 19l7-7 3 3-7 7-3-3z M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z M2 2l7.586 7.586" />,
             Users: (p) => <Icon {...p} d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75" />,
@@ -156,15 +161,13 @@
             Trash2: (p) => <Icon {...p} d="M3 6h18 M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />,
             Image: (p) => <Icon {...p} d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z M11 14l3 3 5-5" />,
             Edit: (p) => <Icon {...p} d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7 M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />,
-            EyeOff: (p) => <Icon {...p} d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22" />,
             Settings: (p) => <Icon {...p} d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />,
-            Sword: (p) => <Icon {...p} d="M14.5 17.5L3 6V3h3l11.5 11.5 M13 19l6-6 M16 16l4 4 M19 21l2-2" />,
-            Mic: (p) => <Icon {...p} d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z M19 10v2a7 7 0 0 1-14 0v-2 M12 19v4 M8 23h8" />,
             ArrowRight: (p) => <Icon {...p} d="M5 12h14 M12 5l7 7-7 7" />,
             ArrowLeft: (p) => <Icon {...p} d="M19 12H5 M12 19l-7-7 7-7" />,
-            RotateCw: (p) => <Icon {...p} d="M23 4v6h-6 M1 20v-6h6 M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />,
-            Shuffle: (p) => <Icon {...p} d="M16 3h5v5 M4 20L21 3 M21 16v5h-5 M15 15l6 6 M4 4l5 5" />,
             WifiOff: (p) => <Icon {...p} d="M1 1l22 22 M16.72 11.06A10.94 10.94 0 0 1 19 12.55 M5 12.55a10.94 10.94 0 0 1 5.17-2.39 M10.71 5.05A16 16 0 0 1 22.58 9 M1.42 9a15.91 15.91 0 0 1 4.7-2.88 M8.53 16.11a6 6 0 0 1 6.95 0 M12 20h.01" />,
+            Sword: (p) => <Icon {...p} d="M14.5 17.5L3 6V3h3l11.5 11.5 M13 19l6-6 M16 16l4 4 M19 21l2-2" />,
+            Shuffle: (p) => <Icon {...p} d="M16 3h5v5 M4 20L21 3 M21 16v5h-5 M15 15l6 6 M4 4l5 5" />,
+            EyeOff: (p) => <Icon {...p} d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22" />,
         };
 
         // --- Components ---
@@ -197,6 +200,7 @@
             const [pressing, setPressing] = useState(false);
             const [progress, setProgress] = useState(0);
             const timer = useRef(null);
+
             useEffect(() => {
                 if (pressing && !disabled) {
                     timer.current = setInterval(() => setProgress(p => p >= 100 ? 100 : p + 4), 30);
@@ -204,11 +208,13 @@
                     setProgress(0);
                     clearInterval(timer.current);
                 }
-                return () => { if (timer.current) clearInterval(timer.current); }
+                return () => clearInterval(timer.current);
             }, [pressing, disabled]);
+
             useEffect(() => { if (progress === 100) { setPressing(false); onComplete(); } }, [progress, onComplete]);
+
             return (
-                <button disabled={disabled} className={`w-full py-3 border-2 border-red-600 text-red-600 rounded font-bold flex items-center justify-center gap-2 shadow-sm tracking-widest relative overflow-hidden noselect transition ${disabled ? 'opacity-50 cursor-not-allowed' : 'bg-white hover:bg-red-50 cursor-pointer'}`}
+                <button disabled={disabled} className={`w-full py-3 border-2 border-red-600 text-red-600 bg-white rounded font-bold flex items-center justify-center gap-2 shadow-sm tracking-widest relative overflow-hidden noselect transition ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-50 cursor-pointer'}`}
                     onMouseDown={() => setPressing(true)} onMouseUp={() => setPressing(false)} onMouseLeave={() => setPressing(false)} onTouchStart={() => setPressing(true)} onTouchEnd={() => setPressing(false)}>
                     <div className="absolute inset-0 bg-red-200 transition-all duration-75 ease-linear" style={{ width: `${progress}%` }}></div>
                     <div className="relative flex items-center gap-2 z-10">{Icon && <Icon size={20}/>} {pressing ? (progress === 100 ? '已確認' : '請長按以銷毀...') : label}</div>
@@ -230,15 +236,14 @@
             };
             return (
                 <div className="flex flex-col items-center justify-center min-h-screen p-4 relative z-10">
-                    <div className="bg-white p-8 rounded-lg shadow-2xl max-w-lg w-full border-4 border-k-black relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-k-green"></div>
+                    <div className="bg-white p-8 w-full max-w-lg border-4 border-k-black relative shadow-2xl transform rotate-1">
                         <div className="flex justify-center mb-4 text-k-black"><Icons.Settings size={48} /></div>
                         <h2 className="text-2xl font-bold text-center mb-6 text-k-black tracking-widest">鬼殺隊・總部連線</h2>
-                        <textarea className="w-full h-32 p-3 border-2 border-k-black rounded text-xs font-mono bg-k-bg focus:ring-2 ring-k-green outline-none" value={val} onChange={e=>setVal(e.target.value)} placeholder="貼上 Firebase Config..."></textarea>
+                        <textarea className="w-full h-32 p-3 border-2 border-k-black rounded text-xs font-mono bg-gray-50 focus:ring-2 ring-k-green outline-none text-black mb-4" value={val} onChange={e=>setVal(e.target.value)} placeholder="貼上 Firebase Config..."></textarea>
                         {err && <p className="text-red-600 text-xs mb-2">{err}</p>}
                         <div className="space-y-3">
-                            <button onClick={save} className="w-full py-3 bg-k-black text-white font-bold rounded transition border-b-4 border-black hover:bg-gray-800">連線</button>
-                            <button onClick={onOfflineMode} className="w-full py-3 bg-k-green text-white font-bold rounded transition border-b-4 border-k-dark-green hover:bg-green-600">離線模式</button>
+                            <button onClick={save} className="w-full py-3 bg-k-black text-white font-bold rounded transition hover:bg-gray-800">連線</button>
+                            <button onClick={onOfflineMode} className="w-full py-3 bg-k-green text-white font-bold rounded transition hover:bg-green-600">離線模式</button>
                         </div>
                     </div>
                 </div>
@@ -266,7 +271,7 @@
 
             const appRef = useRef(null);
             const dbRef = useRef(null);
-            const appId = 'kimetsu-classic-v6';
+            const appId = 'kimetsu-classic-final-v2'; 
 
             useEffect(() => {
                 const init = async () => {
@@ -427,26 +432,32 @@
             if(mode==='loading') return null;
             if(mode==='setup') return <ConfigWizard onConfigComplete={()=>window.location.reload()} onOfflineMode={()=>{setMode('offline'); setView('home');}}/>;
 
-            // Wrapper (Classic Style)
+            // Wrapper (Classic Style Match)
             const Wrapper = ({ children }) => (
-                <div className="min-h-screen relative bg-kimetsu-bg overflow-hidden font-serif text-gray-800">
-                    <div className="fixed inset-0 pointer-events-none opacity-20 bg-checkered z-0"></div>
-                    <div className="relative z-10 w-full max-w-md mx-auto min-h-screen bg-white shadow-2xl flex flex-col border-x-4 border-k-black">
-                        <header className="bg-k-black text-white p-4 flex justify-between items-center border-b-4 border-k-green sticky top-0 z-50 shadow-md">
-                            <div className="flex items-center gap-2"><Icons.Sword className="text-k-green"/> <h1 className="text-lg font-bold tracking-widest text-k-green">鬼滅之刃交換道場</h1></div>
-                            <div className="flex gap-2">
-                                {users.length > 0 && <button onClick={()=>setView('reveal')} className="text-xs bg-k-pink px-2 py-1 rounded font-bold border border-pink-400 hover:bg-pink-600 transition shadow text-white">任務</button>}
-                                <button onClick={()=>setView('admin_login')} className="text-xs border border-gray-500 px-2 py-1 rounded text-gray-400 hover:text-white">後台</button>
+                <div className="min-h-screen relative bg-[#f0f0f0] font-serif overflow-hidden text-[#2d3436]">
+                    <div className="fixed inset-0 pointer-events-none opacity-50 bg-paper z-0"></div>
+                    <div className="relative z-10 w-full max-w-md mx-auto min-h-screen bg-white/90 shadow-2xl flex flex-col">
+                        <header className="bg-[#2d3436] text-white p-4 flex justify-between items-center shadow-md z-20">
+                            <div className="flex items-center gap-2 text-k-green font-bold tracking-widest text-lg">
+                                <Icons.Sword/> 鬼滅之刃交換道場
+                            </div>
+                            <div className="flex gap-2 items-center">
+                                {mode==='cloud' && <span className="text-xs border border-k-green text-k-green px-2 py-1 rounded">連線中</span>}
                             </div>
                         </header>
-                        <main className="flex-1 p-4 flex flex-col relative bg-[url('https://www.transparenttextures.com/patterns/rice-paper.png')]">{children}</main>
+                        <main className="flex-1 flex flex-col relative overflow-hidden bg-[url('https://www.transparenttextures.com/patterns/rice-paper.png')]">
+                            {children}
+                        </main>
                     </div>
                 </div>
             );
 
+            // --- Views ---
+
+            // Admin Live View (Full Screen, Dark Mode preserved for atmosphere)
             if(view === 'admin_live') return (
-                <div className="min-h-screen bg-k-black text-white flex flex-col relative overflow-hidden font-serif">
-                    <div className="absolute top-0 left-0 w-full h-4 bg-k-green"></div>
+                <div className="min-h-screen bg-[#1e272e] text-white flex flex-col relative overflow-hidden font-serif">
+                    <div className="absolute top-0 left-0 w-full h-2 bg-k-green"></div>
                     <header className="p-4 z-20 flex justify-between items-center bg-black/50 backdrop-blur">
                         <h1 className="text-2xl font-bold tracking-widest flex items-center gap-2 text-k-green"><Icons.Users/> 禮物交付儀式 (接龍)</h1>
                         <div className="flex gap-2">
@@ -496,27 +507,50 @@
 
             if(view === 'home') return (
                 <Wrapper>
-                    <div className="flex flex-col items-center justify-center h-full gap-8 py-8 animate-fade-in">
-                        <div className="text-center w-full transform rotate-1 bg-white p-8 rounded border-4 border-k-black shadow-xl">
-                            <h2 className="text-3xl font-black text-k-black mb-2 tracking-[0.2em]">全集中</h2>
-                            <h3 className="text-4xl font-black text-k-green mb-6 tracking-widest border-b-4 border-k-black inline-block pb-2">交換之呼吸</h3>
-                            <div className="bg-gray-100 py-3 rounded border-2 border-dashed border-gray-300"><p className="text-gray-700 font-bold text-lg">現任隊員：<span className="text-k-pink text-4xl font-black mx-2">{users.length}</span>名</p></div>
+                    <div className="flex flex-col items-center justify-center h-full gap-8 py-12 animate-fade-in p-6">
+                        {/* Title Box - Matching User Image */}
+                        <div className="bg-white border-4 border-gray-800 p-2 shadow-xl w-full max-w-sm transform rotate-1">
+                            <div className="border-2 border-k-green p-6 text-center">
+                                <h1 className="text-3xl font-black tracking-[0.2em] text-gray-800">全集中・交換之呼吸</h1>
+                            </div>
                         </div>
-                        <div className="w-full space-y-4">
+
+                        {/* Counter Box */}
+                        <div className="bg-white border-2 border-gray-800 px-8 py-4 shadow-md">
+                            <p className="font-bold text-lg text-gray-700">現任隊員：<span className="text-k-pink font-black text-2xl mx-1">{users.length}</span> 名</p>
+                        </div>
+
+                        {/* Main Buttons */}
+                        <div className="w-full space-y-4 mt-4">
                             {!myId ? (
-                                <button onClick={()=>{setEditData(null); setView('draw');}} className="w-full py-5 bg-k-green text-white rounded shadow-lg font-bold text-xl flex items-center justify-center gap-3 border-b-4 border-green-800 active:border-b-0 active:translate-y-1 transition-all">
-                                    <Icons.PenTool size={24}/> 入隊考核 (繪製)
+                                <button onClick={()=>{setEditData(null); setView('draw');}} className="w-full py-5 bg-k-btn-green text-white rounded font-bold text-xl flex items-center justify-center gap-3 shadow-lg hover:bg-green-500 transition-transform active:scale-95">
+                                    <Icons.PenTool size={24}/> 入隊考核 (繪製卷軸)
                                 </button>
                             ) : (
-                                <button onClick={()=>setView('my_card')} className="w-full py-5 bg-white border-4 border-k-green text-k-green rounded shadow-md font-bold text-xl flex items-center justify-center gap-3 hover:bg-green-50 active:scale-95 transition-all">
-                                    <Icons.Image size={24}/> 我的任務卷軸
+                                <button onClick={()=>setView('my_card')} className="w-full py-5 bg-white border-2 border-k-green text-k-green rounded font-bold text-xl flex items-center justify-center gap-3 shadow-lg hover:bg-green-50 transition-transform active:scale-95">
+                                    <Icons.Image size={24}/> 查看我的任務卷軸
                                 </button>
                             )}
-                            <button onClick={()=>setView('list')} className="w-full py-4 bg-k-black text-white rounded font-bold text-lg border-b-4 border-black hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
-                                <Icons.Users/> 隊員名冊 (公開)
+                            
+                            <button onClick={()=>setView('list')} className="w-full py-5 bg-k-dark text-white rounded font-bold text-xl flex items-center justify-center gap-3 shadow-lg hover:bg-gray-800 transition-transform active:scale-95">
+                                <Icons.Users size={24}/> 查看隊員名冊
+                            </button>
+
+                            {users.length > 0 && (
+                                <button onClick={() => setView('reveal')} className={`w-full py-4 mt-6 border-2 ${Object.keys(matches).length > 0 ? 'bg-k-pink border-pink-400 text-white' : 'bg-gray-100 border-gray-300 text-gray-500'} rounded font-bold flex justify-center gap-2 transition`}>
+                                    {Object.keys(matches).length > 0 ? <><Icons.Eye size={20}/> 任務下達！確認目標</> : <><Icons.Lock size={20}/> 隊員集合！確認卷軸</>}
+                                </button>
+                            )}
+                        </div>
+                        
+                        {/* Footer */}
+                        <div className="mt-auto pt-12 w-full flex flex-col items-center gap-4">
+                            {myId && <button onClick={()=>{if(confirm('隱退?')) {localStorage.removeItem('pid'); setMyId(null);}}} className="text-xs text-gray-400 border-b border-gray-300 pb-1">解除隊員身份</button>}
+                            
+                            <button onClick={() => setView('admin_login')} className="bg-white border border-gray-800 px-6 py-2 rounded text-sm font-bold text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 shadow-sm">
+                                <Icons.Lock size={14}/> 鬼殺隊總部 (Admin)
                             </button>
                         </div>
-                        {myId && <button onClick={()=>{if(confirm('隱退?')) {localStorage.removeItem('pid'); setMyId(null);}}} className="mt-auto text-xs text-gray-400 border-b border-gray-300 pb-1">解除隊員身份</button>}
                     </div>
                 </Wrapper>
             );
@@ -524,98 +558,106 @@
             // List View (Classic Grid)
             if(view === 'list') return (
                 <Wrapper>
-                    <h2 className="text-2xl font-bold mb-6 text-k-black text-center border-b-4 border-k-green pb-2 inline-block mx-auto flex items-center gap-2"><Icons.Users/> 隊員名冊</h2>
-                    <div className="grid grid-cols-2 gap-4 overflow-y-auto pb-4">
-                        {users.map((u,i) => {
-                            const s = getStyle(u.style);
-                            return (
-                                <div key={u.id} className={`p-2 rounded border-4 shadow-sm flex flex-col items-center bg-white ${s.border} relative`}>
-                                    <div className="absolute top-1 left-2 text-xs font-mono text-gray-400 font-bold">#{i+1}</div>
-                                    <div className="w-full aspect-square bg-gray-50 rounded mb-2 overflow-hidden border border-gray-200 mt-5">
-                                        <img src={u.img} className="w-full h-full object-contain" />
+                    <div className="p-4 h-full flex flex-col">
+                        <h2 className="text-xl font-bold mb-4 text-center border-b-2 border-k-green pb-2 inline-block mx-auto">隊員名冊</h2>
+                        <div className="grid grid-cols-2 gap-4 overflow-y-auto flex-1 pb-4">
+                            {users.map((u,i) => {
+                                const s = getStyle(u.style);
+                                return (
+                                    <div key={u.id} className={`p-2 rounded border-2 shadow-sm flex flex-col items-center bg-white ${s.border} relative`}>
+                                        <div className="absolute top-1 left-2 text-xs font-mono text-gray-400 font-bold">#{i+1}</div>
+                                        <div className="w-full aspect-square bg-gray-50 rounded mb-2 overflow-hidden border border-gray-200 mt-5">
+                                            <img src={u.img} className="w-full h-full object-contain" />
+                                        </div>
+                                        <div className="text-xs text-gray-500 mb-1 flex items-center gap-1">{s.icon} {s.name}</div>
+                                        <div className={`font-bold text-sm truncate w-full text-center ${s.text}`}>{u.name}</div>
+                                        {u.id === myId && <span className="absolute top-1 right-1 bg-k-dark text-white text-[10px] px-1.5 py-0.5 rounded">我</span>}
                                     </div>
-                                    <div className="text-xs text-gray-500 mb-1 flex items-center gap-1">{s.icon} {s.name}</div>
-                                    <div className={`font-bold text-sm truncate w-full text-center ${s.text}`}>{u.name}</div>
-                                    {u.id === myId && <span className="absolute top-1 right-1 bg-k-black text-white text-[10px] px-1.5 py-0.5 rounded">我</span>}
-                                </div>
-                            )
-                        })}
+                                )
+                            })}
+                        </div>
+                        <button onClick={()=>setView('home')} className="mt-4 w-full py-3 bg-white border-2 border-k-dark text-k-dark font-bold rounded hover:bg-gray-100">返回</button>
                     </div>
-                    <button onClick={()=>setView('home')} className="mt-auto w-full py-4 bg-white border-2 border-k-black font-bold rounded hover:bg-gray-100">返回</button>
                 </Wrapper>
             );
 
             if(view === 'draw') return (
                 <Wrapper>
-                    <DrawingPad initialData={editData} onSave={saveMe} onCancel={()=>setView(editData?'my_card':'home')} />
+                    <div className="p-4 h-full flex flex-col">
+                        <DrawingPad initialData={editData} onSave={saveMe} onCancel={()=>setView(editData?'my_card':'home')} />
+                    </div>
                 </Wrapper>
             );
 
             if(view === 'my_card') return (
                 <Wrapper>
-                    {(() => {
-                        const me = users.find(u=>u.id===myId);
-                        if(!me) return <div className="text-center mt-10">資料已遺失</div>;
-                        const isLocked = !!matches[me.id];
-                        const style = getStyle(me.style);
-                        return (
-                            <div className="flex flex-col h-full animate-fade-in items-center">
-                                <h2 className="text-2xl font-bold mb-4 text-k-black flex items-center gap-2">我的卷軸</h2>
-                                <div className={`w-full p-6 mb-6 bg-white border-4 ${style.border} ${style.bg} relative rounded shadow-lg`}>
-                                    <div className="flex justify-between items-center mb-4 border-b-2 border-black/10 pb-2">
-                                        <span className={`text-sm font-bold ${style.text} bg-white/80 px-2 rounded border border-black/10`}>階級: {me.rank}</span>
-                                        <span className={`font-bold text-xl ${style.text}`}>{me.name}</span>
+                    <div className="p-4 h-full flex flex-col items-center">
+                        {(() => {
+                            const me = users.find(u=>u.id===myId);
+                            if(!me) return <div className="text-center mt-10">資料已遺失</div>;
+                            const isLocked = !!matches[me.id];
+                            const style = getStyle(me.style);
+                            return (
+                                <>
+                                    <h2 className="text-xl font-bold mb-4 text-k-dark flex items-center gap-2">我的卷軸</h2>
+                                    <div className={`w-full p-6 mb-6 bg-white border-4 ${style.border} ${style.bg} relative rounded shadow-lg`}>
+                                        <div className="flex justify-between items-center mb-4 border-b-2 border-black/10 pb-2">
+                                            <span className={`text-sm font-bold ${style.text} bg-white/80 px-2 rounded border border-black/10`}>{me.rank}</span>
+                                            <span className={`font-bold text-xl ${style.text}`}>{me.name}</span>
+                                        </div>
+                                        <div className={`aspect-square bg-white border-2 ${style.border} relative shadow-inner rounded overflow-hidden`}>
+                                            <img src={me.img} className="w-full h-full object-contain"/>
+                                            {isLocked && <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-2xl tracking-widest">封 印</div>}
+                                        </div>
                                     </div>
-                                    <div className={`aspect-square bg-white border-4 ${style.border} relative shadow-inner rounded overflow-hidden`}>
-                                        <img src={me.img} className="w-full h-full object-contain"/>
-                                        {isLocked && <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-3xl tracking-widest border-4 border-white m-4">封 印</div>}
-                                    </div>
-                                </div>
-                                {!isLocked ? (
-                                    <button onClick={()=>{setEditData(me); setView('draw');}} className="w-full py-4 bg-k-black text-white font-bold rounded shadow-lg border-b-4 border-black active:border-b-0 active:translate-y-1 transition-all"><Icons.Edit/> 修改卷軸</button>
-                                ) : (
-                                    <div className="w-full p-4 bg-gray-200 text-gray-600 text-center font-bold rounded border-2 border-gray-300">任務已下達，無法修改</div>
-                                )}
-                                <button onClick={()=>setView('home')} className="mt-auto w-full py-3 text-gray-500 font-bold hover:text-k-black">返回</button>
-                            </div>
-                        )
-                    })()}
+                                    {!isLocked ? (
+                                        <button onClick={()=>{setEditData(me); setView('draw');}} className="w-full py-4 bg-k-dark text-white font-bold rounded shadow-lg active:scale-95 transition-transform">修改卷軸</button>
+                                    ) : (
+                                        <div className="w-full p-4 bg-gray-200 text-gray-600 text-center font-bold rounded border-2 border-gray-300">任務已下達，無法修改</div>
+                                    )}
+                                    <button onClick={()=>setView('home')} className="mt-auto w-full py-3 text-gray-500 font-bold hover:text-k-dark">返回</button>
+                                </>
+                            )
+                        })()}
+                    </div>
                 </Wrapper>
             );
 
             if(view === 'reveal') return (
                 <Wrapper>
-                    <div className="text-center mb-6">
-                        <h2 className="text-2xl font-bold text-k-black tracking-widest">{Object.keys(matches).length>0?'任務下達':'卷軸確認'}</h2>
-                        <p className="text-sm text-gray-500 mt-1">點擊名字解開</p>
+                    <div className="p-4 h-full flex flex-col">
+                        <div className="text-center mb-6">
+                            <h2 className="text-xl font-bold text-k-dark tracking-widest">{Object.keys(matches).length>0?'任務下達':'卷軸確認'}</h2>
+                            <p className="text-sm text-gray-500 mt-1">點擊名字解開</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 overflow-y-auto pb-6 flex-1">
+                            {users.map(u => {
+                                const s = getStyle(u.style);
+                                return (
+                                    <button key={u.id} onClick={()=>{setTargetUser(u); setUserPwd(myId===u.id?localStorage.getItem('pwd_bk')||'':''); setView('login');}} 
+                                        className={`relative p-4 rounded border-2 bg-white shadow-sm hover:bg-gray-50 transition-transform active:scale-95 flex flex-col items-center gap-2 aspect-square justify-center ${s.border}`}>
+                                        {myId===u.id && <div className="absolute top-2 right-2 w-3 h-3 bg-k-green rounded-full border border-white"></div>}
+                                        <Icons.Lock className="text-gray-300"/>
+                                        <span className={`font-bold ${s.text} truncate w-full text-center`}>{u.name}</span>
+                                    </button>
+                                )
+                            })}
+                        </div>
+                        <button onClick={()=>setView('home')} className="mt-auto w-full py-3 bg-white border-2 border-k-dark font-bold rounded">返回</button>
                     </div>
-                    <div className="grid grid-cols-2 gap-3 overflow-y-auto pb-6">
-                        {users.map(u => {
-                            const s = getStyle(u.style);
-                            return (
-                                <button key={u.id} onClick={()=>{setTargetUser(u); setUserPwd(myId===u.id?localStorage.getItem('pwd_bk')||'':''); setView('login');}} 
-                                    className={`relative p-4 rounded border-2 bg-white shadow-sm hover:bg-gray-50 transition-transform active:scale-95 flex flex-col items-center gap-2 aspect-square justify-center ${s.border}`}>
-                                    {myId===u.id && <div className="absolute top-2 right-2 w-3 h-3 bg-k-green rounded-full border border-white"></div>}
-                                    <Icons.Lock className="text-gray-300"/>
-                                    <span className={`font-bold ${s.text} truncate w-full text-center`}>{u.name}</span>
-                                </button>
-                            )
-                        })}
-                    </div>
-                    <button onClick={()=>setView('home')} className="mt-auto w-full py-4 bg-white border-2 border-k-black font-bold rounded">返回</button>
                 </Wrapper>
             );
 
             if(view === 'login') return (
                 <Wrapper>
-                    <div className="flex flex-col items-center justify-center h-full">
-                        <div className="p-8 w-full bg-white border-4 border-k-black rounded shadow-xl">
+                    <div className="flex flex-col items-center justify-center h-full p-6">
+                        <div className="p-8 w-full bg-white border-4 border-k-dark rounded shadow-xl">
                             <h2 className="text-xl font-bold text-center mb-6 text-k-green">身分驗證</h2>
-                            <p className="text-center mb-4 font-bold text-k-black">{targetUser.name}</p>
+                            <p className="text-center mb-4 font-bold text-k-dark">{targetUser.name}</p>
                             <input type="password" value={userPwd} onChange={e=>setUserPwd(e.target.value)} className="w-full p-3 text-center border-2 border-gray-300 rounded mb-6 tracking-[0.5em] font-bold text-xl outline-none focus:border-k-green" placeholder="••••"/>
                             <div className="flex gap-3">
                                 <button onClick={()=>setView('reveal')} className="flex-1 py-3 bg-gray-200 font-bold rounded">取消</button>
-                                <button onClick={loginUser} className="flex-1 py-3 bg-k-black text-white font-bold rounded border-b-4 border-black active:border-b-0 active:translate-y-1 transition-all">解開</button>
+                                <button onClick={loginUser} className="flex-1 py-3 bg-k-dark text-white font-bold rounded hover:bg-black transition-all">解開</button>
                             </div>
                         </div>
                     </div>
@@ -624,12 +666,12 @@
 
             if(view === 'check_result' && reveal) return (
                 <Wrapper>
-                    <div className="flex flex-col h-full items-center justify-center animate-fade-in">
-                        <div className="w-full bg-k-black text-white p-4 text-center rounded-t-xl border-b-4 border-k-green">
+                    <div className="flex flex-col h-full items-center justify-center animate-fade-in p-6">
+                        <div className="w-full bg-k-dark text-white p-4 text-center rounded-t-xl border-b-4 border-k-green">
                             <div className="text-xs text-k-green mb-1">TO: 隊員</div>
                             <div className="text-2xl font-bold">{reveal.g.name}</div>
                         </div>
-                        <div className="p-8 w-full rounded-b-xl mb-6 text-center bg-white border-x-4 border-b-4 border-k-black shadow-xl">
+                        <div className="p-8 w-full rounded-b-xl mb-6 text-center bg-white border-x-4 border-b-4 border-k-dark shadow-xl">
                             <p className="text-gray-500 mb-2 font-bold">你的送禮對象是</p>
                             <div className="text-3xl font-black text-k-pink mb-6 tracking-widest">{reveal.r ? "??? (神秘隊員)" : "錯誤"}</div>
                             <div className="bg-gray-100 p-2 border-2 border-dashed border-gray-300 rounded relative">
@@ -637,18 +679,18 @@
                             </div>
                             <p className="text-xs text-gray-400 mt-2">請依照指示準備禮物</p>
                         </div>
-                        <button onClick={()=>setView('reveal')} className="w-full py-4 bg-k-pink text-white font-bold rounded shadow-lg border-b-4 border-pink-600 active:scale-95 transition-transform">遵命 (登出)</button>
+                        <button onClick={()=>setView('reveal')} className="w-full py-4 bg-k-pink text-white font-bold rounded shadow-lg hover:bg-pink-500 transition-transform">遵命 (登出)</button>
                     </div>
                 </Wrapper>
             );
 
             if(view === 'admin_login') return (
                 <Wrapper>
-                    <div className="flex flex-col items-center justify-center h-full">
-                        <div className="p-8 w-full bg-white border-4 border-k-black rounded shadow-xl">
+                    <div className="flex flex-col items-center justify-center h-full p-6">
+                        <div className="p-8 w-full bg-white border-4 border-k-dark rounded shadow-xl">
                             <h2 className="text-xl font-bold text-center mb-6">主公大人</h2>
                             <input type="password" value={adminPwd} onChange={e=>setAdminPwd(e.target.value)} className="w-full p-3 text-center border-2 border-gray-300 rounded mb-6 font-bold" placeholder="暗號"/>
-                            <button onClick={()=>{if(adminPwd==='admin123'){setView('admin_dash');setAdminPwd('');}else alert('錯誤');}} className="w-full py-3 bg-k-black text-white font-bold rounded border-b-4 border-black active:border-b-0 active:translate-y-1">進入</button>
+                            <button onClick={()=>{if(adminPwd==='admin123'){setView('admin_dash');setAdminPwd('');}else alert('錯誤');}} className="w-full py-3 bg-k-dark text-white font-bold rounded hover:bg-black">進入</button>
                             <button onClick={()=>setView('home')} className="w-full py-3 mt-2 text-gray-400 text-sm">返回</button>
                         </div>
                     </div>
@@ -657,20 +699,20 @@
 
             if(view === 'admin_dash') return (
                 <Wrapper>
-                    <div className="flex justify-between items-center mb-6">
+                    <div className="flex justify-between items-center mb-6 p-4 border-b border-gray-300">
                         <h2 className="text-xl font-bold">總部後台</h2>
                         <button onClick={()=>setView('home')} className="text-sm bg-gray-200 px-3 py-1 rounded">離開</button>
                     </div>
-                    <div className="space-y-6 overflow-y-auto flex-1 pb-10">
-                        <div className="bg-gradient-to-r from-k-black to-gray-800 p-6 rounded shadow-lg text-white flex justify-between items-center border-2 border-k-green">
+                    <div className="space-y-6 overflow-y-auto flex-1 pb-10 px-4">
+                        <div className="bg-k-dark p-6 rounded shadow-lg text-white flex justify-between items-center border-l-4 border-k-green">
                             <div><h3 className="font-bold text-xl text-k-green">現場儀式</h3><p className="text-xs opacity-70">開啟大螢幕抽籤</p></div>
-                            <button onClick={()=>setView('admin_live')} className="px-6 py-2 bg-k-pink rounded font-bold shadow border border-white hover:bg-pink-600">進入</button>
+                            <button onClick={()=>setView('admin_live')} className="px-6 py-2 bg-k-pink rounded font-bold shadow hover:bg-pink-500 text-white">進入</button>
                         </div>
                         
                         <div className="p-6 bg-white rounded shadow-md border border-gray-200">
                             <h3 className="font-bold border-b pb-2 mb-4">任務指派</h3>
                             <div className="space-y-3">
-                                <button onClick={doMatch} disabled={loading} className="w-full py-3 bg-k-green text-white font-bold rounded shadow-sm border-b-4 border-green-800 active:border-b-0 active:translate-y-1">{Object.keys(matches).length>0?'重新分配':'開始分配'}</button>
+                                <button onClick={doMatch} disabled={loading} className="w-full py-3 bg-k-green text-white font-bold rounded shadow-sm hover:bg-green-600">{Object.keys(matches).length>0?'重新分配':'開始分配'}</button>
                                 <LongPressButton label="銷毀資料" icon={Icons.Trash2} onComplete={resetAll} disabled={loading}/>
                             </div>
                         </div>
@@ -749,12 +791,12 @@
 
             return (
                 <div className="flex flex-col h-full animate-slide-up">
-                    <h2 className="text-xl font-bold mb-4 text-center text-k-black flex items-center justify-center gap-2"><Icons.PenTool/> 繪製卷軸</h2>
+                    <h2 className="text-xl font-bold mb-4 text-center text-k-dark flex items-center justify-center gap-2"><Icons.PenTool/> 繪製卷軸</h2>
                     <div className="mb-4">
                         <label className="block text-xs font-bold mb-1 text-gray-500">呼吸流派</label>
                         <div className="flex gap-1 overflow-x-auto pb-2">
                             {Object.keys(STYLES).map(k => (
-                                <button key={k} onClick={()=>setStyle(k)} className={`flex-shrink-0 p-2 border-2 rounded ${style===k?'border-k-black bg-white scale-105':'border-transparent opacity-50'} transition-all`}>
+                                <button key={k} onClick={()=>setStyle(k)} className={`flex-shrink-0 p-2 border-2 rounded ${style===k?'border-k-dark bg-white scale-105':'border-transparent opacity-50'} transition-all`}>
                                     <div className="text-2xl">{getStyle(k).icon}</div>
                                 </button>
                             ))}
@@ -767,7 +809,7 @@
                     <div className="flex-1 flex flex-col items-center">
                         <div className={`text-sm font-bold mb-3 flex items-center gap-2 px-4 py-2 rounded border-2 shadow-sm transition-colors ${isLocked ? 'bg-red-100 text-red-600 border-red-300' : `${currStyle.bg} ${currStyle.text} ${currStyle.border}`}`}>
                             <Icons.PenTool size={18}/> 
-                            {isLocked ? (hasDrawn ? '墨跡已乾！(一筆入魂，點擊重畫可重來)' : '全集中・一筆繪製！') : '全集中・一筆繪製！下筆後不能斷'}
+                            {isLocked ? '墨跡已乾！(一筆入魂)' : '全集中・一筆繪製！'}
                         </div>
                         <div className={`w-full aspect-square border-4 ${currStyle.border} rounded overflow-hidden relative shadow-lg ${isLocked?'opacity-90':''}`}>
                             <canvas ref={canvasRef} className="w-full h-full touch-none cursor-crosshair" 
