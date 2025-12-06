@@ -68,7 +68,7 @@
         /* Nezuko Box Styles */
         .nezuko-box {
             perspective: 1000px;
-            cursor: pointer;
+            /* cursor: pointer;  Moved to inline style for conditional logic */
         }
         .nezuko-door {
             transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -243,24 +243,29 @@
             Tv: (p) => <Icon {...p} path={<><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></>} />,
         };
 
-        // --- Nezuko Box Component (Updated: Controlled) ---
+        // --- Nezuko Box Component (Updated: Controlled + Visual State) ---
         const NezukoBox = ({ children, isLocked, isOpen, onClick }) => {
-            // Note: Removed internal state 'isOpen'. Now controlled by props or parent logic.
-            // If onClick is provided, it handles the toggle.
-            
+            // Check if interactive (Spectators pass onClick=null)
+            const canInteract = !!onClick; 
+
             const handleClick = () => {
+                if (!canInteract) return; // Ignore clicks if not interactive
                 if (isLocked) {
                     alert('尚未解開封印！');
                     return;
                 }
-                if (onClick) {
-                    onClick();
-                }
+                onClick();
             };
+
+            // Determine label based on interaction state
+            let labelText = isOpen ? '點擊關閉' : '點擊開箱';
+            if (!canInteract) {
+                labelText = isOpen ? '展示中' : '等待揭曉';
+            }
 
             return (
                 <div 
-                    className={`relative w-full h-full bg-wood-dark border-4 border-black rounded-lg shadow-2xl overflow-hidden cursor-pointer nezuko-box ${isOpen ? 'open' : ''}`}
+                    className={`relative w-full h-full bg-wood-dark border-4 border-black rounded-lg shadow-2xl overflow-hidden nezuko-box ${isOpen ? 'open' : ''} ${canInteract ? 'cursor-pointer' : 'cursor-default'}`}
                     onClick={handleClick}
                 >
                     {/* Content (Drawing) Inside */}
@@ -279,7 +284,7 @@
                             <div className="w-16 h-16 border-4 border-black bg-kimetsu-pink rounded-full flex items-center justify-center shadow-lg">
                                 <span className="text-black font-black text-2xl">禰</span>
                             </div>
-                            <span className="text-white bg-black px-2 py-1 text-xs mt-2 font-bold rounded">{isOpen ? '點擊關閉' : '點擊開箱'}</span>
+                            <span className="text-white bg-black px-2 py-1 text-xs mt-2 font-bold rounded">{labelText}</span>
                         </div>
 
                         <div className="w-full h-4 metal-strap rounded"></div>
@@ -417,9 +422,24 @@
             );
         };
 
+        // --- Helper wrapper for Local Nezuko Box usage (My Card / Check Result) ---
+        const LocalNezukoBox = ({ children, isLocked, defaultOpen = false }) => {
+            const [isOpen, setIsOpen] = useState(defaultOpen);
+            return (
+                <NezukoBox 
+                    isLocked={isLocked} 
+                    isOpen={isOpen} 
+                    onClick={() => setIsOpen(!isOpen)}
+                >
+                    {children}
+                </NezukoBox>
+            );
+        };
+
         // --- Main App ---
         const App = () => {
             const [mode, setMode] = useState('loading'); // loading, setup, cloud, offline
+            // ... (rest of App component)
             const [view, setView] = useState('home'); 
             const [users, setUsers] = useState([]);
             const [matches, setMatches] = useState({});
@@ -1301,7 +1321,7 @@
                                                     
                                                     {/* Nezuko Box for My Card - This one uses local controlled state via wrapper or just simple toggle */}
                                                     {/* We use a simple wrapper here for local toggling since it's "My Card" view */}
-                                                    <LocalNezukoBox isLocked={isLocked}>
+                                                    <LocalNezukoBox isLocked={isLocked} defaultOpen={true}>
                                                         <img src={me.drawing} className="w-full h-full object-contain" />
                                                     </LocalNezukoBox>
                                                 </div>
@@ -1407,155 +1427,6 @@
                                 </div>
                             )}
                         </main>
-                    </div>
-                </div>
-            );
-        };
-
-        // --- Helper wrapper for Local Nezuko Box usage (My Card / Check Result) ---
-        const LocalNezukoBox = ({ children, isLocked }) => {
-            const [isOpen, setIsOpen] = useState(false);
-            return (
-                <NezukoBox 
-                    isLocked={isLocked} 
-                    isOpen={isOpen} 
-                    onClick={() => setIsOpen(!isOpen)}
-                >
-                    {children}
-                </NezukoBox>
-            );
-        };
-
-        const DrawingPad = ({ onSave, onCancel, Icons, initialData }) => {
-            const canvasRef = useRef(null);
-            const [isDrawing, setIsDrawing] = useState(false);
-            const [name, setName] = useState(initialData ? initialData.name : '');
-            const [password, setPassword] = useState(initialData ? initialData.password : '');
-            const [style, setStyle] = useState(initialData ? (initialData.style || 'water') : 'water');
-            const [hasDrawn, setHasDrawn] = useState(false);
-            const [isLocked, setIsLocked] = useState(false);
-
-            useEffect(() => {
-                const canvas = canvasRef.current;
-                if(!canvas) return;
-                canvas.width = canvas.parentElement.clientWidth;
-                canvas.height = canvas.parentElement.clientWidth;
-                const ctx = canvas.getContext('2d');
-                ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#000000'; // Sumi Ink Black
-                ctx.lineWidth = 6; 
-                
-                // Init background
-                ctx.fillStyle = '#ffffff'; 
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                if (initialData && initialData.drawing) {
-                    const img = new Image();
-                    img.src = initialData.drawing;
-                    img.onload = () => {
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        setHasDrawn(true);
-                        setIsLocked(true); 
-                    }
-                }
-            }, [initialData]);
-
-            const getPos = (e) => {
-                const rect = canvasRef.current.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                return { x: clientX - rect.left, y: clientY - rect.top };
-            };
-            
-            const startDraw = (e) => { 
-                if (isLocked) { return; }
-                setIsDrawing(true); 
-                setHasDrawn(true); 
-                const pos = getPos(e); 
-                const ctx = canvasRef.current.getContext('2d'); 
-                ctx.beginPath(); 
-                ctx.moveTo(pos.x, pos.y); 
-            };
-            
-            const draw = (e) => { 
-                if (!isDrawing) return; 
-                const pos = getPos(e); 
-                const ctx = canvasRef.current.getContext('2d'); 
-                ctx.lineTo(pos.x, pos.y); 
-                ctx.stroke(); 
-            };
-            
-            const endDraw = () => {
-                if (isDrawing) {
-                    setIsDrawing(false);
-                    setIsLocked(true); 
-                }
-            };
-            
-            const clearCanvas = () => { 
-                const ctx = canvasRef.current.getContext('2d'); 
-                ctx.fillStyle = '#ffffff'; 
-                ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height); 
-                setHasDrawn(false); 
-                setIsLocked(false); 
-            };
-            
-            const handleSave = () => {
-                if (!name.trim()) return alert('請輸入隊員姓名！');
-                if (!password.trim()) return alert('請設定密碼，以免卷軸被鬼偷看！');
-                if (!hasDrawn) return alert('請繪製卷軸內容！');
-                onSave(name, password.trim(), canvasRef.current.toDataURL('image/png'), style);
-            };
-
-            const currentStyle = getStyle(style);
-
-            return (
-                <div className="flex flex-col h-full animate-slide-up font-kimetsu">
-                    <h2 className="text-2xl font-bold mb-4 text-center text-kimetsu-black tracking-widest border-b-4 border-kimetsu-green pb-2 bg-white shadow-sm">{initialData ? '修改卷軸' : '繪製卷軸'}</h2>
-                    
-                    <div className="mb-4 space-y-3">
-                        {/* Style Selector */}
-                        <div>
-                            <label className="block text-sm font-bold text-kimetsu-black mb-1">選擇呼吸法流派</label>
-                            <div className="grid grid-cols-5 gap-1">
-                                {Object.entries(BREATH_STYLES).filter(([k]) => k !== 'default').map(([k, s]) => (
-                                    <button 
-                                        key={k}
-                                        onClick={() => setStyle(k)}
-                                        className={`p-1 rounded border-2 flex flex-col items-center justify-center transition-all ${style === k ? `border-kimetsu-black bg-white scale-105 shadow-md ${s.text}` : 'border-transparent opacity-60 hover:opacity-100'}`}
-                                    >
-                                        <span className="text-xl">{s.icon}</span>
-                                        <span className="text-[10px] font-bold mt-1">{s.name.substring(0,1)}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
-                                <label className="block text-sm font-bold text-kimetsu-black mb-1">隊員姓名</label>
-                                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：炭治郎" className={`w-full p-2 border-2 ${currentStyle.border} rounded outline-none focus:ring-2 ${currentStyle.ring} text-center font-bold`} />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-kimetsu-black mb-1">設定密碼</label>
-                                <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="解鎖用" className={`w-full p-2 border-2 ${currentStyle.border} rounded outline-none focus:ring-2 ${currentStyle.ring} text-center font-bold`} />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex-1 flex flex-col items-center">
-                        <div className={`text-sm font-bold mb-3 flex items-center gap-2 px-4 py-2 rounded border-2 shadow-sm transition-colors ${isLocked ? 'bg-red-100 text-red-600 border-red-300' : `${currentStyle.bg} ${currentStyle.text} ${currentStyle.border}`}`}>
-                            <Icons.PenTool size={18}/> 
-                            {isLocked ? (hasDrawn ? '墨跡已乾！(一筆入魂，點擊重畫可重來)' : '全集中・一筆繪製！') : '全集中・一筆繪製！下筆後不能斷'}
-                        </div>
-                        <div className={`w-full aspect-square border-4 border-double rounded overflow-hidden shadow-2xl relative bg-white touch-none transition-colors ${isLocked ? 'border-red-400' : currentStyle.border}`}>
-                            <canvas ref={canvasRef} className={`w-full h-full touch-none ${isLocked ? 'cursor-not-allowed' : 'cursor-crosshair'}`} onMouseDown={startDraw} onMouseMove={draw} onMouseUp={endDraw} onMouseLeave={endDraw} onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={endDraw} />
-                            {isLocked && <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/10 text-red-600 font-extrabold text-2xl tracking-[1em] writing-vertical-rl">封印</div>}
-                        </div>
-                        <div className="flex justify-end w-full mt-4"><button onClick={clearCanvas} className={`text-sm flex items-center gap-2 transition font-bold bg-white px-4 py-2 rounded border shadow-sm ${currentStyle.text} ${currentStyle.border} hover:bg-slate-50`}><Icons.RotateCcw size={16}/> 呼吸重置 (重畫)</button></div>
-                    </div>
-                    <div className="mt-6 flex gap-4">
-                        <button onClick={onCancel} className="flex-1 py-4 border-2 border-kimetsu-black text-kimetsu-black rounded font-bold hover:bg-slate-100 transition shadow-sm active:scale-95 tracking-widest">取消</button>
-                        <button onClick={handleSave} className="flex-1 py-4 bg-kimetsu-green text-white rounded shadow-md flex justify-center items-center gap-3 font-bold border-b-4 border-green-800 hover:bg-green-600 transition active:scale-95 tracking-widest"><Icons.Save size={20}/> {initialData ? '修復卷軸' : '傳送卷軸'}</button>
                     </div>
                 </div>
             );
