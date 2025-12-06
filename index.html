@@ -425,7 +425,7 @@
         };
 
         // --- Helper wrapper for Local Nezuko Box usage (My Card / Check Result) ---
-        // FIX: Simplified logic to ensure defaultOpen works reliably
+        // FIX: Simplified logic to ensure defaultOpen works reliably even if isLocked is true/false elsewhere
         const LocalNezukoBox = ({ children, isLocked, defaultOpen = false }) => {
             const [isOpen, setIsOpen] = useState(defaultOpen);
             
@@ -885,6 +885,7 @@
                     if (nextUser) {
                         // Push ID only!
                         const newHistory = [...liveHistory, nextUser.id];
+                        // FIX: Ensure newBoxOpen is false explicitly to reset door
                         await updateLiveState(newHistory, newHistory.length - 1, false, false);
                     }
                 } finally {
