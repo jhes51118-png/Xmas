@@ -243,10 +243,11 @@
 
         // --- Nezuko Box Component (Updated: Controlled + Visual State) ---
         const NezukoBox = ({ children, isLocked, isOpen, onClick }) => {
+            // Check if interactive (Spectators pass onClick=null)
             const canInteract = !!onClick; 
 
             const handleClick = () => {
-                if (!canInteract) return;
+                if (!canInteract) return; // Ignore clicks if not interactive
                 if (isLocked) {
                     alert('尚未解開封印！');
                     return;
@@ -254,6 +255,7 @@
                 onClick();
             };
 
+            // Determine label based on interaction state
             let labelText = isOpen ? '點擊關閉' : '點擊開箱';
             if (!canInteract) {
                 labelText = isOpen ? '展示中' : '等待揭曉';
@@ -264,20 +266,27 @@
                     className={`relative w-full h-full bg-wood-dark border-4 border-black rounded-lg shadow-2xl overflow-hidden nezuko-box ${isOpen ? 'open' : ''} ${canInteract ? 'cursor-pointer' : 'cursor-default'}`}
                     onClick={handleClick}
                 >
+                    {/* Content (Drawing) Inside */}
                     <div className="absolute inset-0 flex items-center justify-center bg-white flex-col">
                         {children}
+                        {/* Fallback label if image fails or box is just empty */}
                         {!children && <span className="text-slate-300 font-bold">無內容</span>}
                     </div>
 
+                    {/* Door Overlay */}
                     <div className="absolute inset-0 bg-wood-light flex flex-col justify-between p-2 nezuko-door z-20 wood-pattern border-r-4 border-black">
+                        {/* Metal Straps */}
                         <div className="w-full h-4 metal-strap rounded"></div>
                         <div className="w-full h-4 metal-strap rounded"></div>
+                        
+                        {/* Center Pattern */}
                         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
                             <div className="w-16 h-16 border-4 border-black bg-kimetsu-pink rounded-full flex items-center justify-center shadow-lg">
                                 <span className="text-black font-black text-2xl">禰</span>
                             </div>
                             <span className="text-white bg-black px-2 py-1 text-xs mt-2 font-bold rounded">{labelText}</span>
                         </div>
+
                         <div className="w-full h-4 metal-strap rounded"></div>
                         <div className="w-full h-4 metal-strap rounded"></div>
                     </div>
@@ -301,7 +310,7 @@
                             }
                             return p + 2; 
                         });
-                    }, 30);
+                    }, 30); // 30ms * 50 = 1.5s approx hold
                 } else {
                     setProgress(0);
                     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -417,6 +426,7 @@
         const LocalNezukoBox = ({ children, isLocked, defaultOpen = false }) => {
             const [isOpen, setIsOpen] = useState(defaultOpen);
             
+            // Effect to force sync if defaultOpen changes (e.g. view change)
             useEffect(() => {
                 if (defaultOpen) setIsOpen(true);
             }, [defaultOpen]);
@@ -447,9 +457,10 @@
                 canvas.width = canvas.parentElement.clientWidth;
                 canvas.height = canvas.parentElement.clientWidth;
                 const ctx = canvas.getContext('2d');
-                ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#000000';
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#000000'; // Sumi Ink Black
                 ctx.lineWidth = 6; 
                 
+                // Init background
                 ctx.fillStyle = '#ffffff'; 
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -518,6 +529,7 @@
                     <h2 className="text-2xl font-bold mb-4 text-center text-kimetsu-black tracking-widest border-b-4 border-kimetsu-green pb-2 bg-white shadow-sm">{initialData ? '修改卷軸' : '繪製卷軸'}</h2>
                     
                     <div className="mb-4 space-y-3">
+                        {/* Style Selector */}
                         <div>
                             <label className="block text-sm font-bold text-kimetsu-black mb-1">選擇呼吸法流派</label>
                             <div className="grid grid-cols-5 gap-1">
@@ -567,7 +579,8 @@
 
         // --- Main App ---
         const App = () => {
-            const [mode, setMode] = useState('loading'); 
+            const [mode, setMode] = useState('loading'); // loading, setup, cloud, offline
+            // ... (rest of App component)
             const [view, setView] = useState('home'); 
             const [users, setUsers] = useState([]);
             const [matches, setMatches] = useState({});
@@ -581,17 +594,23 @@
             const [editData, setEditData] = useState(null); 
             const [showAdminPasswords, setShowAdminPasswords] = useState(false); 
             
+            // Live Event Mode States
+            // IMPORTANT: liveHistory now stores ONLY user IDs to save space and avoid 1MB limit errors
             const [liveHistory, setLiveHistory] = useState([]); 
             const [liveIndex, setLiveIndex] = useState(-1);
             const [liveShowGiver, setLiveShowGiver] = useState(false);
+            // Removed liveBoxOpen state
             
+            // Processing Lock Ref to prevent rapid double-clicks causing skips
             const processingRef = useRef(false);
 
             const appRef = useRef(null);
             const authRef = useRef(null);
             const dbRef = useRef(null);
+            // Use global app ID if available, otherwise default
             const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
+            // 1. Initial Config Check
             useEffect(() => {
                 const initSystem = async () => {
                     const loader = document.getElementById('initial-loader');
@@ -634,6 +653,7 @@
                 initSystem();
             }, []);
 
+            // 2. Data Sync
             useEffect(() => {
                 if (mode !== 'cloud' || !dbRef.current) return;
 
@@ -662,6 +682,9 @@
                     setMatches(matchesMap);
                 }, err => console.error(err));
 
+                // Add listener for Live State (for spectators and admin sync)
+                // Path MUST have even number of segments: collection/doc/collection/doc...
+                // Previous error was caused by stopping at 'live_status' (collection)
                 const liveStateRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'live_status', 'main');
                 const unsubLive = onSnapshot(liveStateRef, (doc) => {
                     if (doc.exists()) {
@@ -669,7 +692,9 @@
                         setLiveHistory(data.history || []);
                         setLiveIndex(data.currentIndex || -1);
                         setLiveShowGiver(data.showGiver || false);
+                        // Removed boxOpen sync
                     } else {
+                        // Reset if doc doesn't exist
                         setLiveHistory([]);
                         setLiveIndex(-1);
                         setLiveShowGiver(false);
@@ -679,6 +704,7 @@
                 return () => { unsubUsers(); unsubMatches(); unsubLive(); };
             }, [mode]);
 
+            // 3. Local Data Sync
             useEffect(() => {
                 if (mode !== 'offline') return;
                 const savedUsers = localStorage.getItem('xmas_users');
@@ -687,7 +713,9 @@
                 if (savedMatches) setMatches(JSON.parse(savedMatches));
             }, [mode]);
 
+            // Helper to update live state in Firestore (for Admin)
             const updateLiveState = async (newHistory, newIndex, newShowGiver) => {
+                 // Optimistic update locally
                  setLiveHistory(newHistory);
                  setLiveIndex(newIndex);
                  setLiveShowGiver(newShowGiver);
@@ -697,11 +725,13 @@
                      await setDoc(liveStateRef, {
                          history: newHistory,
                          currentIndex: newIndex,
-                         showGiver: newShowGiver
+                         showGiver: newShowGiver,
+                         // Removed boxOpen write
                      }, { merge: true });
                  }
             };
 
+            // Handlers
             const handleOfflineMode = () => {
                 setMode('offline');
                 setView('home');
@@ -727,6 +757,7 @@
                         matchesSnap.docs.forEach((d) => batch2.delete(d.ref));
                         await batch2.commit();
                         
+                        // Also clear live state
                         await deleteDoc(doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'live_status', 'main'));
 
                     } catch (e) { alert('重置失敗'); }
@@ -742,6 +773,7 @@
                 setMyParticipantId(null);
                 setRevealData(null);
                 setEditData(null);
+                // Reset Live State
                 setLiveHistory([]);
                 setLiveIndex(-1);
                 setLiveShowGiver(false);
@@ -789,6 +821,7 @@
             const saveUser = async (name, password, drawingData, style) => {
                 setIsProcessing(true);
                 try {
+                    // Check duplicate name
                     const isDuplicate = users.some(u => u.name.trim() === name.trim() && u.id !== myParticipantId);
                     if (isDuplicate) {
                         alert('此隊員姓名已存在，請使用其他代號！');
@@ -797,11 +830,14 @@
                     }
 
                     localStorage.setItem('my_password_backup', password);
+
+                    // Assign Rank
                     const randomRank = getRandomRank();
 
                     if (editData && editData.id === myParticipantId) {
                          if (mode === 'cloud') {
                             const userRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants', myParticipantId);
+                            // Preserve rank on edit, or maybe re-roll? Let's preserve.
                             await updateDoc(userRef, {
                                 name, password, drawing: drawingData, style, updatedAt: serverTimestamp()
                             });
@@ -893,15 +929,19 @@
                     return;
                 }
                 
+                // Login successful
+                // Update local identity
                 localStorage.setItem('my_participant_id', loginTargetUser.id);
-                localStorage.setItem('my_password_backup', userPasswordInput); 
+                localStorage.setItem('my_password_backup', userPasswordInput); // Also save password for auto-fill later
                 setMyParticipantId(loginTargetUser.id);
 
                 const receiverId = matches[loginTargetUser.id];
                 
                 if (!receiverId) {
+                    // Not matched yet -> Go to My Card to allow editing
                     setView('my_card');
                 } else {
+                    // Matched -> Show Result
                     const receiver = users.find(u => u.id === receiverId);
                     setRevealData({ giver: loginTargetUser, receiver });
                     setLoginTargetUser(null);
@@ -925,18 +965,24 @@
                 setView('user_login');
             }
 
+            // Live Event Functions
             const handleNextLive = async () => {
-                if (processingRef.current) return;
+                if (processingRef.current) return; // Prevent double clicks strictly with Ref
                 processingRef.current = true;
                 setIsProcessing(true);
 
                 try {
+                    // 1. If browsing history, just go next
                     if (liveIndex < liveHistory.length - 1) {
                         await updateLiveState(liveHistory, liveIndex + 1, false);
                         return;
                     }
 
+                    // 2. Logic to pick new user
+                    // NOTE: liveHistory now contains IDs only!
                     const drawnIds = new Set(liveHistory);
+                    const allReceivers = Object.values(matches);
+                    // Users who haven't been on stage as receiver yet
                     const remaining = users.filter(u => !drawnIds.has(u.id));
                     
                     if (remaining.length === 0) {
@@ -946,21 +992,27 @@
 
                     let nextUser = null;
 
+                    // CHAIN LOGIC: Try to find the person who GAVE the gift to the current receiver
                     if (liveHistory.length > 0) {
-                        const currentReceiverId = liveHistory[liveHistory.length - 1]; 
+                        const currentReceiverId = liveHistory[liveHistory.length - 1]; // This is ID now
+                        // Find who gave to currentReceiver. matches structure is { giverId: receiverId }
+                        // We need to find Key where Value === currentReceiverId
                         const giverId = Object.keys(matches).find(key => matches[key] === currentReceiverId);
                         
+                        // If this giver hasn't been a receiver yet, they are next!
                         if (giverId && !drawnIds.has(giverId)) {
                             nextUser = users.find(u => u.id === giverId);
                         }
                     }
 
+                    // Fallback: If no chain (first person, or chain broken/looped), pick random
                     if (!nextUser) {
                         const randomIndex = Math.floor(Math.random() * remaining.length);
                         nextUser = remaining[randomIndex];
                     }
 
                     if (nextUser) {
+                        // Push ID only!
                         const newHistory = [...liveHistory, nextUser.id];
                         await updateLiveState(newHistory, newHistory.length - 1, false);
                     }
@@ -980,6 +1032,7 @@
                  await updateLiveState(liveHistory, liveIndex, true);
             }
 
+            // Derive current live receiver object from ID
             const liveReceiverId = liveIndex >= 0 && liveHistory.length > 0 ? liveHistory[liveIndex] : null;
             const liveReceiver = liveReceiverId ? users.find(u => u.id === liveReceiverId) : null;
 
@@ -995,9 +1048,11 @@
                 }
             };
 
+            // Render Modes
             if (mode === 'loading') return null;
             if (mode === 'setup') return <ConfigWizard onConfigComplete={handleConfigComplete} onOfflineMode={handleOfflineMode} />;
 
+            // --- Admin Views ---
             if (view === 'admin_login') {
                 return (
                     <div className="min-h-screen flex items-center justify-center p-4">
@@ -1022,6 +1077,7 @@
                 );
             }
 
+            // Shared View for Admin and Spectator
             if (view === 'admin_live' || view === 'spectator_live') {
                 const isSpectator = view === 'spectator_live';
                 const giver = liveReceiver ? users.find(u => matches[u.id] === liveReceiver.id) : null;
@@ -1029,11 +1085,13 @@
                 const style = getStyle(liveReceiver?.style || 'default');
                 const rank = liveReceiver?.rank || '癸';
                 
+                // Determine next button label logic
                 let nextButtonLabel = "隨機召喚";
                 if (isHistoryMode) {
                     nextButtonLabel = "下一位 (歷史)";
                 } else {
                     if (liveReceiver) {
+                         // Check if next is chained
                          const currentReceiverId = liveReceiver.id;
                          const nextGiverId = Object.keys(matches).find(key => matches[key] === currentReceiverId);
                          const drawnIds = new Set(liveHistory);
@@ -1048,8 +1106,10 @@
                     }
                 }
                 
+                // Use a local internal NezukoBox state for "My Card" view, but here we use the controlled prop
                 return (
                     <div className="min-h-screen flex flex-col bg-kimetsu-black text-white relative overflow-hidden">
+                        {/* Decorative Patterns */}
                         <div className="absolute top-0 left-0 w-full h-4 bg-kimetsu-green"></div>
                         <div className="absolute bottom-0 left-0 w-full h-4 bg-kimetsu-green"></div>
                         
@@ -1269,6 +1329,7 @@
                 )
             }
 
+            // --- User Login View ---
             if (view === 'user_login') {
                 return (
                     <div className="min-h-screen flex items-center justify-center p-4">
@@ -1295,6 +1356,7 @@
                 );
             }
 
+            // Main Public App UI
             return (
                 <div className="min-h-screen relative overflow-hidden flex flex-col items-center">
                     
@@ -1337,12 +1399,14 @@
                                             <Icons.Users size={24}/> 查看隊員名冊
                                         </button>
                                         
+                                        {/* Task Assignment Button: Always Visible if Users exist */}
                                         {users.length > 0 && (
                                             <>
                                                 <button onClick={() => setView('reveal')} className={`w-full py-4 ${Object.keys(matches).length > 0 ? 'bg-kimetsu-pink hover:bg-pink-400 border-pink-600' : 'bg-kimetsu-black hover:bg-slate-800 border-slate-900'} text-white rounded shadow-lg flex items-center justify-center gap-3 text-lg font-bold mt-8 ${Object.keys(matches).length > 0 ? 'animate-pulse' : ''} border-b-4 active:scale-95 transition-transform tracking-widest`}>
                                                     {Object.keys(matches).length > 0 ? <><Icons.Eye size={24}/> 任務下達！確認目標</> : <><Icons.Lock size={24}/> 隊員集合！確認卷軸</>}
                                                 </button>
                                                 
+                                                {/* NEW SPECTATOR BUTTON */}
                                                 <button onClick={() => setView('spectator_live')} className="w-full py-4 bg-blue-600 hover:bg-blue-500 border-blue-800 text-white rounded shadow-lg flex items-center justify-center gap-3 text-lg font-bold border-b-4 active:scale-95 transition-transform tracking-widest mt-2">
                                                     <Icons.Tv size={24}/> 進入會場 (觀看模式)
                                                 </button>
@@ -1350,6 +1414,7 @@
                                         )}
                                     </div>
                                     
+                                    {/* Admin & Footer Links */}
                                     <div className="mt-auto pt-8 flex flex-col items-center gap-3 w-full">
                                         {myParticipantId && (
                                             <button onClick={handleManualLogout} className="text-xs text-slate-500 hover:text-kimetsu-black flex items-center gap-1 py-2 px-4 rounded border-2 border-slate-300 hover:border-kimetsu-black transition mb-2 font-bold">
@@ -1399,7 +1464,10 @@
                                                     
                                                     {/* Nezuko Box for My Card - Force unlocked so user can see their own drawing */}
                                                     <LocalNezukoBox isLocked={false} defaultOpen={true}>
-                                                        <img src={me.drawing} className="w-full h-full object-contain" />
+                                                        <div className="w-full h-full flex items-center justify-center relative">
+                                                            <img src={me.drawing} className="w-full h-full object-contain" />
+                                                            <span className="absolute bottom-2 right-2 text-xs bg-black/50 text-white px-2 py-1 rounded">您的畫作</span>
+                                                        </div>
                                                     </LocalNezukoBox>
                                                 </div>
 
