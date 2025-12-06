@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>鬼滅之刃一筆畫交換禮物 (通用版)</title>
+    <title>鬼滅之刃一筆畫交換禮物 (連鎖版)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts for a more brush-style look -->
@@ -757,29 +757,47 @@
 
             // Live Event Functions
             const handleNextLive = () => {
-                // If browsing history
+                // 1. If browsing history, just go next
                 if (liveIndex < liveHistory.length - 1) {
                     setLiveIndex(prev => prev + 1);
                     setLiveShowGiver(false);
                     return;
                 }
 
-                // New random pick
+                // 2. Logic to pick new user
                 const drawnIds = new Set(liveHistory.map(u => u.id));
                 const allReceivers = Object.values(matches);
-                const remaining = allReceivers.filter(rid => !drawnIds.has(rid));
+                // Users who haven't been on stage as receiver yet
+                const remaining = users.filter(u => !drawnIds.has(u.id));
                 
                 if (remaining.length === 0) {
                     alert('所有隊員都已上台！任務圓滿達成！');
                     return;
                 }
 
-                const randomIndex = Math.floor(Math.random() * remaining.length);
-                const pickedId = remaining[randomIndex];
-                const pickedUser = users.find(u => u.id === pickedId);
+                let nextUser = null;
 
-                if (pickedUser) {
-                    const newHistory = [...liveHistory, pickedUser];
+                // CHAIN LOGIC: Try to find the person who GAVE the gift to the current receiver
+                if (liveHistory.length > 0) {
+                    const currentReceiver = liveHistory[liveHistory.length - 1];
+                    // Find who gave to currentReceiver. matches structure is { giverId: receiverId }
+                    // We need to find Key where Value === currentReceiver.id
+                    const giverId = Object.keys(matches).find(key => matches[key] === currentReceiver.id);
+                    
+                    // If this giver hasn't been a receiver yet, they are next!
+                    if (giverId && !drawnIds.has(giverId)) {
+                        nextUser = users.find(u => u.id === giverId);
+                    }
+                }
+
+                // Fallback: If no chain (first person, or chain broken/looped), pick random
+                if (!nextUser) {
+                    const randomIndex = Math.floor(Math.random() * remaining.length);
+                    nextUser = remaining[randomIndex];
+                }
+
+                if (nextUser) {
+                    const newHistory = [...liveHistory, nextUser];
                     setLiveHistory(newHistory);
                     setLiveIndex(newHistory.length - 1);
                     setLiveShowGiver(false);
@@ -842,6 +860,27 @@
                 const style = getStyle(liveReceiver?.style || 'default');
                 const rank = liveReceiver?.rank || '癸';
                 
+                // Determine next button label logic
+                let nextButtonLabel = "隨機召喚";
+                if (isHistoryMode) {
+                    nextButtonLabel = "下一位 (歷史)";
+                } else {
+                    if (liveReceiver) {
+                         // Check if next is chained
+                         const currentReceiverId = liveReceiver.id;
+                         const nextGiverId = Object.keys(matches).find(key => matches[key] === currentReceiverId);
+                         const drawnIds = new Set(liveHistory.map(u => u.id));
+                         
+                         if (nextGiverId && !drawnIds.has(nextGiverId)) {
+                             nextButtonLabel = "召喚這位送禮者 (連鎖)";
+                         } else {
+                             nextButtonLabel = "隨機召喚 (新回合)";
+                         }
+                    } else {
+                        nextButtonLabel = "隨機召喚第一位";
+                    }
+                }
+                
                 return (
                     <div className="min-h-screen flex flex-col bg-kimetsu-black text-white relative overflow-hidden">
                         {/* Decorative Patterns */}
@@ -865,7 +904,7 @@
                                     <h2 className="text-4xl font-bold tracking-widest">準備開始抽籤</h2>
                                     <p className="text-slate-400">目前還有 {Object.keys(matches).length - liveHistory.length} 位隊員等待上台</p>
                                     <button onClick={handleNextLive} className="px-8 py-4 bg-kimetsu-green text-white text-2xl font-bold rounded-lg shadow-[0_0_15px_rgba(46,204,113,0.6)] hover:scale-105 transition-transform border-2 border-white tracking-widest">
-                                        隨機召喚隊員
+                                        {nextButtonLabel}
                                     </button>
                                 </div>
                             ) : (
@@ -915,7 +954,7 @@
                                                     onClick={handleNextLive} 
                                                     className="flex-1 px-4 py-3 border-2 border-white text-white rounded hover:bg-white hover:text-kimetsu-black transition font-bold flex items-center justify-center gap-2"
                                                 >
-                                                    {isHistoryMode ? '下一位 (歷史)' : '隨機召喚'} <Icons.ArrowRight size={20}/>
+                                                    {nextButtonLabel} <Icons.ArrowRight size={20}/>
                                                 </button>
                                             </div>
                                         </div>
