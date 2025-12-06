@@ -651,7 +651,7 @@
                     if (doc.exists()) {
                         const data = doc.data();
                         setLiveHistory(data.history || []);
-                        setLiveIndex(data.currentIndex || -1);
+                        setLiveIndex(data.currentIndex !== undefined ? data.currentIndex : -1);
                         setLiveShowGiver(data.showGiver || false);
                     } else {
                         setLiveHistory([]);
@@ -737,10 +737,9 @@
                 }
             };
 
-            // New handleLiveReset logic: Clears history BUT immediately picks first user
             const handleLiveReset = async () => {
                 if (confirm('確定要重新開始儀式嗎？\n這將重新抽籤。')) {
-                    const remaining = users; // All users are candidates on reset
+                    const remaining = users; 
                     if (remaining.length === 0) {
                          await updateLiveState([], -1, false);
                          return;
@@ -1046,11 +1045,7 @@
                                         {isSpectator ? "等待主公抽籤中..." : "準備開始抽籤"}
                                     </h2>
                                     <p className="text-slate-400">目前還有 {Object.keys(matches).length - liveHistory.length} 位隊員等待上台</p>
-                                    {!isSpectator && (
-                                        <button onClick={handleNextLive} disabled={isProcessing} className="px-8 py-4 bg-kimetsu-green text-white text-2xl font-bold rounded-lg shadow-[0_0_15px_rgba(46,204,113,0.6)] hover:scale-105 transition-transform border-2 border-white tracking-widest disabled:opacity-50 disabled:cursor-not-allowed">
-                                            {isProcessing ? <Icons.Loader2 size={24} className="animate-spin"/> : nextButtonLabel}
-                                        </button>
-                                    )}
+                                    {/* Start button removed from here as it auto-starts */}
                                 </div>
                             ) : (
                                 <div className="w-full max-w-4xl flex flex-col items-center gap-6 animate-slide-up">
@@ -1314,13 +1309,18 @@
                                             <Icons.Users size={24}/> 查看隊員名冊
                                         </button>
                                         
+                                        {/* Task Assignment Button: Always Visible if Users exist */}
                                         {users.length > 0 && (
                                             <>
                                                 <button onClick={() => setView('reveal')} className={`w-full py-4 ${Object.keys(matches).length > 0 ? 'bg-kimetsu-pink hover:bg-pink-400 border-pink-600' : 'bg-kimetsu-black hover:bg-slate-800 border-slate-900'} text-white rounded shadow-lg flex items-center justify-center gap-3 text-lg font-bold mt-8 ${Object.keys(matches).length > 0 ? 'animate-pulse' : ''} border-b-4 active:scale-95 transition-transform tracking-widest`}>
                                                     {Object.keys(matches).length > 0 ? <><Icons.Eye size={24}/> 任務下達！確認目標</> : <><Icons.Lock size={24}/> 隊員集合！確認卷軸</>}
                                                 </button>
                                                 
-                                                <button onClick={() => setView('spectator_live')} className="w-full py-4 bg-blue-600 hover:bg-blue-500 border-blue-800 text-white rounded shadow-lg flex items-center justify-center gap-3 text-lg font-bold border-b-4 active:scale-95 transition-transform tracking-widest mt-2">
+                                                {/* NEW SPECTATOR BUTTON */}
+                                                <button onClick={async () => {
+                                                    setView('spectator_live');
+                                                    // Auto start for spectator if needed logic can be here, but usually driven by admin
+                                                }} className="w-full py-4 bg-blue-600 hover:bg-blue-500 border-blue-800 text-white rounded shadow-lg flex items-center justify-center gap-3 text-lg font-bold border-b-4 active:scale-95 transition-transform tracking-widest mt-2">
                                                     <Icons.Tv size={24}/> 進入會場 (觀看模式)
                                                 </button>
                                             </>
