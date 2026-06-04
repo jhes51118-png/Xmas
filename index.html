@@ -3,1618 +3,727 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>鬼滅之刃一筆畫交換禮物 (連鎖版)</title>
-    <!-- Tailwind CSS -->
+    <title>盲孔壓鉚鋁釘拉拔力理論計算機 - 圖紙精確版</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts for a more brush-style look -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
-    <!-- HTML2Canvas & jsPDF for Backup -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'kimetsu-green': '#2ecc71', /* Tanjiro Green */
-                        'kimetsu-dark-green': '#006400',
-                        'kimetsu-black': '#2d3436',
-                        'kimetsu-bg': '#f5f6fa', /* Light gray/paper */
-                        'kimetsu-pink': '#fd79a8', /* Nezuko Pink */
-                        'kimetsu-yellow': '#f1c40f', /* Zenitsu Yellow */
-                        'wood-dark': '#5D4037',
-                        'wood-light': '#8D6E63',
-                    },
-                    fontFamily: {
-                        'kimetsu': ['"Noto Serif TC"', '"Songti TC"', 'serif'] 
-                    },
-                    backgroundImage: {
-                        'checkered': "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill-rule='evenodd'%3E%3Cpath d='M0 0h20v20H0V0zm20 20h20v20H20V20z' fill='%232ecc71' opacity='0.4'/%3E%3Cpath d='M20 0h20v20H20V0zM0 20h20v20H0V20z' fill='%232d3436' opacity='0.8'/%3E%3C/g%3E%3C/svg%3E\")"
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        body { font-family: 'Noto Serif TC', serif; }
-        .animate-fade-in { animation: fadeIn 0.8s ease-in; }
-        .animate-slide-up { animation: slideUp 0.5s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
-        /* Loading Spinner - Nichirin Sword Guard Style */
-        #initial-loader { position: fixed; inset: 0; background: #2d3436; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s; }
-        .spinner { 
-            width: 60px; height: 60px; 
-            border: 6px solid #2ecc71; 
-            border-top: 6px solid #fd79a8; 
-            border-radius: 50%; 
-            animation: spin 1s linear infinite;
-            box-shadow: 0 0 15px #2ecc71;
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 10px 40px -10px rgba(31, 38, 135, 0.12);
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .hidden-loader { opacity: 0; pointer-events: none; }
-        
-        /* Disable text selection for long press button */
-        .noselect {
-          -webkit-touch-callout: none; /* iOS Safari */
-            -webkit-user-select: none; /* Safari */
-             -khtml-user-select: none; /* Konqueror HTML */
-               -moz-user-select: none; /* Old versions of Firefox */
-                -ms-user-select: none; /* Internet Explorer/Edge */
-                    user-select: none; /* Non-prefixed version, currently
-                                          supported by Chrome, Edge, Opera and Firefox */
-        }
+        svg path, svg line, svg rect, foreignObject { transition: all 0.2s ease-out; }
+        .math-step { position: relative; padding-left: 1.5rem; }
+        .math-step::before { content: ''; position: absolute; left: 0; top: 0.5rem; bottom: -1rem; width: 2px; background-color: #e2e8f0; }
+        .math-step:last-child::before { display: none; }
+        .step-dot { position: absolute; left: -0.35rem; top: 0.35rem; width: 0.8rem; height: 0.8rem; border-radius: 50%; background-color: #3b82f6; border: 2px solid #fff; }
+        .table-container::-webkit-scrollbar { height: 8px; }
+        .table-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
-        /* Nezuko Box Styles */
-        .nezuko-box {
-            perspective: 1000px;
+        .svg-dim-box {
+            display: flex; align-items: center; width: 100%; height: 100%;
+            background-color: rgba(255, 255, 255, 0.9); border: 1px solid #94a3b8;
+            border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.2s; box-sizing: border-box;
         }
-        .nezuko-door {
-            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            transform-origin: left;
+        .svg-dim-box:hover, .svg-dim-box:focus-within {
+            border-color: #3b82f6; background-color: #ffffff;
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3); transform: scale(1.05); z-index: 10;
         }
-        .nezuko-box.open .nezuko-door {
-            transform: rotateY(-110deg);
+        .svg-dim-label { font-size: 11px; font-weight: 700; color: #475569; padding-left: 4px; user-select: none; cursor: text; }
+        .svg-dim-input {
+            width: 100%; background: transparent; border: none; outline: none;
+            font-size: 12px; font-weight: 800; color: #0f172a; text-align: center;
+            padding: 0 4px 0 0; margin: 0; appearance: none; cursor: text;
         }
-        .wood-pattern {
-            background-image: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px);
-        }
-        .metal-strap {
-            background: linear-gradient(90deg, #333, #555, #333);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.5);
-        }
+        .svg-dim-input::-webkit-inner-spin-button, .svg-dim-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .svg-dim-box.red-accent { border-color: #fca5a5; background-color: #fef2f2; }
+        .svg-dim-box.red-accent:hover, .svg-dim-box.red-accent:focus-within { border-color: #ef4444; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3); }
+        .svg-dim-box.red-accent .svg-dim-label { color: #b91c1c; }
+        .svg-dim-box.red-accent .svg-dim-input { color: #991b1b; }
     </style>
 </head>
-<body class="bg-checkered text-slate-800 font-kimetsu min-h-screen">
-    
-    <!-- 初始載入畫面 -->
-    <div id="initial-loader">
-        <div class="spinner"></div>
-        <p class="mt-6 text-kimetsu-green font-bold text-xl tracking-widest">全集中呼吸...連線中...</p>
-        <p id="error-msg" class="mt-2 text-kimetsu-pink text-sm max-w-md text-center hidden"></p>
+<body class="min-h-screen p-4 md:p-8 text-slate-800 flex flex-col items-center">
+
+    <div class="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <div class="lg:col-span-12 glass-panel rounded-2xl p-6 relative overflow-hidden">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><path d="M14 4c0-1.1.9-2 2-2"/><path d="M20 2c1.1 0 2 .9 2 2"/><path d="M22 8c0 1.1-.9 2-2 2"/><path d="M16 10c-1.1 0-2-.9-2-2"/><path d="M8 4c0-1.1.9-2 2-2"/><path d="M4 2c1.1 0 2 .9 2 2"/><path d="M2 8c0 1.1.9 2 2 2"/><path d="M8 10c-1.1 0-2-.9-2-2"/><path d="M14 20c0 1.1.9 2 2 2"/><path d="M20 22c1.1 0 2-.9 2-2"/><path d="M22 16c0-1.1-.9-2-2-2"/><path d="M16 14c-1.1 0-2 .9-2 2"/><path d="M8 20c0 1.1.9 2 2 2"/><path d="M4 22c1.1 0 2-.9 2-2"/><path d="M2 16c0-1.1.9-2 2 2"/><path d="M8 14c-1.1 0-2 .9-2 2"/></svg>
+                    壓鉚件拉拔力計算機 (盲孔齊平設計)
+                </h1>
+                <span class="bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm tracking-wide">💡 點擊圖面數字可直接修改，並即時連動公式</span>
+            </div>
+            
+            <div class="w-full bg-slate-50 border border-slate-200 rounded-xl flex justify-center items-center overflow-x-auto" style="min-height: 400px;">
+                <svg id="schematic" viewBox="0 0 700 450" class="w-full max-w-4xl h-auto drop-shadow-md">
+                    <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" /></marker>
+                        <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444" /></marker>
+                        <marker id="arrow-v" viewBox="0 0 10 10" refX="5" refY="9" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 5 10 L 10 0 z" fill="#64748b" /></marker>
+                        <marker id="arrow-v-rev" viewBox="0 0 10 10" refX="5" refY="1" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 10 L 5 0 L 10 10 z" fill="#64748b" /></marker>
+                        <linearGradient id="metalNut" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#94a3b8" /><stop offset="50%" stop-color="#f8fafc" /><stop offset="100%" stop-color="#64748b" /></linearGradient>
+                        <linearGradient id="metalPlate" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#e2e8f0" /><stop offset="100%" stop-color="#94a3b8" /></linearGradient>
+                        <pattern id="hatch" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="8" stroke="#cbd5e1" stroke-width="2" /></pattern>
+                        <pattern id="plateHatch" width="8" height="8" patternTransform="rotate(-45 0 0)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="8" stroke="#94a3b8" stroke-width="1.5" /></pattern>
+                    </defs>
+
+                    <!-- 中心線與紅色表面基準線 -->
+                    <line x1="300" y1="20" x2="300" y2="400" stroke="#94a3b8" stroke-dasharray="10 5 2 5" stroke-width="1.5" />
+                    <line id="svgRedRefLine" x1="20" y1="0" x2="680" y2="0" stroke="#ef4444" stroke-width="2.5" />
+                    <text id="svgRedRefText" fill="#ef4444" font-size="11" font-weight="bold">齊平基準面 (Top Surface)</text>
+
+                    <!-- 鋁板與壓鉚釘 -->
+                    <path id="svgPlateL" d="" fill="url(#metalPlate)" stroke="#475569" stroke-width="2" stroke-linejoin="round"/>
+                    <path id="svgPlateR" d="" fill="url(#metalPlate)" stroke="#475569" stroke-width="2" stroke-linejoin="round"/>
+                    <path id="svgPlateLHatch" d="" fill="url(#plateHatch)" stroke-linejoin="round"/>
+                    <path id="svgPlateRHatch" d="" fill="url(#plateHatch)" stroke-linejoin="round"/>
+                    <path id="svgNut" d="" fill="url(#metalNut)" stroke="#334155" stroke-width="2" stroke-linejoin="round"/>
+                    <path id="svgNutHatch" d="" fill="url(#hatch)" stroke-linejoin="round"/>
+
+                    <!-- 拉拔力 F 箭頭 -->
+                    <path id="fArrow" d="M 300 45 L 300 20" stroke="#ef4444" stroke-width="3" marker-end="url(#arrow-red)" fill="none" />
+                    <text id="fText" x="310" y="35" fill="#ef4444" font-weight="bold" font-size="14">拉拔力 (F)</text>
+
+                    <!-- 剪切面與潰縮面指示線 -->
+                    <line id="svgShearLeft" stroke="#ef4444" stroke-dasharray="6 4" stroke-width="3" />
+                    <line id="svgShearRight" stroke="#ef4444" stroke-dasharray="6 4" stroke-width="3" />
+                    <rect id="svgShearBg" width="160" height="24" fill="#fef2f2" rx="4" stroke="#fecaca"/>
+                    <text id="svgShearText" fill="#dc2626" font-size="12" font-weight="bold">← 剪切面 (沿著 Dp)</text>
+
+                    <line id="svgBearingLeft" stroke="#3b82f6" stroke-dasharray="4 2" stroke-width="3" />
+                    <line id="svgBearingRight" stroke="#3b82f6" stroke-dasharray="4 2" stroke-width="3" />
+                    <rect id="svgBearingBg" width="170" height="24" fill="#eff6ff" rx="4" stroke="#bfdbfe"/>
+                    <text id="svgBearingText" fill="#2563eb" font-size="12" font-weight="bold">← 潰縮面 (Dp 與 Du 間)</text>
+
+                    <!-- 尺寸線段 -->
+                    <g id="dimensions_lines_d">
+                        <line id="dimDh_line" stroke="#64748b" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+                        <line id="dimDh_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimDh_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
+                        <line id="dimDu_line" stroke="#64748b" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+                        <line id="dimDu_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimDu_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
+                        <line id="dimDp_line" stroke="#64748b" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+                        <line id="dimDp_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimDp_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
+                        <line id="dimD_line" stroke="#64748b" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+                        <line id="dimD_ext1" stroke="#94a3b8" stroke-dasharray="3" /><line id="dimD_ext2" stroke="#94a3b8" stroke-dasharray="3" />
+                        <line id="dimT_line" stroke="#ef4444" marker-start="url(#arrow-red)" marker-end="url(#arrow-red)" stroke-width="2.5"/>
+                        <line id="dimT_ext1" stroke="#fecaca" stroke-dasharray="3" /><line id="dimT_ext2" stroke="#fecaca" stroke-dasharray="3" />
+                    </g>
+                    <g id="dimensions_lines_h">
+                        <line id="dimHh_line" stroke="#64748b" marker-start="url(#arrow-v-rev)" marker-end="url(#arrow-v)" />
+                        <line id="dimHh_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimHh_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
+                        <line id="dimHu_line" stroke="#64748b" marker-start="url(#arrow-v-rev)" marker-end="url(#arrow-v)" />
+                        <line id="dimHu_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimHu_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
+                        <line id="dimHp_line" stroke="#64748b" marker-start="url(#arrow-v-rev)" marker-end="url(#arrow-v)" />
+                        <line id="dimHp_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimHp_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
+                        <line id="dimHb_line" stroke="#64748b" marker-start="url(#arrow-v-rev)" marker-end="url(#arrow-v)" />
+                        <line id="dimHb_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimHb_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
+                    </g>
+
+                    <!-- 外掛的 HTML 輸入框 -->
+                    <foreignObject id="dimDh_fo" width="70" height="24">
+                        <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Dh=</label><input type="number" id="svgInput_dh" class="svg-dim-input" onchange="syncFromSVG('dh', this.value)" step="0.1" /></div>
+                    </foreignObject>
+                    <foreignObject id="dimDu_fo" width="70" height="24">
+                        <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Du=</label><input type="number" id="svgInput_du" class="svg-dim-input" onchange="syncFromSVG('du', this.value)" step="0.1" /></div>
+                    </foreignObject>
+                    <foreignObject id="dimDp_fo" width="70" height="24">
+                        <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box red-accent" title="擠料環"><label class="svg-dim-label">Dp=</label><input type="number" id="svgInput_dp" class="svg-dim-input" onchange="syncFromSVG('dp', this.value)" step="0.1" /></div>
+                    </foreignObject>
+                    <foreignObject id="dimD_fo" width="65" height="24">
+                        <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box" title="主體/孔壁"><label class="svg-dim-label">D=</label><input type="number" id="svgInput_d" class="svg-dim-input" onchange="syncFromSVG('d', this.value)" step="0.1" /></div>
+                    </foreignObject>
+                    <foreignObject id="dimT_fo" width="65" height="24">
+                        <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box red-accent" title="表面填滿深度"><label class="svg-dim-label">t=</label><input type="number" id="svgInput_t" class="svg-dim-input" onchange="syncFromSVG('t', this.value)" step="0.05" /></div>
+                    </foreignObject>
+                    <foreignObject id="dimHh_fo" width="70" height="24">
+                        <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hh=</label><input type="number" id="svgInput_hh" class="svg-dim-input" onchange="syncFromSVG('hh', this.value)" step="0.1" /></div>
+                    </foreignObject>
+                    <foreignObject id="dimHu_fo" width="70" height="24">
+                        <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hu=</label><input type="number" id="svgInput_hu" class="svg-dim-input" onchange="syncFromSVG('hu', this.value)" step="0.1" /></div>
+                    </foreignObject>
+                    <foreignObject id="dimHp_fo" width="70" height="24">
+                        <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hp=</label><input type="number" id="svgInput_hp" class="svg-dim-input" onchange="syncFromSVG('hp', this.value)" step="0.1" /></div>
+                    </foreignObject>
+                    <foreignObject id="dimHb_fo" width="70" height="24">
+                        <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hb=</label><input type="number" id="svgInput_hb" class="svg-dim-input" onchange="syncFromSVG('hb', this.value)" step="0.1" /></div>
+                    </foreignObject>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 參數輸入面板 -->
+        <div class="lg:col-span-5 flex flex-col gap-6">
+            <div class="glass-panel rounded-2xl p-6">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b border-slate-200 pb-2">
+                    <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-sm">1</span> 盲孔面板參數 (Panel)
+                </h3>
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">材質抗拉強度 (UTS)</label>
+                        <select id="materialSelect" class="w-full rounded-lg border border-slate-300 px-3 py-2 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none mb-2 text-sm" onchange="updateUTS()">
+                            <option value="custom">自訂抗拉強度</option>
+                            <option value="110">AL 1100-H14 (純鋁) - UTS ≈ 110 MPa</option>
+                            <option value="228" selected>AL 5052-H32 (常用鈑金) - UTS ≈ 228 MPa</option>
+                            <option value="310">AL 6061-T6 (結構鋁) - UTS ≈ 310 MPa</option>
+                        </select>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="utsInput" value="228" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" oninput="calculate()">
+                            <span class="text-sm text-slate-500 w-12">MPa</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-indigo-50/60 p-4 rounded-xl border border-indigo-100 relative">
+                        <label class="flex justify-between text-sm font-semibold text-slate-700 mb-1">
+                            <span class="text-indigo-800">槽內填滿厚度 (t)</span>
+                            <span id="tDisplay" class="text-indigo-600 font-mono font-bold">0.30 mm</span>
+                        </label>
+                        <p class="text-xs text-indigo-500 mb-2">擠入退刀槽內的鋁材實際厚度 (自槽頂往下起算)</p>
+                        <input type="range" id="tSlider" min="0.05" max="0.6" step="0.05" value="0.3" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600" oninput="syncSlider('t', this.value)">
+                        <input type="number" id="tInput" value="0.3" class="hidden">
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-6">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b border-slate-200 pb-2">
+                    <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-sm">2</span> 壓鉚釘幾何 (Nut Profile)
+                </h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <h4 class="text-xs font-bold text-slate-500 mb-2 border-b pb-1">直徑參數 (D)</h4>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">頭部外徑 (Dh)</label>
+                            <input type="number" id="dhInput" value="4.6" step="0.1" class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="calculate()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-red-600 mb-1">擠料環外徑 (Dp)</label>
+                            <input type="number" id="dpInput" value="4.2" step="0.1" class="w-full rounded border border-red-300 bg-red-50 px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-red-500 font-bold" oninput="calculate()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">退刀槽徑 (Du)</label>
+                            <input type="number" id="duInput" value="3.2" step="0.1" class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="calculate()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">主體/孔徑 (D)</label>
+                            <input type="number" id="dInput" value="3.6" step="0.1" class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="calculate()">
+                        </div>
+                    </div>
+                    <div class="space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <h4 class="text-xs font-bold text-slate-500 mb-2 border-b pb-1">高度參數 (H)</h4>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">頭部高度 (Hh)</label>
+                            <input type="number" id="hhInput" value="0.3" step="0.1" class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="calculate()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">槽高度 (Hu)</label>
+                            <input type="number" id="huInput" value="0.3" step="0.1" class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="calculate()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">擠料環高 (Hp)</label>
+                            <input type="number" id="hpInput" value="0.3" step="0.1" class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="calculate()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">主體長度 (Hb)</label>
+                            <input type="number" id="hbInput" value="2.3" step="0.1" class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-blue-500" oninput="calculate()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 運算結果與原理面板 -->
+        <div class="lg:col-span-7 flex flex-col gap-6">
+            
+            <div class="glass-panel rounded-2xl p-6 bg-gradient-to-br from-white to-slate-50 border-emerald-100 relative">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        理論極限拉拔力
+                    </h3>
+                    <button onclick="addRecord()" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-4 rounded-lg shadow transition-all active:scale-95 flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        新增至比較
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm text-center">
+                        <div class="flex justify-center items-baseline gap-2">
+                            <span id="resultNewton" class="text-5xl font-black text-slate-800">---</span>
+                            <span class="text-xl text-slate-500 font-bold">N</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-2">牛頓 (Newton)</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm text-center">
+                        <div class="flex justify-center items-baseline gap-2">
+                            <span id="resultKgf" class="text-5xl font-black text-emerald-600">---</span>
+                            <span class="text-xl text-emerald-500 font-bold">kgf</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-2">等效公斤力</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-6 flex-1">
+                <h3 class="text-lg font-bold text-slate-800 mb-5 flex items-center gap-2 border-b border-slate-200 pb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-500"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                    物理計算邏輯 (雙重鋁板破壞模型)
+                </h3>
+                <div class="space-y-4 text-sm text-slate-700">
+                    <div class="math-step">
+                        <div class="step-dot"></div>
+                        <h4 class="font-bold text-slate-900 mb-1">Step 1: 判定「有效抗拉厚度 (<span class="font-serif italic text-red-600">t<sub>eff</sub></span>)」</h4>
+                        <p class="text-slate-500 mb-1 text-xs">`t` 為擠入退刀槽內的鋁板厚度。直接以輸入的 `t` 進行計算。</p>
+                        <div class="bg-slate-100 p-3 rounded font-mono text-xs overflow-x-auto flex items-center flex-wrap gap-2">
+                            <span><span class="text-indigo-600">t_eff</span> = t = <span id="math-t"></span> = <strong class="text-red-600 text-sm"><span id="math-teff"></span> mm</strong></span>
+                            <span id="tWarning" class="hidden text-amber-600 font-bold tracking-wide text-xs bg-amber-50 px-2 py-0.5 rounded border border-amber-200">⚠️ (目前 t 大於槽高 Hu)</span>
+                        </div>
+                    </div>
+                    <div class="math-step">
+                        <div class="step-dot"></div>
+                        <h4 class="font-bold text-slate-900 mb-1">Step 2: 模式A - 剪切破壞 (<span class="font-serif italic">Shear</span>)</h4>
+                        <p class="text-slate-500 mb-1 text-xs">鋁材被擠料環向上推擠，沿著擠料環外徑 (直徑 <strong class="text-red-500">Dp</strong>) 發生垂直撕扯斷裂。</p>
+                        <div class="bg-slate-100 p-3 rounded font-mono text-xs overflow-x-auto">
+                            A_shear = π × <span class="text-red-600 font-bold">Dp</span> × t_eff = 3.1416 × <span id="math-dp"></span> × <span id="math-teff2"></span> = <strong class="text-slate-900"><span id="math-a-shear"></span> mm²</strong><br>
+                            F_shear = A_shear × (UTS × 0.6) = <span id="math-f-shear"></span> N
+                        </div>
+                    </div>
+                    <div class="math-step">
+                        <div class="step-dot"></div>
+                        <h4 class="font-bold text-slate-900 mb-1">Step 3: 模式B - 潰縮破壞 (<span class="font-serif italic">Crushing</span>)</h4>
+                        <p class="text-slate-500 mb-1 text-xs">拉拔時擠料環向上推，卡在退刀槽(Du)與擠料環(Dp)間的鋁環承受不住而碎裂。</p>
+                        <div class="bg-slate-100 p-3 rounded font-mono text-xs overflow-x-auto">
+                            A_bearing = (π/4) × (Dp² - Du²) = 0.7854 × (<span id="math-dp2"></span>² - <span id="math-du"></span>²) = <strong class="text-slate-900"><span id="math-a-bearing"></span> mm²</strong><br>
+                            F_crush = A_bearing × UTS = <span id="math-f-crush"></span> N
+                        </div>
+                    </div>
+                    <div class="math-step">
+                        <div class="step-dot"></div>
+                        <h4 class="font-bold text-slate-900 mb-1">Step 4: 理論拉拔力 (<span class="font-serif italic">F</span>)</h4>
+                        <p class="text-slate-500 mb-1 text-xs">取兩種破壞模式的較小值 (最先發生的破壞為主)。</p>
+                        <div class="bg-slate-100 p-3 rounded font-mono text-xs overflow-x-auto">
+                            <span class="text-indigo-600">F</span> = min(F_shear, F_crush) = <strong class="text-emerald-600 text-sm"><span id="math-f"></span> N</strong>
+                            <span id="math-failure-mode" class="ml-2 text-xs font-bold px-2 py-1 rounded text-white shadow-sm"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 比較清單 -->
+        <div class="lg:col-span-12 glass-panel rounded-2xl p-6 mt-2">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b border-slate-200 pb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                拉拔力評估比較清單
+            </h3>
+            <div class="table-container overflow-x-auto rounded-lg border border-slate-200">
+                <table class="w-full text-sm text-left text-slate-600 whitespace-nowrap">
+                    <thead class="text-xs text-slate-700 uppercase bg-slate-100">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 font-semibold">材質 UTS</th>
+                            <th scope="col" class="px-4 py-3 font-semibold">槽內深 t</th>
+                            <th scope="col" class="px-4 py-3 font-semibold">外徑(Dh/Dp/Du/D)</th>
+                            <th scope="col" class="px-4 py-3 font-semibold">高度(Hh/Hu/Hp/Hb)</th>
+                            <th scope="col" class="px-4 py-3 font-bold text-emerald-700 bg-emerald-50">拉拔力 (N)</th>
+                            <th scope="col" class="px-4 py-3 font-bold text-emerald-700 bg-emerald-50">主要破壞</th>
+                            <th scope="col" class="px-4 py-3 text-center">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr id="emptyStateRow" class="bg-white border-b">
+                            <td colspan="7" class="px-4 py-8 text-center text-slate-400">尚未新增任何比較紀錄。請點擊上方「新增至比較」按鈕。</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
-    <div id="root"></div>
-
-    <!-- Global Error Handler -->
     <script>
-        window.onerror = function(msg, url, line, col, error) {
-            const loader = document.getElementById('initial-loader');
-            const errText = document.getElementById('error-msg');
-            if (loader && errText) {
-                loader.classList.remove('hidden-loader'); 
-                document.querySelector('.spinner').style.display = 'none'; 
-                errText.classList.remove('hidden');
-                errText.innerHTML = `<strong>血鬼術（錯誤）發生：</strong><br>${msg}<br><span style="font-size:10px; color:#ccc">${url}:${line}</span><br><br>請檢查網路連線是否正常。`;
-            }
-            return false;
-        };
-    </script>
+        let currentForceN = 0;
+        let currentForceKgf = 0;
+        let currentFailureMode = "";
+        let recordCount = 0;
 
-    <!-- React App Script -->
-    <script type="text/babel" data-type="module">
-        import React, { useState, useEffect, useRef } from 'https://esm.sh/react@18?dev';
-        import { createRoot } from 'https://esm.sh/react-dom@18/client?dev';
-        
-        // Firebase Imports (Web SDK)
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { 
-            getFirestore, collection, addDoc, onSnapshot, 
-            doc, setDoc, updateDoc, deleteDoc, getDocs, writeBatch, serverTimestamp 
-        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
-        // --- 鬼殺隊階級資料 ---
-        const RANKS = [
-            '癸', '壬', '辛', '庚', '己', '戊', '丁', '丙', '乙', '甲'
-        ];
-        const HASHIRA_TITLES = [
-            '水柱', '蟲柱', '炎柱', '音柱', '岩柱', '戀柱', '霞柱', '蛇柱', '風柱'
-        ];
-
-        const getRandomRank = () => {
-            const roll = Math.random();
-            if (roll < 0.1) { // 10% 機率成為柱
-                return HASHIRA_TITLES[Math.floor(Math.random() * HASHIRA_TITLES.length)];
-            }
-            // 隨機一般階級，偏向低階
-            const index = Math.floor(Math.random() * 5); // 癸~己
-            return RANKS[index];
-        };
-
-        // --- 呼吸法樣式設定 ---
-        const BREATH_STYLES = {
-            water: { 
-                name: '水之呼吸', 
-                border: 'border-blue-600', 
-                bg: 'bg-blue-50', 
-                text: 'text-blue-800', 
-                ring: 'ring-blue-400',
-                icon: '🌊' 
-            },
-            fire: { 
-                name: '炎之呼吸', 
-                border: 'border-red-600', 
-                bg: 'bg-red-50', 
-                text: 'text-red-800', 
-                ring: 'ring-red-400',
-                icon: '🔥'
-            },
-            thunder: { 
-                name: '雷之呼吸', 
-                border: 'border-yellow-500', 
-                bg: 'bg-yellow-50', 
-                text: 'text-yellow-800', 
-                ring: 'ring-yellow-400',
-                icon: '⚡'
-            },
-            beast: { 
-                name: '獸之呼吸', 
-                border: 'border-stone-600', 
-                bg: 'bg-stone-50', 
-                text: 'text-stone-800', 
-                ring: 'ring-stone-400',
-                icon: '🐗'
-            },
-            insect: { 
-                name: '蟲之呼吸', 
-                border: 'border-purple-600', 
-                bg: 'bg-purple-50', 
-                text: 'text-purple-800', 
-                ring: 'ring-purple-400',
-                icon: '🦋'
-            },
-            default: {
-                name: '普通隊員',
-                border: 'border-kimetsu-black',
-                bg: 'bg-white',
-                text: 'text-kimetsu-black',
-                ring: 'ring-kimetsu-green',
-                icon: '⚔️'
-            }
-        };
-
-        const getStyle = (key) => BREATH_STYLES[key] || BREATH_STYLES.default;
-
-        // --- 簡易圖示元件 (SVG) ---
-        const Icon = ({ path, size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                {path}
-            </svg>
-        );
-
-        const SwordIcon = ({ size = 24, className = "" }) => (
-             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                <path d="M14.5 17.5L3 6V3h3l11.5 11.5"/>
-                <path d="M13 19l6-6"/>
-                <path d="M16 16l4 4"/>
-                <path d="M19 21l2-2"/>
-            </svg>
-        );
-        
-        const Icons = {
-            Gift: (p) => <Icon {...p} path={<><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></>} />,
-            PenTool: (p) => <Icon {...p} path={<><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></>} />,
-            Users: (p) => <Icon {...p} path={<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
-            Shuffle: (p) => <Icon {...p} path={<><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l14.2-12.6"/><path d="m22 2-5 5"/><path d="m17 2 5 5"/><path d="M2 6h1.4c1.3 0 2.5.6 3.3 1.7l14.2 12.6"/><path d="m22 22-5-5"/><path d="m17 22 5-5"/></>} />,
-            Eye: (p) => <Icon {...p} path={<><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></>} />,
-            Snowflake: (p) => <Icon {...p} path={<><path d="M12 2v20"/><path d="M2 12h20"/><path d="m4.93 4.93 14.14 14.14"/><path d="m19.07 4.93-14.14 14.14"/></>} />, 
-            RotateCcw: (p) => <Icon {...p} path={<><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></>} />,
-            Save: (p) => <Icon {...p} path={<><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></>} />,
-            Check: (p) => <Icon {...p} path={<polyline points="20 6 9 17 4 12"/>} />,
-            Cloud: (p) => <Icon {...p} path={<path d="M17.5 19c0-3.037-2.463-5.5-5.5-5.5S6.5 15.963 6.5 19 8.963 24.5 12 24.5s5.5-2.463 5.5-5.5z" />} />,
-            WifiOff: (p) => <Icon {...p} path={<><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></>} />,
-            Settings: (p) => <Icon {...p} path={<><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.39a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>} />,
-            Loader2: (p) => <Icon {...p} className={`${p.className} animate-spin`} path={<path d="M21 12a9 9 0 1 1-6.219-8.56" />} />,
-            Lock: (p) => <Icon {...p} path={<><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>} />,
-            LogOut: (p) => <Icon {...p} path={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>} />,
-            Trash2: (p) => <Icon {...p} path={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></>} />,
-            Key: (p) => <Icon {...p} path={<><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></>} />,
-            Image: (p) => <Icon {...p} path={<><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></>} />, 
-            Edit: (p) => <Icon {...p} path={<><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></>} />,
-            EyeOff: (p) => <Icon {...p} path={<><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></>} />,
-            Sword: SwordIcon,
-            Mic: (p) => <Icon {...p} path={<><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></>} />,
-            ArrowRight: (p) => <Icon {...p} path={<><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></>} />,
-            ArrowLeft: (p) => <Icon {...p} path={<><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></>} />,
-            RotateCw: (p) => <Icon {...p} path={<><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></>} />,
-            Tv: (p) => <Icon {...p} path={<><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></>} />,
-            Play: (p) => <Icon {...p} path={<polygon points="5 3 19 12 5 21 5 3" />} />,
-            Square: (p) => <Icon {...p} path={<rect x="3" y="3" width="18" height="18" rx="2" ry="2" />} />,
-            FileDown: (p) => <Icon {...p} path={<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></>} />
-        };
-
-        // --- Nezuko Box Component (Updated: Controlled + Visual State) ---
-        const NezukoBox = ({ children, isLocked, isOpen, onClick }) => {
-            // Check if interactive (Spectators pass onClick=null)
-            const canInteract = !!onClick; 
-
-            const handleClick = () => {
-                if (!canInteract) return; // Ignore clicks if not interactive
-                if (isLocked) {
-                    alert('尚未解開封印！');
-                    return;
+        function syncFromSVG(param, val) {
+            if (!val || isNaN(val)) return; 
+            const panelInput = document.getElementById(param + 'Input');
+            if (panelInput) {
+                panelInput.value = val;
+                if (param === 't') {
+                    const display = document.getElementById('tDisplay');
+                    if (display) display.innerText = parseFloat(val).toFixed(2) + " mm";
+                    const slider = document.getElementById('tSlider');
+                    if (slider) slider.value = val;
                 }
-                onClick();
-            };
-
-            // Determine label based on interaction state
-            let labelText = isOpen ? '點擊關閉' : '點擊開箱';
-            if (!canInteract) {
-                labelText = isOpen ? '展示中' : '等待揭曉';
             }
+            calculate();
+        }
 
-            return (
-                <div 
-                    className={`relative w-full h-full bg-wood-dark border-4 border-black rounded-lg shadow-2xl overflow-hidden nezuko-box ${isOpen ? 'open' : ''} ${canInteract ? 'cursor-pointer' : 'cursor-default'}`}
-                    onClick={handleClick}
-                >
-                    {/* Content (Drawing) Inside */}
-                    <div className="absolute inset-0 flex items-center justify-center bg-white flex-col">
-                        {children}
-                        {/* Fallback label if image fails or box is just empty */}
-                        {!children && <span className="text-slate-300 font-bold">無內容</span>}
-                    </div>
+        function syncSlider(idPrefix, val) {
+            document.getElementById(idPrefix + 'Input').value = val;
+            document.getElementById(idPrefix + 'Display').innerText = parseFloat(val).toFixed(2) + " mm";
+            calculate();
+        }
 
-                    {/* Door Overlay */}
-                    <div className="absolute inset-0 bg-wood-light flex flex-col justify-between p-2 nezuko-door z-20 wood-pattern border-r-4 border-black">
-                        {/* Metal Straps */}
-                        <div className="w-full h-4 metal-strap rounded"></div>
-                        <div className="w-full h-4 metal-strap rounded"></div>
-                        
-                        {/* Center Pattern */}
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                            <div className="w-16 h-16 border-4 border-black bg-kimetsu-pink rounded-full flex items-center justify-center shadow-lg">
-                                <span className="text-black font-black text-2xl">禰</span>
-                            </div>
-                            <span className="text-white bg-black px-2 py-1 text-xs mt-2 font-bold rounded">{labelText}</span>
-                        </div>
+        function updateUTS() {
+            const select = document.getElementById('materialSelect');
+            const utsInput = document.getElementById('utsInput');
+            if (select.value !== 'custom') {
+                utsInput.value = select.value;
+            }
+            calculate();
+        }
 
-                        <div className="w-full h-4 metal-strap rounded"></div>
-                        <div className="w-full h-4 metal-strap rounded"></div>
-                    </div>
-                </div>
-            );
-        };
+        // 安全地更新 DOM 內容，避免因為標籤被移除而導致程式當機
+        function safeSetText(id, txt) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = txt;
+        }
 
-        // --- Local Nezuko Box Component ---
-        const LocalNezukoBox = ({ children, isLocked, defaultOpen = false }) => {
-            const [isOpen, setIsOpen] = useState(defaultOpen);
+        function calculate() {
+            const uts = parseFloat(document.getElementById('utsInput').value) || 0;
+            const t = parseFloat(document.getElementById('tInput').value) || 0;
             
-            // Effect to force sync if defaultOpen changes (e.g. view change)
-            useEffect(() => {
-                if (defaultOpen) setIsOpen(true);
-            }, [defaultOpen]);
+            const dh = parseFloat(document.getElementById('dhInput').value) || 0;
+            const dp = parseFloat(document.getElementById('dpInput').value) || 0;
+            const du = parseFloat(document.getElementById('duInput').value) || 0;
+            const d  = parseFloat(document.getElementById('dInput').value) || 0;
+            
+            const hh = parseFloat(document.getElementById('hhInput').value) || 0;
+            const hp = parseFloat(document.getElementById('hpInput').value) || 0;
+            const hu = parseFloat(document.getElementById('huInput').value) || 0;
+            const hb = parseFloat(document.getElementById('hbInput').value) || 0;
 
-            return (
-                <NezukoBox 
-                    isLocked={isLocked} 
-                    isOpen={isOpen} 
-                    onClick={() => setIsOpen(!isOpen)}
-                >
-                    {children}
-                </NezukoBox>
-            );
-        };
+            if (uts<=0 || t<=0 || dh<=0 || dp<=0 || du<=0 || d<=0 || hh<=0 || hp<=0 || hu<=0 || hb<=0) return;
 
-        // --- Long Press Button Component ---
-        const LongPressButton = ({ onComplete, label, icon: Icon, disabled }) => {
-            const [pressing, setPressing] = useState(false);
-            const [progress, setProgress] = useState(0);
-            const intervalRef = useRef(null);
-
-            useEffect(() => {
-                if (pressing && !disabled) {
-                    intervalRef.current = setInterval(() => {
-                        setProgress(p => {
-                            if (p >= 100) {
-                                clearInterval(intervalRef.current);
-                                return 100;
-                            }
-                            return p + 2; 
-                        });
-                    }, 30);
+            // ---- 物理計算 ----
+            const t_eff = t; // 直接使用使用者輸入的 t，不強制設限
+            
+            const warningEl = document.getElementById('tWarning');
+            if (warningEl) {
+                if (t > hu) warningEl.classList.remove('hidden');
+                else warningEl.classList.add('hidden');
+            }
+            
+            // 模式A: 剪切破壞 (沿著擠料環 Dp 撕扯鋁板)
+            const areaShear = Math.PI * dp * t_eff;
+            const forceShear = areaShear * (uts * 0.6);
+            
+            // 模式B: 潰縮破壞 (夾在擠料環 Dp 與退刀槽 Du 之間的鋁環被壓碎)
+            const areaBearing = dp > du ? (Math.PI / 4) * (Math.pow(dp, 2) - Math.pow(du, 2)) : 0;
+            const forceCrush = areaBearing * uts;
+            
+            // 取較小值
+            currentForceN = Math.min(forceShear, forceCrush);
+            currentForceKgf = currentForceN / 9.80665;
+            
+            const modeEl = document.getElementById('math-failure-mode');
+            if (modeEl) {
+                if (forceShear < forceCrush) {
+                    currentFailureMode = "剪切為主";
+                    modeEl.innerText = "剪切為主 (Shear)";
+                    modeEl.className = "ml-2 text-xs font-bold px-2 py-1 rounded bg-red-500 text-white shadow-sm";
                 } else {
-                    setProgress(0);
-                    if (intervalRef.current) clearInterval(intervalRef.current);
-                }
-                return () => {
-                    if (intervalRef.current) clearInterval(intervalRef.current);
-                }
-            }, [pressing, disabled]);
-
-            useEffect(() => {
-                if (progress === 100) {
-                    setPressing(false);
-                    onComplete();
-                }
-            }, [progress, onComplete]);
-
-            return (
-                <button
-                    disabled={disabled}
-                    className={`w-full py-3 border-2 text-kimetsu-black rounded font-bold flex items-center justify-center gap-2 shadow-sm tracking-widest relative overflow-hidden noselect transition ${disabled ? 'bg-gray-100 border-gray-300 opacity-50 cursor-not-allowed' : 'bg-white border-kimetsu-black hover:bg-slate-50 cursor-pointer'}`}
-                    onMouseDown={() => setPressing(true)}
-                    onMouseUp={() => setPressing(false)}
-                    onMouseLeave={() => setPressing(false)}
-                    onTouchStart={() => setPressing(true)}
-                    onTouchEnd={() => setPressing(false)}
-                >
-                    <div className="absolute inset-0 bg-red-200 transition-all duration-75 ease-linear" style={{ width: `${progress}%` }}></div>
-                    <div className="relative flex items-center gap-2 z-10">
-                        {Icon && <Icon size={20}/>} 
-                        {pressing ? (progress === 100 ? '已確認' : '請長按以銷毀...') : label}
-                    </div>
-                </button>
-            )
-        };
-
-        // --- Config Wizard Component ---
-        const ConfigWizard = ({ onConfigComplete, onOfflineMode }) => {
-            const [inputConfig, setInputConfig] = useState(`{
-      apiKey: "AIzaSyBn6SMVHAYM8A_P6Ah2b6bgF416DmCu6EE",
-      authDomain: "christmas-dd507.firebaseapp.com",
-      projectId: "christmas-dd507",
-      storageBucket: "christmas-dd507.firebasestorage.app",
-      messagingSenderId: "1067471433502",
-      appId: "1:1067471433502:web:fe5d0b38e1329775cea30f",
-      measurementId: "G-D5VM0TKZXV"
-    }`);
-            const [error, setError] = useState('');
-
-            const handleSave = () => {
-                try {
-                    let configStr = inputConfig.trim();
-                    configStr = configStr.replace(/^(const|let|var|export\s+const)\s+\w+\s*=\s*/, '');
-                    configStr = configStr.replace(/;$/, '');
-                    let config;
-                    try {
-                        config = JSON.parse(configStr);
-                    } catch (e1) {
-                        try {
-                            let jsStr = configStr;
-                            if (!jsStr.startsWith('{')) jsStr = `{${jsStr}}`;
-                            const fn = new Function(`return ${jsStr}`);
-                            config = fn();
-                        } catch (e2) {
-                            throw new Error("無法解析內容，請檢查格式。");
-                        }
-                    }
-                    if (!config || typeof config !== 'object') throw new Error("設定必須是物件格式");
-                    if (!config.apiKey) throw new Error("缺少 apiKey");
-                    localStorage.setItem('fb_config_override', JSON.stringify(config));
-                    onConfigComplete(config);
-                } catch(e) {
-                    setError('無法解析：' + e.message + '。建議直接從 Firebase Console 複製整段 config 物件。');
-                }
-            };
-
-            return (
-                <div className="flex flex-col items-center justify-center min-h-screen p-4">
-                    <div className="bg-white p-8 rounded-lg shadow-2xl max-w-lg w-full border-4 border-kimetsu-black relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-kimetsu-green"></div>
-                        <div className="flex justify-center mb-4 text-kimetsu-black"><Icons.Settings size={48} /></div>
-                        <h2 className="text-2xl font-bold text-center mb-2 text-kimetsu-black tracking-widest">鬼殺隊・總部連線設定</h2>
-                        <p className="text-slate-600 text-center mb-6 font-bold">偵測不到鎹鴉信號。請輸入 Firebase Config 連線，或選擇離線修煉。</p>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-kimetsu-black mb-1">輸入密令 (Firebase Config JSON):</label>
-                                <textarea 
-                                    className="w-full h-32 p-3 border-2 border-kimetsu-black rounded text-xs font-mono bg-kimetsu-bg focus:ring-2 ring-kimetsu-green outline-none"
-                                    placeholder='const firebaseConfig = { ... };'
-                                    value={inputConfig}
-                                    onChange={e => setInputConfig(e.target.value)}
-                                ></textarea>
-                                {error && <p className="text-kimetsu-pink text-xs mt-1 whitespace-pre-wrap font-bold">{error}</p>}
-                            </div>
-                            <button onClick={handleSave} className="w-full py-3 bg-kimetsu-black hover:bg-slate-800 text-white rounded font-bold transition border-b-4 border-slate-900 tracking-widest">建立連線</button>
-                            <div className="relative my-4">
-                                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-300"></div></div>
-                                <div className="relative flex justify-center text-sm"><span className="px-2 bg-white text-slate-500 font-bold">或</span></div>
-                            </div>
-                            <button onClick={onOfflineMode} className="w-full py-3 bg-kimetsu-green hover:bg-green-500 text-white rounded font-bold flex items-center justify-center gap-2 transition border-b-4 border-green-700 tracking-widest">
-                                <Icons.WifiOff size={20} /> 離線修煉 (單機)
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        // --- Helper Function for Timestamp ---
-        const formatTime = (timestamp) => {
-            if (!timestamp || !timestamp.seconds) return '未知時間';
-            const date = new Date(timestamp.seconds * 1000);
-            return `${date.getMonth()+1}/${date.getDate()} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
-        };
-
-        // --- Drawing Pad Component ---
-        const DrawingPad = ({ onSave, onCancel, Icons, initialData }) => {
-            const canvasRef = useRef(null);
-            const [isDrawing, setIsDrawing] = useState(false);
-            const [name, setName] = useState(initialData ? initialData.name : '');
-            const [password, setPassword] = useState(initialData ? initialData.password : '');
-            const [style, setStyle] = useState(initialData ? (initialData.style || 'water') : 'water');
-            const [hasDrawn, setHasDrawn] = useState(false);
-            const [isLocked, setIsLocked] = useState(false);
-
-            useEffect(() => {
-                const canvas = canvasRef.current;
-                if(!canvas) return;
-                canvas.width = canvas.parentElement.clientWidth;
-                canvas.height = canvas.parentElement.clientWidth;
-                const ctx = canvas.getContext('2d');
-                ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#000000'; 
-                ctx.lineWidth = 6; 
-                ctx.fillStyle = '#ffffff'; 
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                if (initialData && initialData.drawing) {
-                    const img = new Image();
-                    img.src = initialData.drawing;
-                    img.onload = () => {
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        setHasDrawn(true);
-                        setIsLocked(true); 
-                    }
-                }
-            }, [initialData]);
-
-            const getPos = (e) => {
-                const rect = canvasRef.current.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                return { x: clientX - rect.left, y: clientY - rect.top };
-            };
-            
-            const startDraw = (e) => { 
-                if (isLocked) { return; }
-                setIsDrawing(true); 
-                setHasDrawn(true); 
-                const pos = getPos(e); 
-                const ctx = canvasRef.current.getContext('2d'); 
-                ctx.beginPath(); 
-                ctx.moveTo(pos.x, pos.y); 
-            };
-            
-            const draw = (e) => { 
-                if (!isDrawing) return; 
-                const pos = getPos(e); 
-                const ctx = canvasRef.current.getContext('2d'); 
-                ctx.lineTo(pos.x, pos.y); 
-                ctx.stroke(); 
-            };
-            
-            const endDraw = () => {
-                if (isDrawing) {
-                    setIsDrawing(false);
-                    setIsLocked(true); 
-                }
-            };
-            
-            const clearCanvas = () => { 
-                const ctx = canvasRef.current.getContext('2d'); 
-                ctx.fillStyle = '#ffffff'; 
-                ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height); 
-                setHasDrawn(false); 
-                setIsLocked(false); 
-            };
-            
-            const handleSave = () => {
-                if (!name.trim()) return alert('請輸入隊員姓名！');
-                if (!password.trim()) return alert('請設定密碼，以免卷軸被鬼偷看！');
-                if (!hasDrawn) return alert('請繪製卷軸內容！');
-                onSave(name, password.trim(), canvasRef.current.toDataURL('image/png'), style);
-            };
-
-            const currentStyle = getStyle(style);
-
-            return (
-                <div className="flex flex-col h-full animate-slide-up font-kimetsu">
-                    <h2 className="text-2xl font-bold mb-4 text-center text-kimetsu-black tracking-widest border-b-4 border-kimetsu-green pb-2 bg-white shadow-sm">{initialData ? '修改卷軸' : '繪製卷軸'}</h2>
-                    <div className="mb-4 space-y-3">
-                        <div>
-                            <label className="block text-sm font-bold text-kimetsu-black mb-1">選擇呼吸法流派</label>
-                            <div className="grid grid-cols-5 gap-1">
-                                {Object.entries(BREATH_STYLES).filter(([k]) => k !== 'default').map(([k, s]) => (
-                                    <button 
-                                        key={k}
-                                        onClick={() => setStyle(k)}
-                                        className={`p-1 rounded border-2 flex flex-col items-center justify-center transition-all ${style === k ? `border-kimetsu-black bg-white scale-105 shadow-md ${s.text}` : 'border-transparent opacity-60 hover:opacity-100'}`}
-                                    >
-                                        <span className="text-xl">{s.icon}</span>
-                                        <span className="text-[10px] font-bold mt-1">{s.name.substring(0,1)}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
-                                <label className="block text-sm font-bold text-kimetsu-black mb-1">隊員姓名</label>
-                                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：炭治郎" className={`w-full p-2 border-2 ${currentStyle.border} rounded outline-none focus:ring-2 ${currentStyle.ring} text-center font-bold`} />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-kimetsu-black mb-1">設定密碼</label>
-                                <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="解鎖用" className={`w-full p-2 border-2 ${currentStyle.border} rounded outline-none focus:ring-2 ${currentStyle.ring} text-center font-bold`} />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex-1 flex flex-col items-center">
-                        <div className={`text-sm font-bold mb-3 flex items-center gap-2 px-4 py-2 rounded border-2 shadow-sm transition-colors ${isLocked ? 'bg-red-100 text-red-600 border-red-300' : `${currentStyle.bg} ${currentStyle.text} ${currentStyle.border}`}`}>
-                            <Icons.PenTool size={18}/> 
-                            {isLocked ? (hasDrawn ? '墨跡已乾！(一筆入魂，點擊重畫可重來)' : '全集中・一筆繪製！') : '全集中・一筆繪製！下筆後不能斷'}
-                        </div>
-                        <div className={`w-full aspect-square border-4 border-double rounded overflow-hidden shadow-2xl relative bg-white touch-none transition-colors ${isLocked ? 'border-red-400' : currentStyle.border}`}>
-                            <canvas ref={canvasRef} className={`w-full h-full touch-none ${isLocked ? 'cursor-not-allowed' : 'cursor-crosshair'}`} onMouseDown={startDraw} onMouseMove={draw} onMouseUp={endDraw} onMouseLeave={endDraw} onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={endDraw} />
-                            {isLocked && <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/10 text-red-600 font-extrabold text-2xl tracking-[1em] writing-vertical-rl">封印</div>}
-                        </div>
-                        <div className="flex justify-end w-full mt-4"><button onClick={clearCanvas} className={`text-sm flex items-center gap-2 transition font-bold bg-white px-4 py-2 rounded border shadow-sm ${currentStyle.text} ${currentStyle.border} hover:bg-slate-50`}><Icons.RotateCcw size={16}/> 呼吸重置 (重畫)</button></div>
-                    </div>
-                    <div className="mt-6 flex gap-4">
-                        <button onClick={onCancel} className="flex-1 py-4 border-2 border-kimetsu-black text-kimetsu-black rounded font-bold hover:bg-slate-100 transition shadow-sm active:scale-95 tracking-widest">取消</button>
-                        <button onClick={handleSave} className="flex-1 py-4 bg-kimetsu-green text-white rounded shadow-md flex justify-center items-center gap-3 font-bold border-b-4 border-green-800 hover:bg-green-600 transition active:scale-95 tracking-widest"><Icons.Save size={20}/> {initialData ? '修復卷軸' : '傳送卷軸'}</button>
-                    </div>
-                </div>
-            );
-        };
-
-        // --- Main App ---
-        const App = () => {
-            const [mode, setMode] = useState('loading');
-            const [view, setView] = useState('home'); 
-            const [users, setUsers] = useState([]);
-            const [matches, setMatches] = useState({});
-            const [myParticipantId, setMyParticipantId] = useState(localStorage.getItem('my_participant_id'));
-            const [revealData, setRevealData] = useState(null);
-            const [isProcessing, setIsProcessing] = useState(false);
-            const [isAdmin, setIsAdmin] = useState(false);
-            const [adminPasswordInput, setAdminPasswordInput] = useState('');
-            const [userPasswordInput, setUserPasswordInput] = useState('');
-            const [loginTargetUser, setLoginTargetUser] = useState(null);
-            const [editData, setEditData] = useState(null); 
-            const [showAdminPasswords, setShowAdminPasswords] = useState(false); 
-            const [liveHistory, setLiveHistory] = useState([]); 
-            const [liveIndex, setLiveIndex] = useState(-1);
-            const [liveShowGiver, setLiveShowGiver] = useState(false);
-            const [isLiveStarted, setIsLiveStarted] = useState(false); 
-
-            const processingRef = useRef(false);
-            const appRef = useRef(null);
-            const authRef = useRef(null);
-            const dbRef = useRef(null);
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-            useEffect(() => {
-                const initSystem = async () => {
-                    const loader = document.getElementById('initial-loader');
-                    if(loader) loader.classList.add('hidden-loader');
-                    let config = null;
-                    try {
-                        if (typeof __firebase_config !== 'undefined') {
-                            config = JSON.parse(__firebase_config);
-                        } else {
-                            const saved = localStorage.getItem('fb_config_override');
-                            if(saved) config = JSON.parse(saved);
-                        }
-                        if (config && config.apiKey) {
-                            try {
-                                appRef.current = initializeApp(config);
-                                authRef.current = getAuth(appRef.current);
-                                dbRef.current = getFirestore(appRef.current);
-                                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                                    await signInWithCustomToken(authRef.current, __initial_auth_token);
-                                } else {
-                                    await signInAnonymously(authRef.current);
-                                }
-                                setMode('cloud');
-                            } catch (err) {
-                                console.error("Firebase Init Failed", err);
-                                setMode('setup'); 
-                            }
-                        } else {
-                            setMode('setup');
-                        }
-                    } catch (e) {
-                        console.log("Config parse error", e);
-                        setMode('setup');
-                    }
-                };
-                initSystem();
-            }, []);
-
-            useEffect(() => {
-                if (mode !== 'cloud' || !dbRef.current) return;
-                const participantsRef = collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants');
-                const unsubUsers = onSnapshot(participantsRef, (snapshot) => {
-                    const usersList = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                    usersList.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
-                    setUsers(usersList);
-                    if (localStorage.getItem('my_participant_id')) {
-                         const currentMyId = localStorage.getItem('my_participant_id');
-                         const exists = usersList.find(u => u.id === currentMyId);
-                         if (!exists) {
-                             localStorage.removeItem('my_participant_id');
-                             setMyParticipantId(null);
-                             localStorage.removeItem('my_password_backup');
-                         }
-                    }
-                }, err => console.error(err));
-
-                const matchesRef = collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'matches');
-                const unsubMatches = onSnapshot(matchesRef, (snapshot) => {
-                    const matchesMap = {};
-                    snapshot.docs.forEach(d => matchesMap[d.id] = d.data().receiverId);
-                    setMatches(matchesMap);
-                }, err => console.error(err));
-
-                const liveStateRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'live_status', 'main');
-                const unsubLive = onSnapshot(liveStateRef, (doc) => {
-                    if (doc.exists()) {
-                        const data = doc.data();
-                        setLiveHistory(data.history || []);
-                        setLiveIndex(data.currentIndex !== undefined ? data.currentIndex : -1);
-                        setLiveShowGiver(data.showGiver || false);
-                        setIsLiveStarted(data.isStarted || false); 
-                    } else {
-                        setLiveHistory([]);
-                        setLiveIndex(-1);
-                        setLiveShowGiver(false);
-                        setIsLiveStarted(false);
-                    }
-                });
-
-                return () => { unsubUsers(); unsubMatches(); unsubLive(); };
-            }, [mode]);
-
-            useEffect(() => {
-                if (mode !== 'offline') return;
-                const savedUsers = localStorage.getItem('xmas_users');
-                const savedMatches = localStorage.getItem('xmas_matches');
-                if (savedUsers) setUsers(JSON.parse(savedUsers));
-                if (savedMatches) setMatches(JSON.parse(savedMatches));
-            }, [mode]);
-
-            const updateLiveState = async (newHistory, newIndex, newShowGiver, newIsStarted) => {
-                 setLiveHistory(newHistory);
-                 setLiveIndex(newIndex);
-                 setLiveShowGiver(newShowGiver);
-                 setIsLiveStarted(newIsStarted);
-                 
-                 if (mode === 'cloud' && dbRef.current) {
-                     const liveStateRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'live_status', 'main');
-                     await setDoc(liveStateRef, {
-                         history: newHistory,
-                         currentIndex: newIndex,
-                         showGiver: newShowGiver,
-                         isStarted: newIsStarted
-                     }, { merge: true });
-                 }
-            };
-
-            const handleOfflineMode = () => {
-                setMode('offline');
-                setView('home');
-            };
-
-            const handleConfigComplete = (config) => {
-                window.location.reload();
-            };
-
-            const handleReset = async () => {
-                if (!confirm('【警告】確定要銷毀所有卷軸？\n所有隊員的紀錄將無法復原！')) return;
-                setIsProcessing(true);
-                if (mode === 'cloud') {
-                    try {
-                        const usersSnap = await getDocs(collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants'));
-                        const batch1 = writeBatch(dbRef.current);
-                        usersSnap.docs.forEach((d) => batch1.delete(d.ref));
-                        await batch1.commit();
-                        const matchesSnap = await getDocs(collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'matches'));
-                        const batch2 = writeBatch(dbRef.current);
-                        matchesSnap.docs.forEach((d) => batch2.delete(d.ref));
-                        await batch2.commit();
-                        await deleteDoc(doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'live_status', 'main'));
-                    } catch (e) { alert('重置失敗'); }
-                } else {
-                    localStorage.removeItem('xmas_users');
-                    localStorage.removeItem('xmas_matches');
-                    setUsers([]);
-                    setMatches({});
-                }
-                localStorage.removeItem('my_participant_id');
-                localStorage.removeItem('my_password_backup');
-                setMyParticipantId(null);
-                setRevealData(null);
-                setEditData(null);
-                setLiveHistory([]);
-                setLiveIndex(-1);
-                setLiveShowGiver(false);
-                setIsLiveStarted(false);
-                setView('home');
-                setIsProcessing(false);
-            };
-            
-            const handleGeneratePDF = async () => {
-                if (!confirm('是否要下載當前畫面備份？')) return;
-                setIsProcessing(true);
-                try {
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                    const element = document.body;
-                    const canvas = await window.html2canvas(element, {
-                        scrollY: -window.scrollY, 
-                        useCORS: true,
-                        scale: 2 
-                    });
-                    
-                    const ctx = canvas.getContext('2d');
-                    ctx.save();
-                    ctx.globalAlpha = 0.8;
-                    ctx.font = "bold 30px 'Noto Serif TC', serif"; 
-                    ctx.fillStyle = "red";
-                    ctx.textAlign = "right";
-                    ctx.fillText(`備份時間: ${new Date().toLocaleString()}`, canvas.width - 40, 60); 
-                    ctx.restore();
-
-                    const imgData = canvas.toDataURL('image/png');
-                    const { jsPDF } = window.jspdf;
-                    const pdf = new jsPDF({
-                        orientation: canvas.width > canvas.height ? 'l' : 'p',
-                        unit: 'px',
-                        format: [canvas.width, canvas.height] 
-                    });
-                    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-                    pdf.save(`鬼殺隊名冊備份_${new Date().toISOString().split('T')[0]}.pdf`);
-                } catch (err) {
-                    console.error(err);
-                    alert("備份失敗: " + err.message);
-                } finally {
-                    setIsProcessing(false);
-                }
-            };
-
-            const handleManualLogout = () => {
-                if (confirm('確定要隱退並清除登入狀態嗎？(雲端卷軸不會消失)')) {
-                    localStorage.removeItem('my_participant_id');
-                    localStorage.removeItem('my_password_backup'); 
-                    setMyParticipantId(null);
-                    setEditData(null);
-                    setView('home');
-                }
-            };
-
-            const handleLiveReset = async () => {
-                if (confirm('確定要重新開始儀式嗎？\n這將重新抽籤並回到等待開始狀態。')) {
-                    await updateLiveState([], -1, false, false);
-                }
-            };
-            
-            const toggleLiveStatus = async () => {
-                 if (!isLiveStarted) {
-                     if (liveHistory.length === 0) {
-                        const remaining = users;
-                        if (remaining.length === 0) {
-                            alert("沒有隊員可以抽籤！");
-                            return;
-                        }
-                        const randomIndex = Math.floor(Math.random() * remaining.length);
-                        const nextUser = remaining[randomIndex];
-                        await updateLiveState([nextUser.id], 0, false, true);
-                     } else {
-                        await updateLiveState(liveHistory, liveIndex, liveShowGiver, true);
-                     }
-                 } else {
-                     await updateLiveState(liveHistory, liveIndex, liveShowGiver, false);
-                 }
-            }
-
-            const startDrawing = () => {
-                if (myParticipantId && users.find(u => u.id === myParticipantId)) {
-                    alert('你已經是鬼殺隊的一員了！');
-                    return;
-                }
-                setEditData(null); 
-                setView('draw');
-            };
-
-            const editMyCard = () => {
-                 const me = users.find(u => u.id === myParticipantId);
-                 if (me) {
-                     if (matches[me.id]) {
-                         alert('任務已經分配，卷軸無法修改了！');
-                         return;
-                     }
-                     setEditData(me);
-                     setView('draw');
-                 }
-            };
-
-            const saveUser = async (name, password, drawingData, style) => {
-                setIsProcessing(true);
-                try {
-                    const isDuplicate = users.some(u => u.name.trim() === name.trim() && u.id !== myParticipantId);
-                    if (isDuplicate) {
-                        alert('此隊員姓名已存在，請使用其他代號！');
-                        setIsProcessing(false);
-                        return;
-                    }
-                    localStorage.setItem('my_password_backup', password);
-                    const randomRank = getRandomRank();
-
-                    if (editData && editData.id === myParticipantId) {
-                         if (mode === 'cloud') {
-                            const userRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants', myParticipantId);
-                            await updateDoc(userRef, {
-                                name, password, drawing: drawingData, style, updatedAt: serverTimestamp()
-                            });
-                         } else {
-                             const updatedUsers = users.map(u => 
-                                u.id === myParticipantId ? { ...u, name, password, drawing: drawingData, style } : u
-                             );
-                             setUsers(updatedUsers);
-                             localStorage.setItem('xmas_users', JSON.stringify(updatedUsers));
-                         }
-                         alert('卷軸修復完成！');
-                         setView('my_card'); 
-                    } else {
-                        if (mode === 'cloud') {
-                            const userUid = authRef.current?.currentUser?.uid || 'anon';
-                            const docRef = await addDoc(collection(dbRef.current, 'artifacts', appId, 'public', 'data', 'participants'), {
-                                name, password, drawing: drawingData, style, rank: randomRank, createdAt: serverTimestamp(), uid: userUid
-                            });
-                            localStorage.setItem('my_participant_id', docRef.id);
-                            setMyParticipantId(docRef.id);
-                        } else {
-                            const newUser = { id: Date.now().toString(), name, password, drawing: drawingData, style, rank: randomRank, uid: 'local' };
-                            const newUsers = [...users, newUser];
-                            setUsers(newUsers);
-                            localStorage.setItem('xmas_users', JSON.stringify(newUsers));
-                            localStorage.setItem('my_participant_id', newUser.id);
-                            setMyParticipantId(newUser.id);
-                        }
-                        setView('home');
-                    }
-                } catch (e) { console.error(e); alert('傳送失敗，鎹鴉迷路了'); }
-                setIsProcessing(false);
-                setEditData(null);
-            };
-
-            const performMatching = async () => {
-                if (users.length < 2) { alert('隊員人數不足，無法執行任務！'); return; }
-                if (Object.keys(matches).length > 0 && !confirm('任務已分配，確定要重新指派嗎？')) return;
-                setIsProcessing(true);
-                let giverIds = users.map(u => u.id);
-                let receiverIds = [...giverIds];
-                let isValid = false;
-                let attempts = 0;
-                while (!isValid && attempts < 100) {
-                    for (let i = receiverIds.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [receiverIds[i], receiverIds[j]] = [receiverIds[j], receiverIds[i]];
-                    }
-                    isValid = true;
-                    for (let i = 0; i < giverIds.length; i++) {
-                        if (giverIds[i] === receiverIds[i]) { isValid = false; break; }
-                    }
-                    attempts++;
-                }
-                if (!isValid) {
-                     const shifted = [...giverIds];
-                     const first = shifted.shift();
-                     shifted.push(first);
-                     receiverIds = shifted;
-                }
-                if (mode === 'cloud') {
-                    try {
-                        const batch = writeBatch(dbRef.current);
-                        giverIds.forEach((giverId, index) => {
-                            const matchRef = doc(dbRef.current, 'artifacts', appId, 'public', 'data', 'matches', giverId);
-                            batch.set(matchRef, { receiverId: receiverIds[index] });
-                        });
-                        await batch.commit();
-                    } catch (e) { alert('指派失敗: ' + e.message); }
-                } else {
-                    const newMatches = {};
-                    giverIds.forEach((gid, i) => newMatches[gid] = receiverIds[i]);
-                    setMatches(newMatches);
-                    localStorage.setItem('xmas_matches', JSON.stringify(newMatches));
-                }
-                alert('任務指派完成！');
-                setIsProcessing(false);
-            };
-
-            const handleUserLogin = () => {
-                if (!loginTargetUser) return;
-                if (loginTargetUser.password && loginTargetUser.password !== userPasswordInput) {
-                    alert('呼吸亂了！密碼錯誤。');
-                    return;
-                }
-                localStorage.setItem('my_participant_id', loginTargetUser.id);
-                localStorage.setItem('my_password_backup', userPasswordInput); 
-                setMyParticipantId(loginTargetUser.id);
-                const receiverId = matches[loginTargetUser.id];
-                if (!receiverId) {
-                    setView('my_card');
-                } else {
-                    const receiver = users.find(u => u.id === receiverId);
-                    setRevealData({ giver: loginTargetUser, receiver });
-                    setLoginTargetUser(null);
-                    setUserPasswordInput('');
-                    setView('check_result');
+                    currentFailureMode = "潰縮為主";
+                    modeEl.innerText = "潰縮為主 (Crushing)";
+                    modeEl.className = "ml-2 text-xs font-bold px-2 py-1 rounded bg-blue-500 text-white shadow-sm";
                 }
             }
 
-            const promptUserLogin = (user) => {
-                setLoginTargetUser(user);
-                if (isMe(user.id)) {
-                    const savedPwd = localStorage.getItem('my_password_backup');
-                    if(savedPwd) {
-                        setUserPasswordInput(savedPwd);
-                    } else {
-                        setUserPasswordInput('');
-                    }
+            // ---- 更新 UI 與算式 (使用防呆寫法) ----
+            safeSetText('resultNewton', currentForceN.toLocaleString('en-US', { maximumFractionDigits: 0 }));
+            safeSetText('resultKgf', currentForceKgf.toLocaleString('en-US', { maximumFractionDigits: 1 }));
+
+            safeSetText('math-t', t.toFixed(2));
+            safeSetText('math-hu', hu.toFixed(2));
+            safeSetText('math-teff', t_eff.toFixed(2));
+            safeSetText('math-teff2', t_eff.toFixed(2));
+            
+            safeSetText('math-d', d.toFixed(2));
+            safeSetText('math-dp', dp.toFixed(2));
+            safeSetText('math-dp2', dp.toFixed(2));
+            safeSetText('math-du', du.toFixed(2));
+            
+            safeSetText('math-a-shear', areaShear.toFixed(2));
+            safeSetText('math-f-shear', forceShear.toFixed(0));
+            
+            safeSetText('math-a-bearing', areaBearing.toFixed(2));
+            safeSetText('math-f-crush', forceCrush.toFixed(0));
+            
+            safeSetText('math-f', currentForceN.toFixed(0));
+
+            // ---- 更新 SVG 及浮動輸入框 ----
+            updateSVG({dh, dp, du, d, hh, hp, hu, hb, t_eff, t});
+        }
+
+        function updateSVG(params) {
+            const centerX = 300;
+            const scale = 50; 
+
+            const r_head = (params.dh * scale) / 2;
+            const r_press = (params.dp * scale) / 2;
+            const r_undercut = (params.du * scale) / 2;
+            const r_pilot = (params.d * scale) / 2;
+            const r_thread = (2.0 * scale) / 2; 
+
+            const y_top = 70; // 紅色齊平基準面高度
+            const y1 = y_top + (params.hh * scale); 
+            const y2 = y1 + (params.hu * scale); 
+            const y3 = y2 + (params.hp * scale); 
+            const y4 = y3 + (params.hb * scale); 
+            const chamfer = 0.3 * scale;
+            const y_thread_bottom = y3 + ((params.hb * scale) * 0.6);
+            const y_plate_outer_bottom = y4 + 40;
+
+            // 紅色齊平基準線
+            const redRefLine = document.getElementById('svgRedRefLine');
+            if (redRefLine) {
+                redRefLine.setAttribute('y1', y_top);
+                redRefLine.setAttribute('y2', y_top);
+            }
+            const redRefText = document.getElementById('svgRedRefText');
+            if (redRefText) {
+                redRefText.setAttribute('x', 30);
+                redRefText.setAttribute('y', y_top - 5);
+            }
+
+            // 拉拔力箭頭
+            const fArrow = document.getElementById('fArrow');
+            if (fArrow) fArrow.setAttribute('d', `M ${centerX} ${y_top - 15} L ${centerX} ${y_top - 40}`);
+            const fText = document.getElementById('fText');
+            if (fText) fText.setAttribute('y', y_top - 25);
+
+            // 釘子形狀
+            const nutPath = `
+                M ${centerX - r_thread} ${y_top} L ${centerX - r_head} ${y_top} L ${centerX - r_head} ${y1}
+                L ${centerX - r_undercut} ${y1} L ${centerX - r_undercut} ${y2} L ${centerX - r_press} ${y2}
+                L ${centerX - r_press} ${y3} L ${centerX - r_pilot} ${y3} L ${centerX - r_pilot} ${y4 - chamfer}
+                L ${centerX - r_pilot + chamfer} ${y4} L ${centerX + r_pilot - chamfer} ${y4}
+                L ${centerX + r_pilot} ${y4 - chamfer} L ${centerX + r_pilot} ${y3} L ${centerX + r_press} ${y3}
+                L ${centerX + r_press} ${y2} L ${centerX + r_undercut} ${y2} L ${centerX + r_undercut} ${y1}
+                L ${centerX + r_head} ${y1} L ${centerX + r_head} ${y_top} L ${centerX + r_thread} ${y_top}
+                L ${centerX + r_thread} ${y_thread_bottom} L ${centerX - r_thread} ${y_thread_bottom} Z
+            `;
+            const svgNut = document.getElementById('svgNut');
+            if (svgNut) svgNut.setAttribute('d', nutPath);
+            const svgNutHatch = document.getElementById('svgNutHatch');
+            if (svgNutHatch) svgNutHatch.setAttribute('d', nutPath);
+
+            // 鋁板形狀
+            const draw_t = Math.min(Math.max(params.t, 0), params.hu); 
+            const fill_level_y = y1 + (draw_t * scale); // 自槽頂 y1 起算
+            
+            // 左側鋁板
+            let pL = `M 30 ${y_top} L ${centerX - r_head} ${y_top} L ${centerX - r_head} ${y1} `;
+            if (fill_level_y <= y1) {
+                pL += `L ${centerX - r_pilot} ${y1} L ${centerX - r_pilot} ${y_plate_outer_bottom} L 30 ${y_plate_outer_bottom} Z`;
+            } else {
+                pL += `L ${centerX - r_undercut} ${y1} L ${centerX - r_undercut} ${fill_level_y} `;
+                if (fill_level_y < y2) {
+                    pL += `L ${centerX - r_pilot} ${fill_level_y} L ${centerX - r_pilot} ${y2} L ${centerX - r_press} ${y2} `;
                 } else {
-                    setUserPasswordInput('');
+                    pL += `L ${centerX - r_press} ${y2} `;
                 }
-                setView('user_login');
+                pL += `L ${centerX - r_press} ${y3} L ${centerX - r_pilot} ${y3} L ${centerX - r_pilot} ${y_plate_outer_bottom} L 30 ${y_plate_outer_bottom} Z`;
             }
+            const svgPlateL = document.getElementById('svgPlateL');
+            if (svgPlateL) svgPlateL.setAttribute('d', pL);
+            const svgPlateLHatch = document.getElementById('svgPlateLHatch');
+            if (svgPlateLHatch) svgPlateLHatch.setAttribute('d', pL);
 
-            const handleNextLive = async () => {
-                if (processingRef.current) return; 
-                processingRef.current = true;
-                setIsProcessing(true);
-                try {
-                    if (liveIndex < liveHistory.length - 1) {
-                        await updateLiveState(liveHistory, liveIndex + 1, false, isLiveStarted);
-                        return;
-                    }
-                    const drawnIds = new Set(liveHistory);
-                    const remaining = users.filter(u => !drawnIds.has(u.id));
-                    if (remaining.length === 0) {
-                        alert('所有隊員都已上台！任務圓滿達成！');
-                        return;
-                    }
-                    let nextUser = null;
-                    // REVERSE CHAIN LOGIC: 
-                    // The Giver of the current receiver (on stage) becomes the NEXT Receiver.
-                    if (liveHistory.length > 0) {
-                        const currentReceiverId = liveHistory[liveHistory.length - 1]; 
-                        // matches[giverId] = receiverId.
-                        // We want to find GIVER where receiver == currentReceiverId.
-                        const giverId = Object.keys(matches).find(key => matches[key] === currentReceiverId);
-                        
-                        if (giverId && !drawnIds.has(giverId)) {
-                            nextUser = users.find(u => u.id === giverId);
-                        }
-                    }
-
-                    // Fallback: If no chain (first person, or chain broken/looped), pick random
-                    if (!nextUser) {
-                        const randomIndex = Math.floor(Math.random() * remaining.length);
-                        nextUser = remaining[randomIndex];
-                    }
-
-                    if (nextUser) {
-                        const newHistory = [...liveHistory, nextUser.id];
-                        await updateLiveState(newHistory, newHistory.length - 1, false, isLiveStarted);
-                    }
-                } finally {
-                    processingRef.current = false;
-                    setIsProcessing(false);
-                }
-            };
-
-            const handlePrevLive = async () => {
-                if (liveIndex > 0) {
-                     await updateLiveState(liveHistory, liveIndex - 1, false, isLiveStarted);
-                }
-            }
-
-            const toggleLiveReveal = async () => {
-                 await updateLiveState(liveHistory, liveIndex, true, isLiveStarted);
-            }
-
-            const liveReceiverId = liveIndex >= 0 && liveHistory.length > 0 ? liveHistory[liveIndex] : null;
-            const liveReceiver = liveReceiverId ? users.find(u => u.id === liveReceiverId) : null;
-
-            const isMe = (uid) => myParticipantId === uid;
-
-            const handleAdminLogin = () => {
-                if (adminPasswordInput === 'adminsunny123') { 
-                    setIsAdmin(true);
-                    setView('admin_dashboard');
-                    setAdminPasswordInput('');
+            // 右側鋁板
+            let pR = `M 670 ${y_top} L ${centerX + r_head} ${y_top} L ${centerX + r_head} ${y1} `;
+            if (fill_level_y <= y1) {
+                pR += `L ${centerX + r_pilot} ${y1} L ${centerX + r_pilot} ${y_plate_outer_bottom} L 670 ${y_plate_outer_bottom} Z`;
+            } else {
+                pR += `L ${centerX + r_undercut} ${y1} L ${centerX + r_undercut} ${fill_level_y} `;
+                if (fill_level_y < y2) {
+                    pR += `L ${centerX + r_pilot} ${fill_level_y} L ${centerX + r_pilot} ${y2} L ${centerX + r_press} ${y2} `;
                 } else {
-                    alert('暗號錯誤');
+                    pR += `L ${centerX + r_press} ${y2} `;
                 }
-            };
-
-            if (mode === 'loading') return null;
-            if (mode === 'setup') return <ConfigWizard onConfigComplete={handleConfigComplete} onOfflineMode={handleOfflineMode} />;
-
-            if (view === 'admin_login') {
-                return (
-                    <div className="min-h-screen flex items-center justify-center p-4">
-                        <div className="bg-white p-8 rounded shadow-2xl max-w-sm w-full border-4 border-kimetsu-black relative">
-                            <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-kimetsu-black tracking-widest border-b-2 border-kimetsu-green pb-2">
-                                <Icons.Lock className="text-kimetsu-black"/> 主公大人登入
-                            </h2>
-                            <p className="text-slate-600 text-sm mb-4 font-bold">請輸入暗號進入產屋敷宅邸。</p>
-                            <input 
-                                type="password" 
-                                value={adminPasswordInput}
-                                onChange={e => setAdminPasswordInput(e.target.value)}
-                                className="w-full p-3 border-2 border-kimetsu-black rounded mb-4 outline-none focus:ring-2 ring-kimetsu-green bg-kimetsu-bg text-center tracking-widest font-bold"
-                                placeholder="請輸入暗號"
-                            />
-                            <div className="flex gap-2">
-                                <button onClick={() => setView('home')} className="flex-1 py-2 bg-slate-200 text-slate-700 rounded font-bold hover:bg-slate-300 transition">返回</button>
-                                <button onClick={handleAdminLogin} className="flex-1 py-2 bg-kimetsu-black text-white rounded font-bold hover:bg-slate-800 transition border-b-4 border-slate-900">登入</button>
-                            </div>
-                        </div>
-                    </div>
-                );
+                pR += `L ${centerX + r_press} ${y3} L ${centerX + r_pilot} ${y3} L ${centerX + r_pilot} ${y_plate_outer_bottom} L 670 ${y_plate_outer_bottom} Z`;
             }
+            const svgPlateR = document.getElementById('svgPlateR');
+            if (svgPlateR) svgPlateR.setAttribute('d', pR);
+            const svgPlateRHatch = document.getElementById('svgPlateRHatch');
+            if (svgPlateRHatch) svgPlateRHatch.setAttribute('d', pR);
 
-            if (view === 'admin_live' || view === 'spectator_live') {
-                const isSpectator = view === 'spectator_live';
-                
-                // If spectator and not started, show waiting screen
-                if (isSpectator && !isLiveStarted) {
-                     return (
-                        <div className="min-h-screen flex flex-col bg-kimetsu-black text-white relative overflow-hidden items-center justify-center">
-                            <div className="absolute top-0 left-0 w-full h-4 bg-kimetsu-green"></div>
-                            <div className="absolute bottom-0 left-0 w-full h-4 bg-kimetsu-green"></div>
-                            <div className="text-center animate-pulse">
-                                <div className="text-6xl text-kimetsu-pink mb-6">⏳</div>
-                                <h2 className="text-4xl font-bold tracking-widest mb-2">等待開始...</h2>
-                                <p className="text-slate-400">主公大人正在準備儀式</p>
-                            </div>
-                            <button onClick={() => setView('home')} className="absolute bottom-8 text-sm border border-slate-600 px-3 py-1 rounded hover:bg-white hover:text-kimetsu-black transition text-slate-500">退出</button>
-                        </div>
-                     )
-                }
-
-                const giver = liveReceiver ? users.find(u => matches[u.id] === liveReceiver.id) : null;
-                const isHistoryMode = liveIndex < liveHistory.length - 1;
-                const style = getStyle(liveReceiver?.style || 'default');
-                const rank = liveReceiver?.rank || '癸';
-                
-                let nextButtonLabel = "隨機召喚";
-                if (isHistoryMode) {
-                    nextButtonLabel = "下一位 (歷史)";
-                } else {
-                    if (liveReceiver) {
-                         // Reverse Chain Logic for label
-                         const currentReceiverId = liveReceiver.id;
-                         const giverId = Object.keys(matches).find(key => matches[key] === currentReceiverId);
-                         const drawnIds = new Set(liveHistory);
-                         
-                         if (giverId && !drawnIds.has(giverId)) {
-                             nextButtonLabel = "召喚這位送禮者 (連鎖)";
-                         } else {
-                             nextButtonLabel = "隨機召喚 (新回合)";
-                         }
-                    } else {
-                        nextButtonLabel = "隨機召喚第一位";
-                    }
+            // 紅色剪切面指示線 (對齊擠料環 Dp)
+            const shear_y_bottom = Math.min(fill_level_y, y2);
+            if (shear_y_bottom > y1) {
+                if (document.getElementById('svgShearLeft')) {
+                    document.getElementById('svgShearLeft').setAttribute('x1', centerX - r_press); document.getElementById('svgShearLeft').setAttribute('y1', y1);
+                    document.getElementById('svgShearLeft').setAttribute('x2', centerX - r_press); document.getElementById('svgShearLeft').setAttribute('y2', shear_y_bottom);
+                    document.getElementById('svgShearRight').setAttribute('x1', centerX + r_press); document.getElementById('svgShearRight').setAttribute('y1', y1);
+                    document.getElementById('svgShearRight').setAttribute('x2', centerX + r_press); document.getElementById('svgShearRight').setAttribute('y2', shear_y_bottom);
+                    document.getElementById('svgShearLeft').style.display = 'block'; document.getElementById('svgShearRight').style.display = 'block';
                 }
                 
-                return (
-                    <div className="min-h-screen flex flex-col bg-kimetsu-black text-white relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-4 bg-kimetsu-green"></div>
-                        <div className="absolute bottom-0 left-0 w-full h-4 bg-kimetsu-green"></div>
-                        
-                        <header className="p-4 flex justify-between items-center z-10">
-                            <h1 className="text-2xl font-bold tracking-widest text-kimetsu-green border-b-2 border-white pb-1">
-                                {isSpectator ? "柱合會議・現場轉播" : "柱合會議・禮物交付儀式"}
-                            </h1>
-                            <div className="flex gap-2">
-                                {!isSpectator && (
-                                   <div className="flex gap-2">
-                                        {/* Start button only appears here when entered */}
-                                        <button onClick={toggleLiveStatus} className={`text-sm border ${isLiveStarted ? 'border-red-500 text-red-400 hover:bg-red-600' : 'border-green-500 text-green-400 hover:bg-green-600'} px-3 py-1 rounded hover:text-white transition font-bold flex items-center gap-1`}>
-                                            {isLiveStarted ? <><Icons.Square size={14}/> 關閉直播</> : <><Icons.Play size={14}/> 開啟直播</>}
-                                        </button>
-                                        <button onClick={handleLiveReset} className="text-sm border border-slate-400 text-slate-300 px-3 py-1 rounded hover:bg-slate-600 hover:text-white transition font-bold flex items-center gap-1">
-                                            <Icons.RotateCw size={14}/> 重新開始
-                                        </button>
-                                   </div>
-                                )}
-                                <button onClick={() => setView(isSpectator ? 'home' : 'admin_dashboard')} className="text-sm border border-white px-3 py-1 rounded hover:bg-white hover:text-kimetsu-black transition">退出儀式</button>
-                            </div>
-                        </header>
-
-                        <div className="flex-1 flex flex-col items-center justify-center p-4 z-10 relative">
-                            {!liveReceiver ? (
-                                <div className="text-center space-y-8 animate-fade-in">
-                                    <div className="text-6xl text-kimetsu-pink animate-pulse">🌸</div>
-                                    <h2 className="text-4xl font-bold tracking-widest">
-                                        準備開始抽籤
-                                    </h2>
-                                    <p className="text-slate-400">目前還有 {Object.keys(matches).length - liveHistory.length} 位隊員等待上台</p>
-                                    {!isSpectator && (
-                                        <button onClick={handleNextLive} disabled={isProcessing} className="px-8 py-4 bg-kimetsu-green text-white text-2xl font-bold rounded-lg shadow-[0_0_15px_rgba(46,204,113,0.6)] hover:scale-105 transition-transform border-2 border-white tracking-widest disabled:opacity-50 disabled:cursor-not-allowed">
-                                            {isProcessing ? <Icons.Loader2 size={24} className="animate-spin"/> : nextButtonLabel}
-                                        </button>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="w-full max-w-4xl flex flex-col items-center gap-6 animate-slide-up">
-                                    <div className="text-center">
-                                        <p className={`tracking-[0.5em] text-lg mb-2 font-bold ${style.text.replace('text-','text-kimetsu-green ')}`}>
-                                            <span className="text-sm border border-white px-2 py-1 rounded mr-2">{rank}</span> 
-                                            受贈者 ({style.name})
-                                        </p>
-                                        <h2 className="text-5xl font-black tracking-widest mb-6 border-b-4 border-kimetsu-pink inline-block pb-2">{liveReceiver.name}</h2>
-                                    </div>
-
-                                    <div className="flex flex-col md:flex-row gap-8 items-center justify-center w-full">
-                                        {/* Direct Display Frame (No Door) - Replaces NezukoBox in Live Mode */}
-                                        <div className={`w-full max-w-md aspect-square flex items-center justify-center relative transform rotate-1`}>
-                                            <div className="relative w-full h-full bg-wood-dark border-4 border-black rounded-lg shadow-2xl overflow-hidden flex items-center justify-center p-4">
-                                                <div className="absolute inset-0 bg-white flex items-center justify-center">
-                                                    <img src={liveReceiver.drawing} className="w-full h-full object-contain" />
-                                                </div>
-                                                {/* Optional: Add decorative corner straps */}
-                                                <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-wood-light"></div>
-                                                <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-wood-light"></div>
-                                                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-wood-light"></div>
-                                                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-wood-light"></div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex flex-col items-center gap-6 min-w-[280px]">
-                                            <div className="text-6xl text-white">⬅️</div>
-                                            
-                                            {!liveShowGiver ? (
-                                                isSpectator ? (
-                                                    <div className="w-full py-4 border-2 border-dashed border-slate-600 text-slate-400 rounded-lg font-bold text-xl text-center">
-                                                        等待揭曉...
-                                                    </div>
-                                                ) : (
-                                                    <button onClick={toggleLiveReveal} className="w-full py-4 bg-kimetsu-pink hover:bg-pink-600 text-white rounded-lg font-bold text-xl shadow-lg transition-transform hover:scale-105 border-b-4 border-pink-800 tracking-widest">
-                                                        揭曉送禮者
-                                                    </button>
-                                                )
-                                            ) : (
-                                                <div className="w-full text-center animate-fade-in">
-                                                    <p className="text-sm text-slate-400 mb-1">送禮之呼吸・壹之型</p>
-                                                    <div className="bg-white text-kimetsu-black text-3xl font-black py-4 px-6 rounded border-4 border-kimetsu-green shadow-[0_0_20px_rgba(255,255,255,0.5)] tracking-widest">
-                                                        {giver ? giver.name : "未知"}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {!isSpectator && (
-                                                <div className="flex gap-2 w-full mt-8">
-                                                    <button 
-                                                        onClick={handlePrevLive} 
-                                                        disabled={liveIndex <= 0}
-                                                        className={`flex-1 px-4 py-3 border-2 border-white text-white rounded font-bold flex items-center justify-center gap-2 transition ${liveIndex <= 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-white hover:text-kimetsu-black'}`}
-                                                    >
-                                                        <Icons.ArrowLeft size={20}/> 上一位
-                                                    </button>
-                                                    <button 
-                                                        onClick={handleNextLive} 
-                                                        disabled={isProcessing}
-                                                        className="flex-1 px-4 py-3 border-2 border-white text-white rounded hover:bg-white hover:text-kimetsu-black transition font-bold flex items-center justify-center gap-2 disabled:opacity-50"
-                                                    >
-                                                        {nextButtonLabel} <Icons.ArrowRight size={20}/>
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                );
+                const textX = centerX + Math.max(r_head, r_press, r_pilot) + 25;
+                const textY = y1 + (shear_y_bottom - y1)/2 + 4;
+                if (document.getElementById('svgShearBg')) {
+                    document.getElementById('svgShearBg').setAttribute('x', textX - 5); document.getElementById('svgShearBg').setAttribute('y', textY - 14);
+                    document.getElementById('svgShearText').setAttribute('x', textX); document.getElementById('svgShearText').setAttribute('y', textY);
+                    document.getElementById('svgShearBg').style.display = 'block'; document.getElementById('svgShearText').style.display = 'block';
+                }
+            } else {
+                if (document.getElementById('svgShearLeft')) {
+                    document.getElementById('svgShearLeft').style.display = 'none'; document.getElementById('svgShearRight').style.display = 'none';
+                    document.getElementById('svgShearBg').style.display = 'none'; document.getElementById('svgShearText').style.display = 'none';
+                }
             }
 
-            if (view === 'admin_dashboard') {
-                return (
-                    <div className="min-h-screen flex flex-col">
-                         <header className="bg-kimetsu-black text-white p-4 shadow-md flex justify-between items-center sticky top-0 z-20 border-b-4 border-kimetsu-green">
-                            <div className="flex items-center gap-2">
-                                <Icons.Settings className="text-kimetsu-green" />
-                                <h1 className="text-lg font-bold tracking-widest">鬼殺隊總部後台</h1>
-                            </div>
-                            <button onClick={() => { setIsAdmin(false); setView('home'); }} className="text-xs bg-slate-800 px-3 py-1.5 rounded flex items-center gap-1 hover:bg-slate-700 transition border border-slate-600 font-bold">
-                                <Icons.LogOut size={14}/> 離開
-                            </button>
-                        </header>
-                        <div className="p-4 max-w-5xl mx-auto w-full space-y-6">
-                            
-                            <div className="bg-gradient-to-r from-kimetsu-black to-slate-800 p-6 rounded shadow-lg border-2 border-kimetsu-green relative overflow-hidden text-white flex justify-between items-center">
-                                <div>
-                                    <h3 className="text-2xl font-bold tracking-widest text-kimetsu-green mb-1">柱合會議・現場模式</h3>
-                                    <p className="text-sm text-slate-300">開啟大螢幕，進行現場隨機抽籤與禮物交付儀式。</p>
-                                </div>
-                                {/* Start button removed from dashboard, moved inside Live View */}
-                                <button onClick={async () => {
-                                    setView('admin_live');
-                                    // Auto-start removed, wait for manual start inside
-                                }} className="px-6 py-3 bg-kimetsu-pink hover:bg-pink-600 text-white font-bold rounded shadow-lg border-2 border-white flex items-center gap-2 transition-transform hover:scale-105">
-                                    <Icons.Mic size={20}/> 進入會場
-                                </button>
-                            </div>
-
-                            <div className="bg-white p-6 rounded shadow-lg border-2 border-kimetsu-black relative">
-                                <h3 className="font-bold text-kimetsu-black mb-4 border-b-2 border-kimetsu-green pb-2 tracking-widest">任務指派</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <p className="text-sm text-slate-600 font-bold">當所有劍士完成卷軸後，進行任務分配。</p>
-                                        <button onClick={performMatching} disabled={isProcessing} className="w-full py-3 bg-kimetsu-green hover:bg-green-600 text-white rounded font-bold shadow-md flex items-center justify-center gap-2 border-b-4 border-green-800 tracking-widest">
-                                            <Icons.Shuffle size={20}/> {Object.keys(matches).length > 0 ? '重新指派任務' : '開始指派任務'}
-                                        </button>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <p className="text-sm text-slate-600 font-bold">活動結束後，銷毀所有卷軸重新開始。</p>
-                                        {/* Updated LongPressButton usage */}
-                                        <button onClick={handleGeneratePDF} disabled={isProcessing} className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded font-bold shadow-md flex items-center justify-center gap-2 border-b-4 border-blue-800 tracking-widest mb-2">
-                                            <Icons.FileDown size={20}/> 一鍵備份 PDF
-                                        </button>
-                                        <LongPressButton 
-                                            label="銷毀所有資料" 
-                                            icon={Icons.Trash2} 
-                                            onComplete={handleReset} 
-                                            disabled={isProcessing}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Match List */}
-                            {Object.keys(matches).length > 0 && (
-                                <div className="bg-white p-6 rounded shadow-lg border-2 border-kimetsu-black">
-                                    <h3 className="font-bold text-kimetsu-black mb-4 border-b-2 border-kimetsu-green pb-2 tracking-widest">任務名單 (僅主公可見)</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm font-bold">
-                                        {users.map(u => {
-                                            const recId = matches[u.id];
-                                            const rec = users.find(r => r.id === recId);
-                                            return (
-                                                <div key={u.id} className="flex justify-between p-2 bg-kimetsu-bg rounded border border-slate-300">
-                                                    <span>🗡️ <span className="text-kimetsu-dark-green">{u.name}</span></span>
-                                                    <span className="text-slate-400 mx-2">➜ 贈與 ➜</span>
-                                                    <span><span className="text-kimetsu-black">{rec?.name}</span> 🎁</span>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="bg-white p-6 rounded shadow-lg border-2 border-kimetsu-black">
-                                <div className="flex justify-between items-end mb-4 border-b-2 border-kimetsu-green pb-2">
-                                    <h3 className="font-bold text-kimetsu-black tracking-widest">隊員卷軸 ({users.length}人)</h3>
-                                    <button 
-                                        onClick={() => setShowAdminPasswords(!showAdminPasswords)}
-                                        className={`text-xs flex items-center gap-1 px-3 py-1 rounded transition font-bold border-2 ${showAdminPasswords ? 'bg-kimetsu-pink text-white border-kimetsu-pink' : 'bg-white text-slate-500 border-slate-300'}`}
-                                    >
-                                        {showAdminPasswords ? <Icons.EyeOff size={14}/> : <Icons.Eye size={14}/>}
-                                        {showAdminPasswords ? '隱藏密碼' : '顯示密碼(救援用)'}
-                                    </button>
-                                </div>
-                                
-                                {users.length === 0 ? (
-                                    <p className="text-center text-slate-400 py-8 font-bold">目前尚無隊員加入...</p>
-                                ) : (
-                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                        {users.map(u => {
-                                            const style = getStyle(u.style || 'default');
-                                            const rank = u.rank || '癸';
-                                            return (
-                                                <div key={u.id} className={`border-4 ${style.border} ${style.bg} rounded p-2 relative group shadow-sm transition-all`}>
-                                                    <div className={`absolute top-0 right-0 p-1 text-xs font-bold ${style.text} flex items-center gap-1`}>
-                                                        <span className="border border-current px-1 rounded-sm text-[10px]">{rank}</span>
-                                                        {style.icon} {style.name}
-                                                    </div>
-                                                    <div className="aspect-square bg-white border border-slate-300 overflow-hidden mb-2 mt-6">
-                                                        <img src={u.drawing} className="w-full h-full object-contain" />
-                                                    </div>
-                                                    <div className="flex flex-col pb-1">
-                                                        <div className="flex justify-between items-center mb-1">
-                                                            <span className={`font-bold text-sm truncate ${style.text} leading-relaxed py-0.5`}>{u.name}</span>
-                                                            {matches[u.id] && <span className="text-[10px] bg-kimetsu-green text-white px-2 py-0.5 rounded font-bold">已指派</span>}
-                                                        </div>
-                                                        {showAdminPasswords && (
-                                                            <div className="bg-red-50 text-red-600 text-[10px] p-1 rounded font-mono break-all border border-red-200 font-bold">
-                                                                {u.password}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                );
+            // 藍色承壓潰縮面指示線 (夾在 Dp 與 Du 之間)
+            if (shear_y_bottom > y1 && params.dp > params.du) {
+                if (document.getElementById('svgBearingLeft')) {
+                    document.getElementById('svgBearingLeft').setAttribute('x1', centerX - r_press); document.getElementById('svgBearingLeft').setAttribute('y1', y1);
+                    document.getElementById('svgBearingLeft').setAttribute('x2', centerX - r_undercut); document.getElementById('svgBearingLeft').setAttribute('y2', y1);
+                    document.getElementById('svgBearingRight').setAttribute('x1', centerX + r_undercut); document.getElementById('svgBearingRight').setAttribute('y1', y1);
+                    document.getElementById('svgBearingRight').setAttribute('x2', centerX + r_press); document.getElementById('svgBearingRight').setAttribute('y2', y1);
+                    document.getElementById('svgBearingLeft').style.display = 'block'; document.getElementById('svgBearingRight').style.display = 'block';
+                }
+                
+                const textX = centerX + Math.max(r_head, r_press, r_pilot) + 25;
+                const bearingTextY = y1 - 10;
+                if (document.getElementById('svgBearingBg')) {
+                    document.getElementById('svgBearingBg').setAttribute('x', textX - 5); document.getElementById('svgBearingBg').setAttribute('y', bearingTextY - 14);
+                    document.getElementById('svgBearingText').setAttribute('x', textX); document.getElementById('svgBearingText').setAttribute('y', bearingTextY);
+                    document.getElementById('svgBearingBg').style.display = 'block'; document.getElementById('svgBearingText').style.display = 'block';
+                }
+            } else {
+                if (document.getElementById('svgBearingLeft')) {
+                    document.getElementById('svgBearingLeft').style.display = 'none'; document.getElementById('svgBearingRight').style.display = 'none';
+                    document.getElementById('svgBearingBg').style.display = 'none'; document.getElementById('svgBearingText').style.display = 'none';
+                }
             }
 
-            if (view === 'user_login') {
-                return (
-                    <div className="min-h-screen flex items-center justify-center p-4">
-                        <div className="bg-white p-8 rounded shadow-2xl max-w-sm w-full border-4 border-kimetsu-black relative">
-                            <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-kimetsu-black tracking-widest border-b-2 border-kimetsu-green pb-2">
-                                <Icons.Lock className="text-kimetsu-green"/> 隊員身份驗證
-                            </h2>
-                            <p className="text-kimetsu-black font-bold mb-1">歡迎回來，{loginTargetUser?.name}！</p>
-                            <p className="text-slate-500 text-xs mb-4">請輸入密碼以解開卷軸。</p>
-                            <input 
-                                type="password" 
-                                value={userPasswordInput}
-                                onChange={e => setUserPasswordInput(e.target.value)}
-                                className="w-full p-3 border-2 border-kimetsu-black rounded mb-2 outline-none focus:ring-2 ring-kimetsu-green bg-kimetsu-bg text-center font-bold tracking-widest"
-                                placeholder="輸入密碼"
-                            />
-                            <p className="text-center text-[10px] text-slate-400 mb-4 font-bold">若密碼真的忘記了，請洽小恩</p>
-                            <div className="flex gap-2">
-                                <button onClick={() => setView('reveal')} className="flex-1 py-2 bg-slate-200 text-slate-600 rounded font-bold hover:bg-slate-300 transition">取消</button>
-                                <button onClick={handleUserLogin} className="flex-1 py-2 bg-kimetsu-black text-white rounded font-bold hover:bg-slate-800 transition border-b-4 border-slate-900">解開卷軸</button>
-                            </div>
-                        </div>
-                    </div>
-                );
+            // 更新外掛輸入框數值
+            if(document.getElementById('svgInput_dh')) document.getElementById('svgInput_dh').value = params.dh; 
+            if(document.getElementById('svgInput_du')) document.getElementById('svgInput_du').value = params.du;
+            if(document.getElementById('svgInput_dp')) document.getElementById('svgInput_dp').value = params.dp; 
+            if(document.getElementById('svgInput_d')) document.getElementById('svgInput_d').value = params.d;
+            if(document.getElementById('svgInput_t')) document.getElementById('svgInput_t').value = params.t; 
+            if(document.getElementById('svgInput_hh')) document.getElementById('svgInput_hh').value = params.hh;
+            if(document.getElementById('svgInput_hu')) document.getElementById('svgInput_hu').value = params.hu; 
+            if(document.getElementById('svgInput_hp')) document.getElementById('svgInput_hp').value = params.hp;
+            if(document.getElementById('svgInput_hb')) document.getElementById('svgInput_hb').value = params.hb;
+
+            // 定位 直徑 D
+            function setDimD(id, y, r, extY1) {
+                if (!document.getElementById(`dim${id}_line`)) return;
+                document.getElementById(`dim${id}_line`).setAttribute('x1', centerX - r); document.getElementById(`dim${id}_line`).setAttribute('x2', centerX + r);
+                document.getElementById(`dim${id}_line`).setAttribute('y1', y); document.getElementById(`dim${id}_line`).setAttribute('y2', y);
+                document.getElementById(`dim${id}_ext1`).setAttribute('x1', centerX - r); document.getElementById(`dim${id}_ext1`).setAttribute('x2', centerX - r);
+                document.getElementById(`dim${id}_ext1`).setAttribute('y1', extY1); document.getElementById(`dim${id}_ext1`).setAttribute('y2', y - 5);
+                document.getElementById(`dim${id}_ext2`).setAttribute('x1', centerX + r); document.getElementById(`dim${id}_ext2`).setAttribute('x2', centerX + r);
+                document.getElementById(`dim${id}_ext2`).setAttribute('y1', extY1); document.getElementById(`dim${id}_ext2`).setAttribute('y2', y - 5);
+                const fo = document.getElementById(`dim${id}_fo`);
+                if(fo) {
+                    fo.setAttribute('x', centerX - (parseInt(fo.getAttribute('width'))/2)); fo.setAttribute('y', y - 12);
+                }
+            }
+            setDimD('Dh', y_top - 20, r_head, y_top);
+            setDimD('Du', y1 + 15, r_undercut, y1);
+            setDimD('Dp', y2 + 15, r_press, y2);
+            setDimD('D', y_plate_outer_bottom + 25, r_pilot, y4);
+
+            // 定位 t (厚度)
+            const tLineX = 80;
+            if(document.getElementById('dimT_line')) {
+                document.getElementById('dimT_line').setAttribute('x1', tLineX); document.getElementById('dimT_line').setAttribute('x2', tLineX);
+                document.getElementById('dimT_line').setAttribute('y1', y1); document.getElementById('dimT_line').setAttribute('y2', fill_level_y);
+                document.getElementById('dimT_ext1').setAttribute('x1', 30); document.getElementById('dimT_ext1').setAttribute('x2', tLineX + 5);
+                document.getElementById('dimT_ext1').setAttribute('y1', y1); document.getElementById('dimT_ext1').setAttribute('y2', y1);
+                document.getElementById('dimT_ext2').setAttribute('x1', centerX - r_press); document.getElementById('dimT_ext2').setAttribute('x2', tLineX + 5);
+                document.getElementById('dimT_ext2').setAttribute('y1', fill_level_y); document.getElementById('dimT_ext2').setAttribute('y2', fill_level_y);
+            }
+            const foT = document.getElementById('dimT_fo');
+            if(foT) {
+                foT.setAttribute('x', tLineX - parseInt(foT.getAttribute('width')) - 10);
+                foT.setAttribute('y', y1 + (fill_level_y - y1)/2 - 12);
             }
 
-            return (
-                <div className="min-h-screen relative overflow-hidden flex flex-col items-center">
-                    
-                    <div className="relative z-10 w-full max-w-md min-h-screen bg-kimetsu-bg shadow-2xl flex flex-col border-x-4 border-kimetsu-black">
-                        <header className="bg-kimetsu-black p-4 text-white shadow-md flex justify-between items-center border-b-4 border-kimetsu-green">
-                            <div className="flex items-center gap-2">
-                                <Icons.Sword className="text-kimetsu-green drop-shadow-md" size={28} />
-                                <h1 className="text-xl font-bold tracking-widest text-kimetsu-green">鬼滅之刃交換道場</h1>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                {mode === 'cloud' && <span className="text-xs bg-slate-700 px-2 py-1 rounded flex items-center gap-1 font-bold border border-slate-500 text-kimetsu-green"><Icons.Cloud size={12}/> 連線中</span>}
-                            </div>
-                        </header>
+            // 定位 高度 H
+            const hLineX = centerX + Math.max(r_head, r_press, r_pilot) + 110;
+            function setDimH(id, y_start, y_end, r) {
+                if (!document.getElementById(`dim${id}_line`)) return;
+                document.getElementById(`dim${id}_line`).setAttribute('x1', hLineX); document.getElementById(`dim${id}_line`).setAttribute('x2', hLineX);
+                document.getElementById(`dim${id}_line`).setAttribute('y1', y_start); document.getElementById(`dim${id}_line`).setAttribute('y2', y_end);
+                document.getElementById(`dim${id}_ext1`).setAttribute('x1', centerX + r); document.getElementById(`dim${id}_ext1`).setAttribute('x2', hLineX - 5);
+                document.getElementById(`dim${id}_ext1`).setAttribute('y1', y_start); document.getElementById(`dim${id}_ext1`).setAttribute('y2', y_start);
+                document.getElementById(`dim${id}_ext2`).setAttribute('x1', centerX + r); document.getElementById(`dim${id}_ext2`).setAttribute('x2', hLineX - 5);
+                document.getElementById(`dim${id}_ext2`).setAttribute('y1', y_end); document.getElementById(`dim${id}_ext2`).setAttribute('y2', y_end);
+                const fo = document.getElementById(`dim${id}_fo`);
+                if(fo) {
+                    fo.setAttribute('x', hLineX + 8); fo.setAttribute('y', y_start + (y_end - y_start)/2 - 12);
+                }
+            }
+            setDimH('Hh', y_top, y1, r_head);
+            setDimH('Hu', y1, y2, r_undercut);
+            setDimH('Hp', y2, y3, r_press);
+            setDimH('Hb', y3, y4, r_pilot);
+        }
 
-                        <main className="flex-1 p-6 flex flex-col relative bg-[url('https://www.transparenttextures.com/patterns/rice-paper.png')]">
-                            {isProcessing && <div className="absolute inset-0 z-50 bg-white/80 flex items-center justify-center"><div className="spinner"></div></div>}
+        function addRecord() {
+            const emptyRow = document.getElementById('emptyStateRow');
+            if (emptyRow) emptyRow.style.display = 'none';
 
-                            {view === 'home' && (
-                                <div className="flex flex-col items-center justify-center h-full gap-8 animate-fade-in relative">
-                                    <div className="text-center space-y-4">
-                                        <div className="inline-block p-4 border-4 border-kimetsu-black bg-white shadow-lg rotate-1">
-                                            <h2 className="text-3xl font-bold text-kimetsu-black tracking-widest border-2 border-kimetsu-green p-2">全集中・交換之呼吸</h2>
-                                        </div>
-                                        <div className="bg-white px-6 py-2 rounded border-2 border-kimetsu-black shadow-sm inline-block">
-                                            <p className="text-kimetsu-black font-bold">現任隊員： <span className="text-kimetsu-pink text-2xl font-black">{users.length}</span> 名</p>
-                                        </div>
-                                    </div>
-                                    <div className="w-full space-y-4 mt-4">
-                                        {!myParticipantId ? (
-                                            <button onClick={startDrawing} className="w-full py-4 bg-kimetsu-green hover:bg-green-500 text-white rounded shadow-lg flex items-center justify-center gap-3 text-lg font-bold active:scale-95 transition-transform border-b-4 border-green-800 tracking-widest relative overflow-hidden group">
-                                                <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                                                <Icons.PenTool size={24}/> 入隊考核 (繪製卷軸)
-                                            </button>
-                                        ) : (
-                                            <button onClick={() => setView('my_card')} className="w-full py-4 bg-white border-4 border-kimetsu-green text-kimetsu-dark-green hover:bg-green-50 rounded flex items-center justify-center gap-2 font-bold shadow-md active:scale-95 transition-transform tracking-widest">
-                                                <Icons.Image size={24}/> 查看我的任務卷軸
-                                            </button>
-                                        )}
-                                        <button onClick={() => setView('participants')} className="w-full py-4 bg-kimetsu-black border-2 border-slate-600 hover:bg-slate-800 text-white rounded shadow-lg flex items-center justify-center gap-3 text-lg font-bold transition-transform active:scale-95 tracking-widest">
-                                            <Icons.Users size={24}/> 查看隊員名冊
-                                        </button>
-                                        
-                                        {/* Task Assignment Button: Always Visible if Users exist */}
-                                        {users.length > 0 && (
-                                            <>
-                                                <button onClick={() => setView('reveal')} className={`w-full py-4 ${Object.keys(matches).length > 0 ? 'bg-kimetsu-pink hover:bg-pink-400 border-pink-600' : 'bg-kimetsu-black hover:bg-slate-800 border-slate-900'} text-white rounded shadow-lg flex items-center justify-center gap-3 text-lg font-bold mt-8 ${Object.keys(matches).length > 0 ? 'animate-pulse' : ''} border-b-4 active:scale-95 transition-transform tracking-widest`}>
-                                                    {Object.keys(matches).length > 0 ? <><Icons.Eye size={24}/> 任務下達！確認目標</> : <><Icons.Lock size={24}/> 隊員集合！確認卷軸</>}
-                                                </button>
-                                                
-                                                {/* NEW SPECTATOR BUTTON */}
-                                                <button onClick={async () => {
-                                                    setView('spectator_live');
-                                                }} className="w-full py-4 bg-blue-600 hover:bg-blue-500 border-blue-800 text-white rounded shadow-lg flex items-center justify-center gap-3 text-lg font-bold border-b-4 active:scale-95 transition-transform tracking-widest mt-2">
-                                                    <Icons.Tv size={24}/> 進入會場 (觀看模式)
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
-                                    
-                                    <div className="mt-auto pt-8 flex flex-col items-center gap-3 w-full">
-                                        {myParticipantId && (
-                                            <button onClick={handleManualLogout} className="text-xs text-slate-500 hover:text-kimetsu-black flex items-center gap-1 py-2 px-4 rounded border-2 border-slate-300 hover:border-kimetsu-black transition mb-2 font-bold">
-                                                <Icons.LogOut size={14}/> 隱退 (清除狀態)
-                                            </button>
-                                        )}
-                                        <button onClick={() => setView('admin_login')} className="text-sm text-kimetsu-black hover:text-kimetsu-green flex items-center gap-2 py-2 px-4 rounded transition font-bold bg-white border border-kimetsu-black shadow-sm">
-                                            <Icons.Lock size={16}/> 鬼殺隊總部 (Admin)
-                                        </button>
-                                        <span className="text-[10px] text-slate-300 mt-1 font-mono">v1.0</span>
+            const uts = document.getElementById('utsInput').value;
+            const t = document.getElementById('tInput').value;
+            const dh = document.getElementById('dhInput').value; const dp = document.getElementById('dpInput').value;
+            const du = document.getElementById('duInput').value; const d  = document.getElementById('dInput').value;
+            const hh = document.getElementById('hhInput').value; const hp = document.getElementById('hpInput').value;
+            const hu = document.getElementById('huInput').value; const hb = document.getElementById('hbInput').value;
 
-                                        {mode === 'offline' && (
-                                            <div className="text-xs text-slate-400 font-bold">
-                                                <button onClick={()=>{localStorage.removeItem('fb_config_override');window.location.reload()}} className="underline ml-1 hover:text-kimetsu-black transition">重設連線</button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
+            recordCount++;
+            const rowId = 'record-' + recordCount;
 
-                            {view === 'draw' && <DrawingPad initialData={editData} onSave={saveUser} onCancel={() => setView(editData ? 'my_card' : 'home')} Icons={Icons} />}
-                            
-                            {view === 'my_card' && (
-                                <div className="flex flex-col h-full animate-fade-in">
-                                    <div className="flex items-center justify-center mb-4">
-                                         <h2 className="text-2xl font-bold text-center text-kimetsu-black tracking-widest border-b-4 border-kimetsu-green pb-1">我的任務卷軸</h2>
-                                    </div>
-                                    {(() => {
-                                        const me = users.find(u => u.id === myParticipantId);
-                                        if (!me) return (
-                                            <div className="flex flex-col items-center justify-center py-10 text-slate-500 gap-4 bg-white rounded border-2 border-kimetsu-black p-8 shadow-md">
-                                                <p className="font-bold text-lg">找不到卷軸，可能已被銷毀。</p>
-                                                <button onClick={handleManualLogout} className="px-6 py-3 bg-kimetsu-black text-white rounded text-sm font-bold shadow-md border-b-4 border-slate-700 hover:bg-slate-800 transition">返回首頁</button>
-                                            </div>
-                                        );
-                                        const isLocked = !!matches[me.id];
-                                        const style = getStyle(me.style || 'default');
-                                        const rank = me.rank || '癸';
+            const tbody = document.getElementById('historyTableBody');
+            const tr = document.createElement('tr');
+            tr.id = rowId;
+            tr.className = 'bg-white border-b hover:bg-slate-50 transition-colors';
+            
+            const modeColor = currentFailureMode === "剪切為主" ? "text-red-600" : "text-blue-600";
 
-                                        return (
-                                            <div className="flex-1 flex flex-col items-center">
-                                                <div className={`w-full p-6 rounded shadow-lg border-4 ${style.border} ${style.bg} mb-6 relative`}>
-                                                    <div className={`absolute -top-3 -right-3 px-2 py-1 bg-white border-2 ${style.border} rounded text-xs font-bold`}>{style.icon} {style.name}</div>
-                                                    <div className="flex justify-between items-center mb-4 border-b-2 border-slate-200 pb-2">
-                                                        <span className={`text-sm font-bold ${style.text}`}>隊員階級: {rank}</span>
-                                                        <span className={`font-bold text-xl ${style.text}`}>{me.name}</span>
-                                                    </div>
-                                                    
-                                                    {/* Nezuko Box for My Card - Force unlocked so user can see their own drawing */}
-                                                    <LocalNezukoBox isLocked={false} defaultOpen={true}>
-                                                        <img src={me.drawing} className="w-full h-full object-contain" />
-                                                    </LocalNezukoBox>
-                                                </div>
+            tr.innerHTML = `
+                <td class="px-4 py-3">${uts}</td>
+                <td class="px-4 py-3">${t}</td>
+                <td class="px-4 py-3 text-xs text-slate-500">${dh} / <strong class="text-red-500">${dp}</strong> / ${du} / ${d}</td>
+                <td class="px-4 py-3 text-xs text-slate-500">${hh} / ${hu} / ${hp} / ${hb}</td>
+                <td class="px-4 py-3 font-bold text-slate-800 bg-emerald-50/50">${currentForceN.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                <td class="px-4 py-3 font-bold ${modeColor}">${currentFailureMode}</td>
+                <td class="px-4 py-3 text-center">
+                    <button onclick="deleteRecord('${rowId}')" class="text-slate-400 hover:text-red-500 transition-colors p-1" title="刪除此紀錄">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                    </button>
+                </td>
+            `;
+            
+            tbody.appendChild(tr);
+            tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
 
-                                                {isLocked ? (
-                                                    <>
-                                                        <div className="w-full p-6 bg-slate-100 text-slate-600 rounded text-sm text-center mb-6 border-l-4 border-kimetsu-black shadow-md">
-                                                            <p className="font-bold mb-2 text-lg text-kimetsu-black">🔒 任務已下達！</p>
-                                                            無法再修改卷軸內容！
-                                                        </div>
-                                                        <div className="flex flex-col items-center mb-6 opacity-80 w-full">
-                                                            <p className="text-xs text-slate-500 mb-1">▼ 您的畫作存檔 ▼</p>
-                                                            <div className="w-full aspect-square bg-white border-2 border-slate-200 rounded p-2">
-                                                                <img src={me.drawing} className="w-full h-full object-contain" />
-                                                            </div>
-                                                        </div>
-                                                    </>
-                                                ) : (
-                                                    <button onClick={editMyCard} className="w-full py-4 bg-kimetsu-black hover:bg-slate-800 text-white rounded shadow-md font-bold flex items-center justify-center gap-2 mb-6 border-b-4 border-slate-900 active:scale-95 transition-transform tracking-widest">
-                                                        <Icons.Edit size={24}/> 修改卷軸
-                                                    </button>
-                                                )}
-                                                
-                                                <button onClick={() => setView('home')} className="w-full py-4 bg-white text-kimetsu-black font-bold rounded mt-auto border-2 border-kimetsu-black hover:bg-slate-100 transition shadow-sm active:scale-95 tracking-widest">返回道場</button>
-                                            </div>
-                                        );
-                                    })()}
-                                </div>
-                            )}
+        function deleteRecord(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) row.remove();
+            
+            const tbody = document.getElementById('historyTableBody');
+            const rows = tbody.querySelectorAll('tr:not(#emptyStateRow)');
+            if (rows.length === 0) {
+                const emptyRow = document.getElementById('emptyStateRow');
+                if (emptyRow) emptyRow.style.display = 'table-row';
+            }
+        }
 
-                            {view === 'participants' && (
-                                <div className="flex flex-col h-full">
-                                    <h2 className="text-2xl font-bold mb-6 flex items-center gap-3 text-kimetsu-black border-l-4 border-kimetsu-green pl-3 tracking-widest">鬼殺隊名冊</h2>
-                                    <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-                                        {users.length === 0 ? <div className="text-center text-slate-500 mt-10 font-bold text-lg bg-white p-8 rounded border-2 border-slate-300">尚無隊員入隊...</div> : users.map((u, idx) => {
-                                            const style = getStyle(u.style || 'default');
-                                            const rank = u.rank || '癸';
-                                            return (
-                                                <div key={u.id} className={`p-4 rounded flex justify-between items-center border-2 shadow-sm transition-transform hover:translate-x-1 ${isMe(u.id) ? `bg-green-50 border-kimetsu-green` : `${style.bg} ${style.border}`}`}>
-                                                    <div className="flex items-center gap-3">
-                                                        <span className={`font-bold text-lg ${style.text} font-mono`}>#{idx + 1}</span>
-                                                        <span className={`font-bold text-lg ${style.text}`}>
-                                                            <span className="text-xs border border-current px-1 rounded mr-1">{rank}</span>
-                                                            {style.icon} {u.name}
-                                                        </span>
-                                                        {isMe(u.id) && <span className="text-xs bg-kimetsu-black text-white px-2 py-1 rounded font-bold">我</span>}
-                                                    </div>
-                                                    <div className="flex flex-col items-end">
-                                                        <span className="text-xs text-slate-500 font-bold border border-slate-300 px-2 py-1 rounded flex items-center gap-1 mb-1"><Icons.Check size={12}/> 卷軸完成</span>
-                                                        <span className="text-[10px] text-slate-400">{formatTime(u.updatedAt || u.createdAt)}</span>
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                    <button onClick={() => setView('home')} className="mt-6 w-full py-4 bg-kimetsu-black text-white font-bold rounded border-b-4 border-slate-900 hover:bg-slate-800 transition shadow-md active:scale-95 tracking-widest">返回道場</button>
-                                </div>
-                            )}
-
-                            {view === 'reveal' && (
-                                <div className="flex flex-col h-full">
-                                    <div className="text-center mb-8">
-                                        <h2 className="text-3xl font-bold text-kimetsu-black tracking-widest border-b-2 border-kimetsu-green inline-block pb-2">
-                                            {Object.keys(matches).length > 0 ? "任務下達" : "卷軸確認"}
-                                        </h2>
-                                        <p className="text-slate-600 font-bold mt-4">請點選你的名字解開卷軸</p>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4 overflow-y-auto pb-6 pr-2">
-                                        {users.map((u) => {
-                                            const style = getStyle(u.style || 'default');
-                                            return (
-                                                <button key={u.id} onClick={() => promptUserLogin(u)} className={`p-6 border-2 rounded shadow-md flex flex-col items-center justify-center aspect-square transition-all relative group active:scale-95 ${isMe(u.id) ? 'bg-green-50 border-kimetsu-green ring-2 ring-green-200' : `${style.bg} ${style.border} hover:opacity-90`}`}>
-                                                    {isMe(u.id) && <div className="absolute top-2 right-2 text-white bg-kimetsu-black px-2 py-0.5 rounded text-xs font-bold">我</div>}
-                                                    <Icons.Lock size={32} className={`${isMe(u.id) ? 'text-kimetsu-green' : style.text} mb-3 group-hover:scale-110 transition-transform`} />
-                                                    <span className={`font-bold ${style.text} text-lg truncate w-full text-center`}>{u.name}</span>
-                                                </button>
-                                            )
-                                        })}
-                                    </div>
-                                    <button onClick={() => setView('home')} className="mt-auto w-full py-4 bg-kimetsu-black text-white font-bold rounded border-b-4 border-slate-900 hover:bg-slate-800 transition shadow-md active:scale-95 tracking-widest">返回道場</button>
-                                </div>
-                            )}
-
-                            {view === 'check_result' && revealData && (
-                                <div className="flex flex-col h-full items-center justify-center text-center animate-fade-in">
-                                    <div className="mb-8 p-4 border-y-4 border-kimetsu-green w-full bg-kimetsu-black">
-                                        <span className="text-xs text-kimetsu-green uppercase tracking-widest font-bold block mb-1">TO: 隊員</span>
-                                        <h2 className="text-3xl font-extrabold text-white drop-shadow-sm">{revealData.giver.name}</h2>
-                                    </div>
-                                    <div className="w-full bg-white p-8 rounded shadow-2xl border-4 border-kimetsu-black mb-8 relative overflow-hidden">
-                                        <div className="absolute -top-10 -right-10 w-24 h-24 bg-kimetsu-pink rotate-45 opacity-50"></div>
-                                        <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-kimetsu-green rotate-45 opacity-50"></div>
-                                        
-                                        <p className="text-slate-500 mb-4 font-bold text-lg">你要贈送禮物的對象是：</p>
-                                        
-                                        {/* Masked Name */}
-                                        <div className="text-3xl font-black text-kimetsu-black mb-6 bg-kimetsu-bg py-4 px-8 rounded border-2 border-dashed border-kimetsu-black relative z-10 tracking-widest">
-                                            ??? (神秘隊員)
-                                        </div>
-                                        
-                                        <div className="mb-6 bg-orange-50 border-l-4 border-orange-500 p-3 text-orange-700 font-bold text-sm text-left">
-                                            <span className="block mb-1 text-lg">⚠️ 主公指令：</span>
-                                            請準備符合下方卷軸內容的禮物，並於集會時交付！
-                                        </div>
-                                        
-                                        <div className="bg-white border-4 border-double border-slate-300 rounded p-2 shadow-inner inline-block relative z-10 w-full max-w-sm aspect-square">
-                                            {/* User Result Nezuko Box */}
-                                            <LocalNezukoBox isLocked={false}>
-                                                {revealData.receiver ? <img src={revealData.receiver.drawing} className="w-full h-full object-contain" /> : "Error"}
-                                            </LocalNezukoBox>
-                                        </div>
-                                    </div>
-                                    <button onClick={() => setView('reveal')} className="w-full py-4 bg-kimetsu-pink text-white font-bold rounded shadow-lg border-b-4 border-pink-700 hover:bg-pink-400 transition active:scale-95 tracking-widest">遵命！(登出)</button>
-                                </div>
-                            )}
-                        </main>
-                    </div>
-                </div>
-            );
-        };
-
-        const root = createRoot(document.getElementById('root'));
-        root.render(<App />);
+        window.onload = calculate;
     </script>
 </body>
 </html>
