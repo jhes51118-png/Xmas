@@ -17,8 +17,9 @@
         .svg-dim-box { display: flex; align-items: center; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.95); border: 1px solid #94a3b8; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s; box-sizing: border-box; }
         .svg-dim-box:hover, .svg-dim-box:focus-within { border-color: #4f46e5; background-color: #ffffff; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2); transform: scale(1.05); z-index: 10; }
         .svg-dim-label { font-size: 12px; font-weight: 800; color: #475569; padding-left: 6px; user-select: none; cursor: text; }
-        .svg-dim-input { width: 100%; background: transparent; border: none; outline: none; font-size: 13px; font-weight: 900; color: #0f172a; text-align: center; padding: 0 4px 0 0; appearance: none; cursor: text; }
-        .svg-dim-input::-webkit-inner-spin-button, .svg-dim-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        /* 移除 appearance: none; 讓瀏覽器原生的上下微調箭頭顯示出來 */
+        .svg-dim-input { width: 100%; background: transparent; border: none; outline: none; font-size: 13px; font-weight: 900; color: #0f172a; text-align: center; padding: 0; cursor: text; }
         
         .red-accent { border-color: #fca5a5; background-color: #fef2f2; }
         .red-accent:hover, .red-accent:focus-within { border-color: #ef4444; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); }
@@ -47,7 +48,7 @@
                 </div>
                 
                 <div class="w-full bg-slate-50 border border-slate-200 rounded-lg flex justify-center items-center overflow-x-auto min-h-[250px] py-4">
-                    <svg id="schematic" viewBox="0 0 800 340" class="w-full max-w-2xl h-auto drop-shadow-sm">
+                    <svg id="schematic" viewBox="0 0 800 380" class="w-full max-w-2xl h-auto drop-shadow-sm">
                         <defs>
                             <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" /></marker>
                             <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444" /></marker>
@@ -58,9 +59,9 @@
                         </defs>
 
                         <!-- 中心線與拉拔力箭頭 (X 向右偏移至 430) -->
-                        <line id="centerLine" x1="430" y1="10" x2="430" y2="330" stroke="#94a3b8" stroke-dasharray="10 5 2 5" stroke-width="1.5" />
-                        <line id="svgRedRefLine" x1="20" y1="190" x2="780" y2="190" stroke="#ef4444" stroke-width="2.5" />
-                        <text id="svgRedRefText" x="30" y="182" fill="#ef4444" font-size="13" font-weight="bold">齊平基準面 (Top Surface)</text>
+                        <line id="centerLine" x1="430" y1="10" x2="430" y2="370" stroke="#94a3b8" stroke-dasharray="10 5 2 5" stroke-width="1.5" />
+                        <line id="svgRedRefLine" x1="20" y1="230" x2="780" y2="230" stroke="#ef4444" stroke-width="2.5" />
+                        <text id="svgRedRefText" x="30" y="222" fill="#ef4444" font-size="13" font-weight="bold">齊平基準面 (Top Surface)</text>
                         
                         <path id="fArrow" d="M 430 60 L 430 15" stroke="#ef4444" stroke-width="3.5" marker-end="url(#arrow-red)" fill="none" />
                         <text id="fText" x="440" y="40" fill="#ef4444" font-weight="bold" font-size="16">拉拔力 (F)</text>
@@ -77,7 +78,7 @@
                         <path id="svgSqueezeL" d="" fill="#475569" opacity="0.6"/>
                         <path id="svgSqueezeR" d="" fill="#475569" opacity="0.6"/>
 
-                        <!-- 破壞面指示線 (文字移至左側) -->
+                        <!-- 破壞面指示線 -->
                         <line id="svgShearLeft" stroke="#ef4444" stroke-dasharray="6 4" stroke-width="3" />
                         <line id="svgShearRight" stroke="#ef4444" stroke-dasharray="6 4" stroke-width="3" />
                         <rect id="svgShearBg" width="125" height="24" fill="#fef2f2" rx="4" stroke="#fecaca"/>
@@ -114,34 +115,34 @@
                             <line id="dimHh_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimHh_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
                         </g>
 
-                        <!-- 浮動輸入框 -->
-                        <foreignObject id="dimDh_fo" width="75" height="26">
+                        <!-- 浮動輸入框：稍微加寬至 86 確保上下微調箭頭(Spin buttons)完美顯示 -->
+                        <foreignObject id="dimDh_fo" width="86" height="26">
                             <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Dh=</label><input type="number" id="svgInput_dh" class="svg-dim-input" onchange="syncFromSVG('dh', this.value)" step="0.1" /></div>
                         </foreignObject>
-                        <foreignObject id="dimDu_fo" width="75" height="26">
+                        <foreignObject id="dimDu_fo" width="86" height="26">
                             <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Du=</label><input type="number" id="svgInput_du" class="svg-dim-input" onchange="syncFromSVG('du', this.value)" step="0.1" /></div>
                         </foreignObject>
-                        <foreignObject id="dimDp_fo" width="75" height="26">
+                        <foreignObject id="dimDp_fo" width="86" height="26">
                             <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box" title="擠料環"><label class="svg-dim-label">Dp=</label><input type="number" id="svgInput_dp" class="svg-dim-input" onchange="syncFromSVG('dp', this.value)" step="0.1" /></div>
                         </foreignObject>
-                        <foreignObject id="dimD_fo" width="70" height="26">
+                        <foreignObject id="dimD_fo" width="80" height="26">
                             <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box" title="盲孔柱"><label class="svg-dim-label">D=</label><input type="number" id="svgInput_d" class="svg-dim-input" onchange="syncFromSVG('d', this.value)" step="0.1" /></div>
                         </foreignObject>
                         
-                        <foreignObject id="dimT_fo" width="75" height="26">
+                        <foreignObject id="dimT_fo" width="86" height="26">
                             <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box red-accent" title="退刀槽內填入厚度"><label class="svg-dim-label">t=</label><input type="number" id="svgInput_t" class="svg-dim-input" onchange="syncFromSVG('t', this.value)" step="0.05" /></div>
                         </foreignObject>
 
-                        <foreignObject id="dimHb_fo" width="75" height="26">
+                        <foreignObject id="dimHb_fo" width="86" height="26">
                             <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hb=</label><input type="number" id="svgInput_hb" class="svg-dim-input" onchange="syncFromSVG('hb', this.value)" step="0.1" /></div>
                         </foreignObject>
-                        <foreignObject id="dimHp_fo" width="75" height="26">
+                        <foreignObject id="dimHp_fo" width="86" height="26">
                             <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hp=</label><input type="number" id="svgInput_hp" class="svg-dim-input" onchange="syncFromSVG('hp', this.value)" step="0.1" /></div>
                         </foreignObject>
-                        <foreignObject id="dimHu_fo" width="75" height="26">
+                        <foreignObject id="dimHu_fo" width="86" height="26">
                             <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hu=</label><input type="number" id="svgInput_hu" class="svg-dim-input" onchange="syncFromSVG('hu', this.value)" step="0.1" /></div>
                         </foreignObject>
-                        <foreignObject id="dimHh_fo" width="75" height="26">
+                        <foreignObject id="dimHh_fo" width="86" height="26">
                             <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hh=</label><input type="number" id="svgInput_hh" class="svg-dim-input" onchange="syncFromSVG('hh', this.value)" step="0.1" /></div>
                         </foreignObject>
                     </svg>
@@ -449,7 +450,7 @@
             const r_dh = (params.dh * scale) / 2;
             const r_th = (2.0 * scale) / 2; 
 
-            const y_surface = 190; 
+            const y_surface = 230; // 下移基準面，給上方箭頭與標註留出充足空間
             const y_flangeTop = y_surface; 
             const y_postTop = y_flangeTop - (params.hb * scale); 
             const y_undercutTop = y_flangeTop + (params.hp * scale); 
@@ -464,13 +465,15 @@
             if(document.getElementById('centerLine')) {
                 document.getElementById('centerLine').setAttribute('x1', centerX);
                 document.getElementById('centerLine').setAttribute('x2', centerX);
+                document.getElementById('centerLine').setAttribute('y2', 370);
             }
             if (document.getElementById('fArrow')) {
-                document.getElementById('fArrow').setAttribute('d', `M ${centerX} ${y_postTop - 10} L ${centerX} ${y_postTop - 40}`);
+                // 將拉拔力箭頭大幅上移，完全避開 D 尺寸標註框
+                document.getElementById('fArrow').setAttribute('d', `M ${centerX} ${y_postTop - 45} L ${centerX} ${y_postTop - 85}`);
             }
             if (document.getElementById('fText')) {
                 document.getElementById('fText').setAttribute('x', centerX + 10);
-                document.getElementById('fText').setAttribute('y', y_postTop - 25);
+                document.getElementById('fText').setAttribute('y', y_postTop - 60);
             }
 
             const nutPath = `
@@ -558,7 +561,7 @@
                 if(fo) { fo.setAttribute('x', centerX - (parseInt(fo.getAttribute('width'))/2)); fo.setAttribute('y', y - 13); }
             }
             
-            setDimD('D', y_postTop - 30, r_d, y_postTop);
+            setDimD('D', y_postTop - 25, r_d, y_postTop);
             setDimD('Dp', y_flangeTop + 10, r_dp, y_flangeTop);
             setDimD('Du', y_undercutTop + 10, r_du, y_undercutTop);
             setDimD('Dh', y_holeBottom + 30, r_dh, y_holeBottom);
