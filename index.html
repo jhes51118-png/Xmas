@@ -312,7 +312,7 @@
             if (currentShape === 'tri') {
                 const d_avg = (dh + du) / 2; areaShear = Math.PI * d_avg * t_eff;
                 areaBearing = dh > du ? (Math.PI / 4) * (Math.pow(dh, 2) - Math.pow(du, 2)) : 0;
-                forceShear = areaShear * (uts * 0.6); forceCrush = areaBearing * uts * 0.707;
+                forceShear = areaShear * (uts * 0.6); forceCrush = areaBearing * uts * 1.414;
                 
                 document.getElementById('logic-step1-formula').innerHTML = `<div class="text-indigo-600 font-bold">t_eff = Hu = ${t_eff.toFixed(2)} mm</div>`;
                 document.getElementById('logic-step2-title').innerHTML = `Step 2: 剪切 A (<span class="font-serif italic text-red-600">沿斜面平均徑 Davg</span>)`;
@@ -324,12 +324,12 @@
                     <div class="text-slate-600">F_sh = A_sh × (UTS × 0.6)</div>
                     <div class="text-slate-500">F_sh = ${areaShear.toFixed(1)} × (${uts} × 0.6) = ${(forceShear).toFixed(0)} N</div>
                 `;
-                document.getElementById('logic-step3-title').innerHTML = `Step 3: 潰縮 B (<span class="font-serif italic text-blue-600">45°倒錐承壓折減</span>)`;
+                document.getElementById('logic-step3-title').innerHTML = `Step 3: 潰縮 B (<span class="font-serif italic text-blue-600">45°倒錐承壓修正</span>)`;
                 document.getElementById('logic-crush-formula').innerHTML = `
                     <div class="text-slate-600">A_br = (π/4) × (Dh² - Du²)</div>
                     <div class="text-slate-500 mb-1">A_br = 0.7854 × (${dh.toFixed(2)}² - ${du.toFixed(2)}²) = ${areaBearing.toFixed(1)} mm²</div>
-                    <div class="text-slate-600">F_cr = A_br × UTS × cos(45°)</div>
-                    <div class="text-slate-500">F_cr = ${areaBearing.toFixed(1)} × ${uts} × 0.707 = ${(forceCrush).toFixed(0)} N</div>
+                    <div class="text-slate-600">F_cr = A_br × UTS × sec(45°)</div>
+                    <div class="text-slate-500">F_cr = ${areaBearing.toFixed(1)} × ${uts} × 1.414 = ${(forceCrush).toFixed(0)} N</div>
                 `;
             } else {
                 areaShear = Math.PI * dh * t_eff; areaBearing = dh > du ? (Math.PI / 4) * (Math.pow(dh, 2) - Math.pow(du, 2)) : 0;
