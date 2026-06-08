@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>盲孔壓鉚鋁釘拉拔力理論計算機 - 完美版</title>
+    <title>盲孔壓鉚鋁釘拉拔力理論計算機 - 最終完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; overflow: hidden; }
         .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 4px 20px -5px rgba(31, 38, 135, 0.1); }
         svg path, svg line, svg rect, foreignObject { transition: all 0.2s ease-out; }
-        .math-step { position: relative; padding-left: 1.25rem; margin-bottom: 0.25rem; }
+        .math-step { position: relative; padding-left: 1.25rem; margin-bottom: 0.35rem; }
         .math-step::before { content: ''; position: absolute; left: 0; top: 0.4rem; bottom: -0.2rem; width: 2px; background-color: #e2e8f0; }
         .math-step:last-child::before { display: none; }
         .step-dot { position: absolute; left: -0.3rem; top: 0.25rem; width: 0.7rem; height: 0.7rem; border-radius: 50%; background-color: #3b82f6; border: 2px solid #fff; }
@@ -38,7 +38,7 @@
 
     <div class="max-w-[1400px] w-full h-full grid grid-cols-1 lg:grid-cols-10 gap-3">
         
-        <!-- 左側面板：佔 6/10 -->
+        <!-- ================= 左側面板：佔 6/10 ================= -->
         <div class="lg:col-span-6 flex flex-col gap-3 h-full overflow-hidden">
             
             <!-- 上方：動態示意圖 (自動填滿空間) -->
@@ -124,9 +124,9 @@
                         </g>
 
                         <!-- 輸入框 -->
-                        <foreignObject id="dimDh_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Dh=</label><input type="number" id="svgInput_dh" class="svg-dim-input" oninput="handleSync('dh', this.value)" step="0.1" /></div></foreignObject>
+                        <foreignObject id="dimDh_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box red-accent"><label class="svg-dim-label">Dh=</label><input type="number" id="svgInput_dh" class="svg-dim-input" oninput="handleSync('dh', this.value)" step="0.1" /></div></foreignObject>
                         <foreignObject id="dimDu_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Du=</label><input type="number" id="svgInput_du" class="svg-dim-input" oninput="handleSync('du', this.value)" step="0.1" /></div></foreignObject>
-                        <foreignObject id="dimDp_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box red-accent"><label class="svg-dim-label">Dp=</label><input type="number" id="svgInput_dp" class="svg-dim-input" oninput="handleSync('dp', this.value)" step="0.1" /></div></foreignObject>
+                        <foreignObject id="dimDp_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box" title="擠料環"><label class="svg-dim-label">Dp=</label><input type="number" id="svgInput_dp" class="svg-dim-input" oninput="handleSync('dp', this.value)" step="0.1" /></div></foreignObject>
                         <foreignObject id="dimD_fo" width="65" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">D=</label><input type="number" id="svgInput_d" class="svg-dim-input" oninput="handleSync('d', this.value)" step="0.1" /></div></foreignObject>
                         
                         <foreignObject id="dimT_fo" width="80" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box indigo-accent"><label class="svg-dim-label">Hu=t=</label><input type="number" id="svgInput_t" class="svg-dim-input" oninput="handleSync('hu', this.value)" step="0.05" /></div></foreignObject>
@@ -143,7 +143,7 @@
             <div class="glass-panel rounded-xl flex flex-col h-[250px] flex-shrink-0">
                 <div class="p-2 flex justify-between items-center bg-slate-50 border-b border-slate-200">
                     <span class="text-xs font-bold text-slate-700">📋 紀錄比較清單 (<span id="recordCountLabel">0</span>)</span>
-                    <button onclick="document.getElementById('historyTableBody').innerHTML='<tr id=\'emptyStateRow\' class=\'bg-white border-b\'><td colspan=\'6\' class=\'px-2 py-3 text-center text-slate-400\'>無紀錄</td></tr>'; recordCount=0; document.getElementById('recordCountLabel').innerText=0;" class="text-[10px] text-slate-400 hover:text-red-500">清除全部</button>
+                    <button onclick="document.getElementById('historyTableBody').innerHTML='<tr id=\'emptyStateRow\' class=\'bg-white border-b\'><td colspan=\'6\' class=\'px-2 py-6 text-center text-slate-400\'>尚未新增任何紀錄。點選右方「更新計算與+紀錄」即可比對。</td></tr>'; recordCount=0; document.getElementById('recordCountLabel').innerText=0;" class="text-[10px] text-slate-400 hover:text-red-500">清除全部</button>
                 </div>
                 <div class="table-container overflow-auto flex-1 bg-white">
                     <table class="w-full text-[10px] text-left text-slate-600 whitespace-nowrap">
@@ -158,7 +158,7 @@
             </div>
         </div>
 
-        <!-- 右側面板：佔 4/10 -->
+        <!-- ================= 右側面板：佔 4/10 ================= -->
         <div class="lg:col-span-4 flex flex-col gap-3 h-full overflow-hidden">
             
             <!-- 參數設定 -->
@@ -192,7 +192,7 @@
             <div class="glass-panel rounded-xl p-3 flex-shrink-0">
                 <div class="grid grid-cols-4 gap-1.5">
                     <div class="space-y-1.5">
-                        <div><label class="block text-[9px] font-semibold text-slate-600 mb-0.5">大頭Dh</label><input type="number" id="dhInput" value="4.6" step="0.1" class="w-full rounded border border-slate-300 px-1 py-0.5 text-[10px] text-center" oninput="handleSync('dh', this.value)"></div>
+                        <div><label class="block text-[9px] font-bold text-red-600 mb-0.5">大頭Dh</label><input type="number" id="dhInput" value="4.6" step="0.1" class="w-full rounded border border-red-300 bg-red-50 px-1 py-0.5 text-[10px] text-center font-bold" oninput="handleSync('dh', this.value)"></div>
                         <div><label class="block text-[9px] font-semibold text-slate-600 mb-0.5">頭高Hh</label><input type="number" id="hhInput" value="0.3" step="0.1" class="w-full rounded border border-slate-300 px-1 py-0.5 text-[10px] text-center" oninput="handleSync('hh', this.value)"></div>
                     </div>
                     <div class="space-y-1.5">
@@ -200,7 +200,7 @@
                         <div><label class="block text-[9px] font-bold text-indigo-700 mb-0.5">槽高Hu(=t)</label><input type="number" id="huInput" value="0.3" step="0.05" class="w-full rounded border border-indigo-300 bg-indigo-50 px-1 py-0.5 text-[10px] text-center font-bold" oninput="handleSync('hu', this.value)"></div>
                     </div>
                     <div class="space-y-1.5">
-                        <div><label class="block text-[9px] font-bold text-red-600 mb-0.5">擠料Dp</label><input type="number" id="dpInput" value="4.2" step="0.1" class="w-full rounded border border-red-300 bg-red-50 px-1 py-0.5 text-[10px] text-center font-bold" oninput="handleSync('dp', this.value)"></div>
+                        <div><label class="block text-[9px] font-semibold text-slate-600 mb-0.5">擠料Dp</label><input type="number" id="dpInput" value="4.2" step="0.1" class="w-full rounded border border-slate-300 px-1 py-0.5 text-[10px] text-center" oninput="handleSync('dp', this.value)"></div>
                         <div><label class="block text-[9px] font-semibold text-slate-600 mb-0.5">擠高Hp</label><input type="number" id="hpInput" value="0.3" step="0.1" class="w-full rounded border border-slate-300 px-1 py-0.5 text-[10px] text-center" oninput="handleSync('hp', this.value)"></div>
                     </div>
                     <div class="space-y-1.5">
@@ -210,15 +210,14 @@
                 </div>
             </div>
 
-            <!-- 計算結果與公式 (無須滾動) -->
+            <!-- 計算結果與公式 (自適應剩餘高度，可滾動) -->
             <div class="glass-panel rounded-xl p-3 bg-gradient-to-br from-white to-slate-50 border-emerald-100 flex-1 overflow-y-auto flex flex-col">
-                <!-- 縮小了按鈕的大小和間距 -->
                 <button id="calcBtn" onclick="executeCalculation(true)" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 rounded-lg shadow-md transition-all active:scale-95 flex justify-center items-center gap-1 text-[11px] mb-2 flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                     <span>更新計算與 + 紀錄</span>
                 </button>
 
-                <!-- 縮小了數字框的文字大小、padding及高度 -->
+                <!-- 結果數字框縮小與扁平化 -->
                 <div id="resultsSection" class="grid grid-cols-2 gap-2 mb-2 transition-opacity duration-300 flex-shrink-0">
                     <div class="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm text-center flex flex-col justify-center">
                         <div class="flex justify-center items-baseline gap-0.5">
@@ -236,14 +235,14 @@
                     </div>
                 </div>
 
-                <!-- 縮緊公式區塊的行距以避免產生捲軸 -->
+                <!-- 物理模型公式區塊 (採 先列公式 -> 下行帶入數字 格式) -->
                 <div id="logicSection" class="space-y-1 text-slate-700 text-[9px] transition-opacity duration-300 pb-1 flex-1">
                     <div class="flex justify-between items-center border-b border-slate-100 pb-0.5 mb-1">
                         <h3 class="text-[10px] font-bold text-slate-800">物理模型展開公式</h3>
                     </div>
-                    <div class="math-step"><div class="step-dot"></div><h4 class="font-bold mb-0.5" id="logic-step1-title">Step 1: 幾何</h4><div class="bg-slate-100 p-1 rounded font-mono" id="logic-step1-formula"></div></div>
-                    <div class="math-step"><div class="step-dot"></div><h4 class="font-bold mb-0.5" id="logic-step2-title">Step 2: 剪切 (A)</h4><div class="bg-slate-100 p-1 rounded font-mono" id="logic-shear-formula"></div></div>
-                    <div class="math-step"><div class="step-dot"></div><h4 class="font-bold mb-0.5" id="logic-step3-title">Step 3: 潰縮 (B)</h4><div class="bg-slate-100 p-1 rounded font-mono" id="logic-crush-formula"></div></div>
+                    <div class="math-step"><div class="step-dot"></div><h4 class="font-bold mb-0.5" id="logic-step1-title">Step 1: 幾何</h4><div class="bg-slate-100 p-1.5 rounded font-mono leading-tight" id="logic-step1-formula"></div></div>
+                    <div class="math-step"><div class="step-dot"></div><h4 class="font-bold mb-0.5" id="logic-step2-title">Step 2: 剪切 (A)</h4><div class="bg-slate-100 p-1.5 rounded font-mono leading-tight" id="logic-shear-formula"></div></div>
+                    <div class="math-step"><div class="step-dot"></div><h4 class="font-bold mb-0.5" id="logic-step3-title">Step 3: 潰縮 (B)</h4><div class="bg-slate-100 p-1.5 rounded font-mono leading-tight" id="logic-crush-formula"></div></div>
                     <div class="math-step"><div class="step-dot"></div><h4 class="font-bold mb-0.5">Step 4: 理論拉力</h4><div class="bg-indigo-50 p-1 rounded font-mono border border-indigo-100 flex items-center flex-wrap gap-1">F = min(A, B) = <strong class="text-emerald-600 text-xs"><span id="math-f-final">?</span> N</strong><span id="math-failure-mode" class="px-1 py-0.5 rounded text-white shadow-sm text-[8px] font-bold"></span></div></div>
                 </div>
             </div>
@@ -304,42 +303,52 @@
             if (autoRecord) addRecord();
         }
 
+        // ================== 重構：雙行公式帶入數值 ==================
         function performMathLogic() {
             const uts = parseFloat(document.getElementById('utsInput').value)||0; const hu = parseFloat(document.getElementById('huInput').value)||0;
-            const dp = parseFloat(document.getElementById('dpInput').value)||0; const du = parseFloat(document.getElementById('duInput').value)||0;
+            const dh = parseFloat(document.getElementById('dhInput').value)||0; const du = parseFloat(document.getElementById('duInput').value)||0;
             const t_eff = hu; let areaShear=0, areaBearing=0, forceShear=0, forceCrush=0;
 
             if (currentShape === 'tri') {
-                const d_avg = (dp + du) / 2; areaShear = Math.PI * d_avg * t_eff;
-                areaBearing = dp > du ? (Math.PI / 4) * (Math.pow(dp, 2) - Math.pow(du, 2)) : 0;
+                const d_avg = (dh + du) / 2; areaShear = Math.PI * d_avg * t_eff;
+                areaBearing = dh > du ? (Math.PI / 4) * (Math.pow(dh, 2) - Math.pow(du, 2)) : 0;
                 forceShear = areaShear * (uts * 0.6); forceCrush = areaBearing * uts * 0.707;
                 
-                document.getElementById('logic-step1-formula').innerHTML = `<div class="text-[9px]">t_eff = Hu = <strong class="text-indigo-600">${t_eff.toFixed(2)}mm</strong></div>`;
+                document.getElementById('logic-step1-formula').innerHTML = `<div class="text-indigo-600 font-bold">t_eff = Hu = ${t_eff.toFixed(2)} mm</div>`;
                 document.getElementById('logic-step2-title').innerHTML = `Step 2: 剪切 A (<span class="font-serif italic text-red-600">沿斜面平均徑 Davg</span>)`;
                 document.getElementById('logic-shear-formula').innerHTML = `
-                    D_avg = (Dp + Du)/2 = ${d_avg.toFixed(2)} mm<br>
-                    A_sh = π × ${d_avg.toFixed(2)} × ${t_eff.toFixed(2)} = ${areaShear.toFixed(1)} mm²<br>
-                    <span class="text-slate-500">F_sh = ${areaShear.toFixed(1)} × (${uts} × 0.6) = ${(forceShear).toFixed(0)} N</span>
+                    <div class="text-slate-600">D_avg = (Dh + Du) / 2</div>
+                    <div class="text-slate-500 mb-1">D_avg = (${dh.toFixed(2)} + ${du.toFixed(2)}) / 2 = ${d_avg.toFixed(2)} mm</div>
+                    <div class="text-slate-600">A_sh = π × D_avg × t_eff</div>
+                    <div class="text-slate-500 mb-1">A_sh = π × ${d_avg.toFixed(2)} × ${t_eff.toFixed(2)} = ${areaShear.toFixed(1)} mm²</div>
+                    <div class="text-slate-600">F_sh = A_sh × (UTS × 0.6)</div>
+                    <div class="text-slate-500">F_sh = ${areaShear.toFixed(1)} × (${uts} × 0.6) = ${(forceShear).toFixed(0)} N</div>
                 `;
                 document.getElementById('logic-step3-title').innerHTML = `Step 3: 潰縮 B (<span class="font-serif italic text-blue-600">45°倒錐承壓折減</span>)`;
                 document.getElementById('logic-crush-formula').innerHTML = `
-                    A_br = 0.785 × (${dp.toFixed(2)}² - ${du.toFixed(2)}²) = ${areaBearing.toFixed(1)} mm²<br>
-                    <span class="text-slate-500">F_cr = ${areaBearing.toFixed(1)} × ${uts} × 0.707 = ${(forceCrush).toFixed(0)} N</span>
+                    <div class="text-slate-600">A_br = (π/4) × (Dh² - Du²)</div>
+                    <div class="text-slate-500 mb-1">A_br = 0.7854 × (${dh.toFixed(2)}² - ${du.toFixed(2)}²) = ${areaBearing.toFixed(1)} mm²</div>
+                    <div class="text-slate-600">F_cr = A_br × UTS × cos(45°)</div>
+                    <div class="text-slate-500">F_cr = ${areaBearing.toFixed(1)} × ${uts} × 0.707 = ${(forceCrush).toFixed(0)} N</div>
                 `;
             } else {
-                areaShear = Math.PI * dp * t_eff; areaBearing = dp > du ? (Math.PI / 4) * (Math.pow(dp, 2) - Math.pow(du, 2)) : 0;
+                areaShear = Math.PI * dh * t_eff; areaBearing = dh > du ? (Math.PI / 4) * (Math.pow(dh, 2) - Math.pow(du, 2)) : 0;
                 forceShear = areaShear * (uts * 0.6); forceCrush = areaBearing * uts;
                 
-                document.getElementById('logic-step1-formula').innerHTML = `<div class="text-[9px]">t_eff = Hu = <strong class="text-indigo-600">${t_eff.toFixed(2)}mm</strong></div>`;
-                document.getElementById('logic-step2-title').innerHTML = `Step 2: 剪切 A (<span class="font-serif italic text-red-600">沿擠料環 Dp</span>)`;
+                document.getElementById('logic-step1-formula').innerHTML = `<div class="text-indigo-600 font-bold">t_eff = Hu = ${t_eff.toFixed(2)} mm</div>`;
+                document.getElementById('logic-step2-title').innerHTML = `Step 2: 剪切 A (<span class="font-serif italic text-red-600">沿大頭外緣 Dh</span>)`;
                 document.getElementById('logic-shear-formula').innerHTML = `
-                    A_sh = π × ${dp.toFixed(2)} × ${t_eff.toFixed(2)} = ${areaShear.toFixed(1)} mm²<br>
-                    <span class="text-slate-500">F_sh = ${areaShear.toFixed(1)} × (${uts} × 0.6) = ${(forceShear).toFixed(0)} N</span>
+                    <div class="text-slate-600">A_sh = π × Dh × t_eff</div>
+                    <div class="text-slate-500 mb-1">A_sh = π × ${dh.toFixed(2)} × ${t_eff.toFixed(2)} = ${areaShear.toFixed(1)} mm²</div>
+                    <div class="text-slate-600">F_sh = A_sh × (UTS × 0.6)</div>
+                    <div class="text-slate-500">F_sh = ${areaShear.toFixed(1)} × (${uts} × 0.6) = ${(forceShear).toFixed(0)} N</div>
                 `;
-                document.getElementById('logic-step3-title').innerHTML = `Step 3: 潰縮 B (<span class="font-serif italic text-blue-600">Dp與Du間的平口</span>)`;
+                document.getElementById('logic-step3-title').innerHTML = `Step 3: 潰縮 B (<span class="font-serif italic text-blue-600">Dh與Du間的平口</span>)`;
                 document.getElementById('logic-crush-formula').innerHTML = `
-                    A_br = 0.785 × (${dp.toFixed(2)}² - ${du.toFixed(2)}²) = ${areaBearing.toFixed(1)} mm²<br>
-                    <span class="text-slate-500">F_cr = ${areaBearing.toFixed(1)} × ${uts} = ${(forceCrush).toFixed(0)} N</span>
+                    <div class="text-slate-600">A_br = (π/4) × (Dh² - Du²)</div>
+                    <div class="text-slate-500 mb-1">A_br = 0.7854 × (${dh.toFixed(2)}² - ${du.toFixed(2)}²) = ${areaBearing.toFixed(1)} mm²</div>
+                    <div class="text-slate-600">F_cr = A_br × UTS</div>
+                    <div class="text-slate-500">F_cr = ${areaBearing.toFixed(1)} × ${uts} = ${(forceCrush).toFixed(0)} N</div>
                 `;
             }
             currentForceN = Math.min(forceShear, forceCrush); currentForceKgf = currentForceN / 9.80665;
@@ -349,6 +358,7 @@
             safeSetText('resultNewton', currentForceN.toLocaleString('en-US', { maximumFractionDigits: 0 })); safeSetText('resultKgf', currentForceKgf.toLocaleString('en-US', { maximumFractionDigits: 1 })); safeSetText('math-f-final', currentForceN.toFixed(0));
         }
 
+        // ================== SVG 繪圖引擎 ==================
         function setIndicator(type, x1, y1, y2, text, textX, textY, xRight = null) {
             const centerX = 450;
             if (type === 'Shear') {
@@ -367,7 +377,7 @@
             const r_dh = (params.dh*scale)/2; const r_dp = (params.dp*scale)/2; const r_du = (params.du*scale)/2;
             const r_d = (params.d*scale)/2; const r_th = (2.0*scale)/2; const t_px = params.hu*scale;
             
-            // 完全修正為 柱朝上，齊平基準面在頂部
+            // 方向：柱朝上，齊平基準面在頂部
             const y_surface = 180; const y_flangeTop = y_surface; const y_postTop = y_flangeTop - (params.hb*scale);
             const y_undercutTop = y_flangeTop + (params.hp*scale); const y_headTop = y_undercutTop + (params.hu*scale);
             const y_holeBottom = y_headTop + (params.hh*scale); const chamfer = 0.2*scale; const y_plateBottom = y_holeBottom + 35; const y_thread_bottom = y_postTop + ((params.hb*scale)*0.7);
@@ -381,7 +391,6 @@
             let pR = `M 780 ${y_surface} L ${centerX + r_dp} ${y_surface} L ${centerX + r_dp} ${y_undercutTop} `;
             let sqL = ''; let sqR = ''; const max_r = Math.max(r_dh, r_dp, r_d);
             
-            // 將剪切與潰縮文字方塊拉到極左，防擋圖
             const textX_shear = 160; 
             const textY_shear = y_undercutTop + t_px/2 + 4; const bearingTextY = y_undercutTop - 12;
 
@@ -389,17 +398,17 @@
                 // 鋁釘倒錐 (錐度往下漸擴)
                 nutPath += `L ${centerX - r_du} ${y_undercutTop} L ${centerX - r_dh} ${y_headTop} `;
                 pL += `L ${centerX - r_dh} ${y_undercutTop} L ${centerX - r_dh} ${y_holeBottom} `; pR += `L ${centerX + r_dh} ${y_undercutTop} L ${centerX + r_dh} ${y_holeBottom} `;
-                // 擠入的深灰色鋁材填滿整個倒錐空間
                 sqL = `M ${centerX - r_dh} ${y_undercutTop} L ${centerX - r_du} ${y_undercutTop} L ${centerX - r_dh} ${y_headTop} Z`; sqR = `M ${centerX + r_dh} ${y_undercutTop} L ${centerX + r_du} ${y_undercutTop} L ${centerX + r_dh} ${y_headTop} Z`;
                 
-                const r_avg = (r_dp + r_du) / 2; setIndicator('Shear', centerX - r_avg, y_undercutTop, y_headTop, '剪切面 (Davg) →', textX_shear, textY_shear);
-                setIndicator('Bearing', centerX - r_dp, y_undercutTop, y_undercutTop, '潰縮面 (Dp-Du) →', textX_shear, bearingTextY, centerX - r_du);
+                const r_avg = (r_dh + r_du) / 2; setIndicator('Shear', centerX - r_avg, y_undercutTop, y_headTop, '剪切面 (Davg) →', textX_shear, textY_shear);
+                setIndicator('Bearing', centerX - r_dh, y_undercutTop, y_undercutTop, '潰縮面 (Dh-Du) →', textX_shear, bearingTextY, centerX - r_du);
             } else {
+                // 矩形
                 nutPath += `L ${centerX - r_du} ${y_undercutTop} L ${centerX - r_du} ${y_headTop} L ${centerX - r_dh} ${y_headTop} `;
                 pL += `L ${centerX - r_dh} ${y_undercutTop} L ${centerX - r_dh} ${y_holeBottom} `; pR += `L ${centerX + r_dh} ${y_undercutTop} L ${centerX + r_dh} ${y_holeBottom} `;
                 sqL = `M ${centerX - r_dh} ${y_undercutTop} L ${centerX - r_du} ${y_undercutTop} L ${centerX - r_du} ${y_headTop} L ${centerX - r_dh} ${y_headTop} Z`; sqR = `M ${centerX + r_dh} ${y_undercutTop} L ${centerX + r_du} ${y_undercutTop} L ${centerX + r_du} ${y_headTop} L ${centerX + r_dh} ${y_headTop} Z`;
-                setIndicator('Shear', centerX - r_dp, y_undercutTop, y_headTop, '剪切面 (Dp) →', textX_shear, textY_shear);
-                setIndicator('Bearing', centerX - r_dp, y_undercutTop, y_undercutTop, '潰縮面 (Dp-Du) →', textX_shear, bearingTextY, centerX - r_du);
+                setIndicator('Shear', centerX - r_dh, y_undercutTop, y_headTop, '剪切面 (Dh) →', textX_shear, textY_shear);
+                setIndicator('Bearing', centerX - r_dh, y_undercutTop, y_undercutTop, '潰縮面 (Dh-Du) →', textX_shear, bearingTextY, centerX - r_du);
             }
             
             nutPath += `L ${centerX - r_dh} ${y_holeBottom - chamfer} L ${centerX - r_dh + chamfer} ${y_holeBottom} L ${centerX} ${y_holeBottom} `;
@@ -430,7 +439,7 @@
             const tLineX = textX_shear - 15;
             if(document.getElementById('dimT_line')) { document.getElementById('dimT_line').setAttribute('x1', tLineX); document.getElementById('dimT_line').setAttribute('x2', tLineX); document.getElementById('dimT_line').setAttribute('y1', y_undercutTop); document.getElementById('dimT_line').setAttribute('y2', y_headTop);
                 document.getElementById('dimT_ext1').setAttribute('x1', textX_shear - 5); document.getElementById('dimT_ext1').setAttribute('x2', tLineX + 5); document.getElementById('dimT_ext1').setAttribute('y1', y_undercutTop); document.getElementById('dimT_ext1').setAttribute('y2', y_undercutTop);
-                document.getElementById('dimT_ext2').setAttribute('x1', centerX - r_dp); document.getElementById('dimT_ext2').setAttribute('x2', tLineX + 5); document.getElementById('dimT_ext2').setAttribute('y1', y_headTop); document.getElementById('dimT_ext2').setAttribute('y2', y_headTop); }
+                document.getElementById('dimT_ext2').setAttribute('x1', centerX - r_dh); document.getElementById('dimT_ext2').setAttribute('x2', tLineX + 5); document.getElementById('dimT_ext2').setAttribute('y1', y_headTop); document.getElementById('dimT_ext2').setAttribute('y2', y_headTop); }
             const foT = document.getElementById('dimT_fo'); if(foT) { foT.setAttribute('x', tLineX - parseInt(foT.getAttribute('width')) - 8); foT.setAttribute('y', y_undercutTop + (y_headTop - y_undercutTop)/2 - 11); }
 
             const hLineX = centerX + max_r + 30;
@@ -452,7 +461,7 @@
             recordCount++; const rowId = 'record-' + recordCount; const tbody = document.getElementById('historyTableBody'); const tr = document.createElement('tr'); tr.id = rowId; tr.className = 'bg-white border-b hover:bg-slate-50 transition-colors';
             const modeColor = currentFailureMode === "剪切斷裂" ? "text-red-600" : "text-blue-600";
             const shapeLabel = currentShape === 'tri' ? '<span class="text-[8px] bg-blue-50 text-blue-600 px-1 rounded mr-0.5">45°</span>' : '<span class="text-[8px] bg-slate-100 text-slate-600 px-1 rounded mr-0.5">矩形</span>';
-            tr.innerHTML = `<td class="px-2 py-1.5 flex items-center">${shapeLabel}${uts}</td><td class="px-2 py-1.5 font-bold text-indigo-600">${hu}</td><td class="px-2 py-1.5 text-slate-500">${dh}/<strong class="text-red-500">${dp}</strong>/${du}</td><td class="px-2 py-1.5 font-bold text-slate-800 bg-emerald-50/50">${currentForceN.toLocaleString('en-US',{maximumFractionDigits:0})}</td><td class="px-2 py-1.5 font-bold ${modeColor} text-[8px]">${currentFailureMode.substring(0,2)}</td><td class="px-1 py-1.5 text-center"><button onclick="deleteRecord('${rowId}')" class="text-slate-300 hover:text-red-500 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></td>`;
+            tr.innerHTML = `<td class="px-2 py-1.5 flex items-center">${shapeLabel}${uts}</td><td class="px-2 py-1.5 font-bold text-indigo-600">${hu}</td><td class="px-2 py-1.5 text-slate-500"><strong class="text-red-500">${dh}</strong>/${dp}/${du}</td><td class="px-2 py-1.5 font-bold text-slate-800 bg-emerald-50/50">${currentForceN.toLocaleString('en-US',{maximumFractionDigits:0})}</td><td class="px-2 py-1.5 font-bold ${modeColor} text-[8px]">${currentFailureMode.substring(0,2)}</td><td class="px-1 py-1.5 text-center"><button onclick="deleteRecord('${rowId}')" class="text-slate-300 hover:text-red-500 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></td>`;
             tbody.insertBefore(tr, tbody.firstChild); document.getElementById('recordCountLabel').innerText = recordCount;
         }
         function deleteRecord(rowId) {
