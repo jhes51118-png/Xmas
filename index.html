@@ -2,95 +2,104 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>隱藏式盲孔壓鉚螺柱 (Concealed Standoff) 拉拔力計算機</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>盲孔壓鉚鋁釘拉拔力理論計算機 - 完美版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-image: radial-gradient(#e2e8f0 1px, transparent 1px); background-size: 20px 20px; }
-        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 10px 40px -10px rgba(15, 23, 42, 0.1); }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; overflow: hidden; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 4px 20px -5px rgba(31, 38, 135, 0.1); }
         svg path, svg line, svg rect, foreignObject { transition: all 0.2s ease-out; }
-        .math-step { position: relative; padding-left: 1.25rem; margin-bottom: 0.5rem; }
-        .math-step::before { content: ''; position: absolute; left: 0; top: 0.5rem; bottom: -0.5rem; width: 2px; background-color: #cbd5e1; }
+        .math-step { position: relative; padding-left: 1.25rem; margin-bottom: 0.25rem; }
+        .math-step::before { content: ''; position: absolute; left: 0; top: 0.4rem; bottom: -0.2rem; width: 2px; background-color: #e2e8f0; }
         .math-step:last-child::before { display: none; }
-        .step-dot { position: absolute; left: -0.3rem; top: 0.35rem; width: 0.7rem; height: 0.7rem; border-radius: 50%; background-color: #4f46e5; border: 2px solid #fff; }
+        .step-dot { position: absolute; left: -0.3rem; top: 0.25rem; width: 0.7rem; height: 0.7rem; border-radius: 50%; background-color: #3b82f6; border: 2px solid #fff; }
         
-        .svg-dim-box { display: flex; align-items: center; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.95); border: 1px solid #94a3b8; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s; box-sizing: border-box; }
-        .svg-dim-box:hover, .svg-dim-box:focus-within { border-color: #4f46e5; background-color: #ffffff; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2); transform: scale(1.05); z-index: 10; }
-        .svg-dim-label { font-size: 12px; font-weight: 800; color: #475569; padding-left: 6px; user-select: none; cursor: text; }
+        .svg-dim-box { display: flex; align-items: center; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.9); border: 1px solid #94a3b8; border-radius: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s; box-sizing: border-box; }
+        .svg-dim-box:hover, .svg-dim-box:focus-within { border-color: #3b82f6; background-color: #ffffff; box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3); transform: scale(1.05); z-index: 10; }
+        .svg-dim-label { font-size: 10px; font-weight: 700; color: #475569; padding-left: 3px; user-select: none; cursor: text; }
+        .svg-dim-input { width: 100%; background: transparent; border: none; outline: none; font-size: 11px; font-weight: 800; color: #0f172a; text-align: center; padding: 0 3px 0 0; margin: 0; cursor: text; }
         
-        /* 移除 appearance: none; 讓瀏覽器原生的上下微調箭頭顯示出來 */
-        .svg-dim-input { width: 100%; background: transparent; border: none; outline: none; font-size: 13px; font-weight: 900; color: #0f172a; text-align: center; padding: 0; cursor: text; }
+        .svg-dim-box.indigo-accent { border-color: #a5b4fc; background-color: #eff6ff; }
+        .svg-dim-box.indigo-accent:hover, .svg-dim-box.indigo-accent:focus-within { border-color: #6366f1; box-shadow: 0 2px 5px rgba(99, 102, 241, 0.3); }
+        .svg-dim-box.indigo-accent .svg-dim-label { color: #4338ca; }
+        .svg-dim-box.indigo-accent .svg-dim-input { color: #3730a3; }
+
+        .svg-dim-box.red-accent { border-color: #fca5a5; background-color: #fef2f2; }
+        .svg-dim-box.red-accent:hover, .svg-dim-box.red-accent:focus-within { border-color: #ef4444; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.3); }
+        .svg-dim-box.red-accent .svg-dim-label { color: #b91c1c; }
+        .svg-dim-box.red-accent .svg-dim-input { color: #991b1b; }
         
-        .red-accent { border-color: #fca5a5; background-color: #fef2f2; }
-        .red-accent:hover, .red-accent:focus-within { border-color: #ef4444; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); }
-        .red-accent .svg-dim-label { color: #b91c1c; }
-        .red-accent .svg-dim-input { color: #991b1b; }
-        
-        .table-container::-webkit-scrollbar { height: 6px; }
-        .table-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-        .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .table-container::-webkit-scrollbar { height: 6px; width: 6px; }
+        .table-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
+        .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     </style>
 </head>
-<body class="min-h-screen p-3 md:p-4 text-slate-800 flex justify-center items-start">
+<body class="h-screen p-2 md:p-3 text-slate-800 flex justify-center items-start overflow-hidden">
 
-    <div class="max-w-[1500px] w-full flex flex-col lg:flex-row gap-4">
+    <div class="max-w-[1400px] w-full h-full grid grid-cols-1 lg:grid-cols-10 gap-3">
         
-        <!-- ================= 左半部：視覺與歷史紀錄 ================= -->
-        <div class="w-full lg:w-7/12 flex flex-col gap-4">
+        <!-- 左側面板：佔 6/10 -->
+        <div class="lg:col-span-6 flex flex-col gap-3 h-full overflow-hidden">
             
-            <div class="glass-panel rounded-xl p-4 relative overflow-hidden flex-shrink-0">
-                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-                    <h1 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><path d="M14 4c0-1.1.9-2 2-2"/><path d="M20 2c1.1 0 2 .9 2 2"/><path d="M22 8c0 1.1-.9 2-2 2"/><path d="M16 10c-1.1 0-2-.9-2-2"/><path d="M8 4c0-1.1.9-2 2-2"/><path d="M4 2c1.1 0 2 .9 2 2"/><path d="M2 8c0 1.1.9 2 2 2"/><path d="M8 10c-1.1 0-2-.9-2-2"/><path d="M14 20c0 1.1.9 2 2 2"/><path d="M20 22c1.1 0 2-.9 2-2"/><path d="M22 16c0-1.1-.9-2-2-2"/><path d="M16 14c-1.1 0-2 .9-2 2"/><path d="M8 20c0 1.1.9 2 2 2"/><path d="M4 22c1.1 0 2-.9 2-2"/><path d="M2 16c0-1.1.9-2 2 2"/><path d="M8 14c-1.1 0-2 .9-2 2"/></svg>
-                        隱藏式盲孔壓鉚拉拔力 (Concealed Standoff)
+            <!-- 上方：動態示意圖 (自動填滿空間) -->
+            <div class="glass-panel rounded-xl p-3 relative flex flex-col flex-1 overflow-hidden">
+                <div class="flex items-center justify-between gap-2 mb-2 flex-shrink-0">
+                    <h1 class="text-lg font-bold text-slate-800 flex items-center gap-2 truncate">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><path d="M14 4c0-1.1.9-2 2-2"/><path d="M20 2c1.1 0 2 .9 2 2"/><path d="M22 8c0 1.1-.9 2-2 2"/><path d="M16 10c-1.1 0-2-.9-2-2"/><path d="M8 4c0-1.1.9-2 2-2"/><path d="M4 2c1.1 0 2 .9 2 2"/><path d="M2 8c0 1.1.9 2 2 2"/><path d="M8 10c-1.1 0-2-.9-2-2"/><path d="M14 20c0 1.1.9 2 2 2"/><path d="M20 22c1.1 0 2-.9 2-2"/><path d="M22 16c0-1.1-.9-2-2-2"/><path d="M16 14c-1.1 0-2 .9-2 2"/><path d="M8 20c0 1.1.9 2 2 2"/><path d="M4 22c1.1 0 2-.9 2-2"/><path d="M2 16c0-1.1.9-2 2 2"/><path d="M8 14c-1.1 0-2 .9-2 2"/></svg>
+                        盲孔壓鉚計算機 (齊平)
                     </h1>
-                    <span class="bg-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm tracking-wide">💡 圖面數字可直接點擊修改</span>
+                    <span class="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm tracking-wide flex-shrink-0">💡點擊圖面數字修改</span>
                 </div>
                 
-                <div class="w-full bg-slate-50 border border-slate-200 rounded-lg flex justify-center items-center overflow-x-auto min-h-[250px] py-4">
-                    <svg id="schematic" viewBox="0 0 800 380" class="w-full max-w-2xl h-auto drop-shadow-sm">
+                <div class="w-full bg-slate-50 border border-slate-200 rounded-lg flex justify-center items-center flex-1 p-2 overflow-hidden">
+                    <svg id="schematic" viewBox="0 0 800 340" class="w-full h-full drop-shadow-sm" preserveAspectRatio="xMidYMid meet">
                         <defs>
-                            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" /></marker>
-                            <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444" /></marker>
-                            <linearGradient id="metalNut" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#94a3b8" /><stop offset="50%" stop-color="#f8fafc" /><stop offset="100%" stop-color="#64748b" /></linearGradient> 
-                            <linearGradient id="metalPlate" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#cbd5e1" /><stop offset="100%" stop-color="#94a3b8" /></linearGradient>
+                            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" /></marker>
+                            <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444" /></marker>
+                            <marker id="arrow-v" viewBox="0 0 10 10" refX="5" refY="9" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 0 L 5 10 L 10 0 z" fill="#64748b" /></marker>
+                            <marker id="arrow-v-rev" viewBox="0 0 10 10" refX="5" refY="1" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 10 L 5 0 L 10 10 z" fill="#64748b" /></marker>
+                            <linearGradient id="metalNut" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#94a3b8" /><stop offset="50%" stop-color="#f8fafc" /><stop offset="100%" stop-color="#64748b" /></linearGradient>
+                            <linearGradient id="metalPlate" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#e2e8f0" /><stop offset="100%" stop-color="#94a3b8" /></linearGradient>
                             <pattern id="hatch" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="8" stroke="#cbd5e1" stroke-width="2" /></pattern>
                             <pattern id="plateHatch" width="8" height="8" patternTransform="rotate(-45 0 0)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="8" stroke="#94a3b8" stroke-width="1.5" /></pattern>
                         </defs>
 
-                        <!-- 中心線與拉拔力箭頭 (X 向右偏移至 430) -->
-                        <line id="centerLine" x1="430" y1="10" x2="430" y2="370" stroke="#94a3b8" stroke-dasharray="10 5 2 5" stroke-width="1.5" />
-                        <line id="svgRedRefLine" x1="20" y1="230" x2="780" y2="230" stroke="#ef4444" stroke-width="2.5" />
-                        <text id="svgRedRefText" x="30" y="222" fill="#ef4444" font-size="13" font-weight="bold">齊平基準面 (Top Surface)</text>
-                        
-                        <path id="fArrow" d="M 430 60 L 430 15" stroke="#ef4444" stroke-width="3.5" marker-end="url(#arrow-red)" fill="none" />
-                        <text id="fText" x="440" y="40" fill="#ef4444" font-weight="bold" font-size="16">拉拔力 (F)</text>
+                        <!-- 中心線與紅色表面基準線 -->
+                        <line id="centerLine" x1="450" y1="10" x2="450" y2="330" stroke="#94a3b8" stroke-dasharray="10 5 2 5" stroke-width="1" />
+                        <line id="svgRedRefLine" x1="20" y1="180" x2="780" y2="180" stroke="#ef4444" stroke-width="2" />
+                        <text id="svgRedRefText" x="30" y="174" fill="#ef4444" font-size="11" font-weight="bold">齊平基準面 (Top Surface)</text>
 
-                        <!-- 鋁板與壓鉚釘 Path -->
-                        <path id="svgPlateL" d="" fill="url(#metalPlate)" stroke="#475569" stroke-width="2" stroke-linejoin="round"/>
-                        <path id="svgPlateR" d="" fill="url(#metalPlate)" stroke="#475569" stroke-width="2" stroke-linejoin="round"/>
+                        <!-- 鋁板(Plate) -->
+                        <path id="svgPlateL" d="" fill="url(#metalPlate)" stroke="#475569" stroke-width="1.5" stroke-linejoin="round"/>
+                        <path id="svgPlateR" d="" fill="url(#metalPlate)" stroke="#475569" stroke-width="1.5" stroke-linejoin="round"/>
                         <path id="svgPlateLHatch" d="" fill="url(#plateHatch)" stroke-linejoin="round"/>
                         <path id="svgPlateRHatch" d="" fill="url(#plateHatch)" stroke-linejoin="round"/>
-                        <path id="svgNut" d="" fill="url(#metalNut)" stroke="#334155" stroke-width="2" stroke-linejoin="round"/>
+                        
+                        <!-- 擠入的鋁材(Squeeze) -->
+                        <path id="svgSqueezeL" d="" fill="#475569" opacity="0.8" stroke="#334155" stroke-width="0.5"/>
+                        <path id="svgSqueezeR" d="" fill="#475569" opacity="0.8" stroke="#334155" stroke-width="0.5"/>
+                        
+                        <!-- 鋁釘(Nut) -->
+                        <path id="svgNut" d="" fill="url(#metalNut)" stroke="#334155" stroke-width="1.5" stroke-linejoin="round"/>
                         <path id="svgNutHatch" d="" fill="url(#hatch)" stroke-linejoin="round"/>
 
-                        <!-- 擠入退刀槽的鋁材 (強調顯示) -->
-                        <path id="svgSqueezeL" d="" fill="#475569" opacity="0.6"/>
-                        <path id="svgSqueezeR" d="" fill="#475569" opacity="0.6"/>
+                        <!-- 拉力箭頭 F -->
+                        <path id="fArrow" d="M 450 40 L 450 15" stroke="#ef4444" stroke-width="2.5" marker-end="url(#arrow-red)" fill="none" />
+                        <text id="fText" x="460" y="30" fill="#ef4444" font-weight="bold" font-size="14">拉拔力 (F)</text>
 
-                        <!-- 破壞面指示線 -->
-                        <line id="svgShearLeft" stroke="#ef4444" stroke-dasharray="6 4" stroke-width="3" />
-                        <line id="svgShearRight" stroke="#ef4444" stroke-dasharray="6 4" stroke-width="3" />
-                        <rect id="svgShearBg" width="125" height="24" fill="#fef2f2" rx="4" stroke="#fecaca"/>
-                        <text id="svgShearText" fill="#dc2626" font-size="13" font-weight="bold">剪切面 (沿 Dh) →</text>
+                        <!-- 剪切與潰縮標示線 (移至極左側防遮擋) -->
+                        <line id="svgShearLeft" stroke="#ef4444" stroke-dasharray="4 3" stroke-width="1.5" />
+                        <line id="svgShearRight" stroke="#ef4444" stroke-dasharray="4 3" stroke-width="1.5" />
+                        <rect id="svgShearBg" width="125" height="20" fill="#fef2f2" fill-opacity="0.9" rx="3" stroke="#fecaca"/>
+                        <text id="svgShearText" fill="#dc2626" font-size="10" font-weight="bold">← 剪切面</text>
 
-                        <line id="svgBearingLeft" stroke="#3b82f6" stroke-dasharray="4 2" stroke-width="3" />
-                        <line id="svgBearingRight" stroke="#3b82f6" stroke-dasharray="4 2" stroke-width="3" />
-                        <rect id="svgBearingBg" width="130" height="24" fill="#eff6ff" rx="4" stroke="#bfdbfe"/>
-                        <text id="svgBearingText" fill="#2563eb" font-size="13" font-weight="bold">潰縮面 (Dh-Du) →</text>
+                        <line id="svgBearingLeft" stroke="#3b82f6" stroke-dasharray="3 2" stroke-width="1.5" />
+                        <line id="svgBearingRight" stroke="#3b82f6" stroke-dasharray="3 2" stroke-width="1.5" />
+                        <rect id="svgBearingBg" width="135" height="20" fill="#eff6ff" fill-opacity="0.9" rx="3" stroke="#bfdbfe"/>
+                        <text id="svgBearingText" fill="#2563eb" font-size="10" font-weight="bold">← 潰縮面</text>
 
-                        <!-- 尺寸線段 -->
-                        <g id="dim_lines">
+                        <!-- 尺寸細線 -->
+                        <g id="dimensions_lines_d" stroke-width="0.8">
                             <line id="dimDh_line" stroke="#64748b" marker-start="url(#arrow)" marker-end="url(#arrow)" />
                             <line id="dimDh_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimDh_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
                             <line id="dimDu_line" stroke="#64748b" marker-start="url(#arrow)" marker-end="url(#arrow)" />
@@ -99,594 +108,358 @@
                             <line id="dimDp_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimDp_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
                             <line id="dimD_line" stroke="#64748b" marker-start="url(#arrow)" marker-end="url(#arrow)" />
                             <line id="dimD_ext1" stroke="#94a3b8" stroke-dasharray="3" /><line id="dimD_ext2" stroke="#94a3b8" stroke-dasharray="3" />
-                            <line id="dimT_line" stroke="#ef4444" marker-start="url(#arrow-red)" marker-end="url(#arrow-red)" stroke-width="2.5"/>
+                            <line id="dimT_line" stroke="#ef4444" marker-start="url(#arrow-red)" marker-end="url(#arrow-red)" stroke-width="2"/>
                             <line id="dimT_ext1" stroke="#fecaca" stroke-dasharray="3" /><line id="dimT_ext2" stroke="#fecaca" stroke-dasharray="3" />
                         </g>
-                        <g id="dim_lines_h">
-                            <line id="dimHb_line" stroke="#64748b" />
-                            <line id="dimHb_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimHb_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
-                            <line id="dimHp_line" stroke="#64748b" />
-                            <line id="dimHp_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimHp_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
-                            <line id="dimHu_line" stroke="#64748b" />
-                            <line id="dimHu_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimHu_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
-                            <!-- 新增引導線，用於防重疊排版 -->
-                            <line id="dimHu_leader" stroke="#64748b" stroke-dasharray="2" stroke-width="1.5" style="display:none;" />
-                            <line id="dimHh_line" stroke="#64748b" />
+                        <g id="dimensions_lines_h" stroke-width="0.8">
+                            <line id="dimHh_line" stroke="#64748b" marker-start="url(#arrow-v-rev)" marker-end="url(#arrow-v)" />
                             <line id="dimHh_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimHh_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
+                            <line id="dimHu_line" stroke="#64748b" marker-start="url(#arrow-v-rev)" marker-end="url(#arrow-v)" />
+                            <line id="dimHu_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimHu_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
+                            <line id="dimHp_line" stroke="#64748b" marker-start="url(#arrow-v-rev)" marker-end="url(#arrow-v)" />
+                            <line id="dimHp_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimHp_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
+                            <line id="dimHb_line" stroke="#64748b" marker-start="url(#arrow-v-rev)" marker-end="url(#arrow-v)" />
+                            <line id="dimHb_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimHb_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
+                            <line id="dimHu_leader" stroke="#64748b" stroke-dasharray="2" stroke-width="1" style="display:none;" />
                         </g>
 
-                        <!-- 浮動輸入框：稍微加寬至 86 確保上下微調箭頭(Spin buttons)完美顯示 -->
-                        <foreignObject id="dimDh_fo" width="86" height="26">
-                            <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Dh=</label><input type="number" id="svgInput_dh" class="svg-dim-input" onchange="syncFromSVG('dh', this.value)" step="0.1" /></div>
-                        </foreignObject>
-                        <foreignObject id="dimDu_fo" width="86" height="26">
-                            <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Du=</label><input type="number" id="svgInput_du" class="svg-dim-input" onchange="syncFromSVG('du', this.value)" step="0.1" /></div>
-                        </foreignObject>
-                        <foreignObject id="dimDp_fo" width="86" height="26">
-                            <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box" title="擠料環"><label class="svg-dim-label">Dp=</label><input type="number" id="svgInput_dp" class="svg-dim-input" onchange="syncFromSVG('dp', this.value)" step="0.1" /></div>
-                        </foreignObject>
-                        <foreignObject id="dimD_fo" width="80" height="26">
-                            <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box" title="盲孔柱"><label class="svg-dim-label">D=</label><input type="number" id="svgInput_d" class="svg-dim-input" onchange="syncFromSVG('d', this.value)" step="0.1" /></div>
-                        </foreignObject>
+                        <!-- 輸入框 -->
+                        <foreignObject id="dimDh_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Dh=</label><input type="number" id="svgInput_dh" class="svg-dim-input" oninput="handleSync('dh', this.value)" step="0.1" /></div></foreignObject>
+                        <foreignObject id="dimDu_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Du=</label><input type="number" id="svgInput_du" class="svg-dim-input" oninput="handleSync('du', this.value)" step="0.1" /></div></foreignObject>
+                        <foreignObject id="dimDp_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box red-accent"><label class="svg-dim-label">Dp=</label><input type="number" id="svgInput_dp" class="svg-dim-input" oninput="handleSync('dp', this.value)" step="0.1" /></div></foreignObject>
+                        <foreignObject id="dimD_fo" width="65" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">D=</label><input type="number" id="svgInput_d" class="svg-dim-input" oninput="handleSync('d', this.value)" step="0.1" /></div></foreignObject>
                         
-                        <foreignObject id="dimT_fo" width="86" height="26">
-                            <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box red-accent" title="退刀槽內填入厚度"><label class="svg-dim-label">t=</label><input type="number" id="svgInput_t" class="svg-dim-input" onchange="syncFromSVG('t', this.value)" step="0.05" /></div>
-                        </foreignObject>
-
-                        <foreignObject id="dimHb_fo" width="86" height="26">
-                            <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hb=</label><input type="number" id="svgInput_hb" class="svg-dim-input" onchange="syncFromSVG('hb', this.value)" step="0.1" /></div>
-                        </foreignObject>
-                        <foreignObject id="dimHp_fo" width="86" height="26">
-                            <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hp=</label><input type="number" id="svgInput_hp" class="svg-dim-input" onchange="syncFromSVG('hp', this.value)" step="0.1" /></div>
-                        </foreignObject>
-                        <foreignObject id="dimHu_fo" width="86" height="26">
-                            <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hu=</label><input type="number" id="svgInput_hu" class="svg-dim-input" onchange="syncFromSVG('hu', this.value)" step="0.1" /></div>
-                        </foreignObject>
-                        <foreignObject id="dimHh_fo" width="86" height="26">
-                            <div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hh=</label><input type="number" id="svgInput_hh" class="svg-dim-input" onchange="syncFromSVG('hh', this.value)" step="0.1" /></div>
-                        </foreignObject>
+                        <foreignObject id="dimT_fo" width="80" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box indigo-accent"><label class="svg-dim-label">Hu=t=</label><input type="number" id="svgInput_t" class="svg-dim-input" oninput="handleSync('hu', this.value)" step="0.05" /></div></foreignObject>
+                        
+                        <foreignObject id="dimHh_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hh=</label><input type="number" id="svgInput_hh" class="svg-dim-input" oninput="handleSync('hh', this.value)" step="0.1" /></div></foreignObject>
+                        <foreignObject id="dimHu_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box indigo-accent"><label class="svg-dim-label">Hu=</label><input type="number" id="svgInput_hu" class="svg-dim-input" oninput="handleSync('hu', this.value)" step="0.1" /></div></foreignObject>
+                        <foreignObject id="dimHp_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hp=</label><input type="number" id="svgInput_hp" class="svg-dim-input" oninput="handleSync('hp', this.value)" step="0.1" /></div></foreignObject>
+                        <foreignObject id="dimHb_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hb=</label><input type="number" id="svgInput_hb" class="svg-dim-input" oninput="handleSync('hb', this.value)" step="0.1" /></div></foreignObject>
                     </svg>
                 </div>
             </div>
 
-            <!-- 比較清單 -->
-            <div class="glass-panel rounded-xl p-4 flex-1 flex flex-col">
-                <h3 class="text-sm font-bold text-slate-800 mb-2 flex items-center gap-2 border-b border-slate-200 pb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-                    參數配比歷史紀錄
-                </h3>
-                <div class="table-container overflow-x-auto rounded border border-slate-200 flex-1 bg-white">
-                    <table class="w-full text-xs text-left text-slate-600 whitespace-nowrap">
-                        <thead class="text-[10px] text-slate-700 uppercase bg-slate-100">
-                            <tr>
-                                <th scope="col" class="px-3 py-2 font-semibold">材質</th>
-                                <th scope="col" class="px-3 py-2 font-semibold">深 t</th>
-                                <th scope="col" class="px-3 py-2 font-semibold">外徑(Dh/Du/Dp/D)</th>
-                                <th scope="col" class="px-3 py-2 font-semibold">高(Hh/Hu/Hp/Hb)</th>
-                                <th scope="col" class="px-3 py-2 font-bold text-emerald-700 bg-emerald-50">拉力(N)</th>
-                                <th scope="col" class="px-3 py-2 font-bold text-emerald-700 bg-emerald-50">破壞</th>
-                                <th scope="col" class="px-3 py-2 text-center">操作</th>
-                            </tr>
+            <!-- 下方：紀錄比較清單 (高度加高至 250px) -->
+            <div class="glass-panel rounded-xl flex flex-col h-[250px] flex-shrink-0">
+                <div class="p-2 flex justify-between items-center bg-slate-50 border-b border-slate-200">
+                    <span class="text-xs font-bold text-slate-700">📋 紀錄比較清單 (<span id="recordCountLabel">0</span>)</span>
+                    <button onclick="document.getElementById('historyTableBody').innerHTML='<tr id=\'emptyStateRow\' class=\'bg-white border-b\'><td colspan=\'6\' class=\'px-2 py-3 text-center text-slate-400\'>無紀錄</td></tr>'; recordCount=0; document.getElementById('recordCountLabel').innerText=0;" class="text-[10px] text-slate-400 hover:text-red-500">清除全部</button>
+                </div>
+                <div class="table-container overflow-auto flex-1 bg-white">
+                    <table class="w-full text-[10px] text-left text-slate-600 whitespace-nowrap">
+                        <thead class="text-[9px] text-slate-700 uppercase bg-slate-100 sticky top-0 shadow-sm z-10">
+                            <tr><th class="px-2 py-1.5">形狀/UTS</th><th class="px-2 py-1.5">Hu(=t)</th><th class="px-2 py-1.5">Dh/Dp/Du</th><th class="px-2 py-1.5 text-emerald-700">拉力(N)</th><th class="px-2 py-1.5">最弱模式</th><th class="px-1 py-1.5 text-center">刪</th></tr>
                         </thead>
                         <tbody id="historyTableBody">
-                            <tr id="emptyStateRow" class="bg-white border-b">
-                                <td colspan="7" class="px-3 py-6 text-center text-slate-400">尚未儲存任何紀錄。</td>
-                            </tr>
+                            <tr id="emptyStateRow" class="bg-white border-b"><td colspan="6" class="px-2 py-6 text-center text-slate-400">尚未新增任何紀錄。點選右方「更新計算與+紀錄」即可比對。</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- ================= 右半部：參數輸入與計算邏輯 ================= -->
-        <div class="w-full lg:w-5/12 flex flex-col gap-4">
+        <!-- 右側面板：佔 4/10 -->
+        <div class="lg:col-span-4 flex flex-col gap-3 h-full overflow-hidden">
             
-            <div class="glass-panel rounded-xl p-4">
-                <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-1">
-                    <span class="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-[10px]">設定</span> 參數與幾何
-                </h3>
-                
-                <div class="flex flex-col gap-3">
-                    <div class="grid grid-cols-2 gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                        <div>
-                            <label class="block text-[11px] font-semibold text-slate-700 mb-1">材質 (UTS)</label>
-                            <div class="flex items-center gap-1">
-                                <select id="materialSelect" class="w-full rounded border border-slate-300 px-1 py-1 bg-white text-[11px] outline-none" onchange="updateUTS()">
-                                    <option value="110">AL1100(110)</option>
-                                    <option value="228" selected>AL5052(228)</option>
-                                    <option value="310">AL6061(310)</option>
-                                    <option value="custom">自訂...</option>
-                                </select>
-                                <input type="number" id="utsInput" value="228" class="w-12 rounded border border-slate-300 px-1 py-1 text-[11px] outline-none text-center" oninput="handleInput()">
-                            </div>
-                        </div>
-                        <div class="relative">
-                            <label class="flex justify-between text-[11px] font-bold text-indigo-800 mb-1">
-                                <span>填入深度 (t)</span>
-                                <span id="tDisplay" class="font-mono">0.40</span>
-                            </label>
-                            <input type="range" id="tSlider" min="0.05" max="0.6" step="0.05" value="0.4" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 mt-1" oninput="syncSlider('t', this.value)">
-                            <input type="number" id="tInput" value="0.4" class="hidden">
+            <!-- 參數設定 -->
+            <div class="glass-panel rounded-xl p-3 flex-shrink-0">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">材質 UTS (MPa)</label>
+                        <div class="flex items-center gap-1">
+                            <select id="materialSelect" class="flex-1 rounded border border-slate-300 px-1 py-1 bg-white text-[10px] outline-none" onchange="updateUTS()">
+                                <option value="110">AL 1100</option>
+                                <option value="228" selected>AL 5052</option>
+                                <option value="310">AL 6061</option>
+                                <option value="custom">自訂</option>
+                            </select>
+                            <input type="number" id="utsInput" value="228" class="w-10 rounded border border-slate-300 px-1 py-1 text-[10px] text-center outline-none" oninput="handleSync('uts', this.value)">
                         </div>
                     </div>
-
-                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                        <label class="block text-[11px] font-semibold text-slate-500 mb-2 border-b border-slate-200 pb-1">直徑 (Dia) / 高度 (Height)</label>
-                        <div class="grid grid-cols-4 gap-2 mb-2">
-                            <div><label class="block text-[10px] font-bold text-red-600 mb-0.5">大頭 Dh</label><input type="number" id="dhInput" value="4.5" step="0.1" class="w-full rounded border border-red-300 bg-red-50 px-1 py-1 text-[11px] outline-none text-center font-bold" oninput="handleInput()"></div>
-                            <div><label class="block text-[10px] font-semibold text-slate-700 mb-0.5">退刀 Du</label><input type="number" id="duInput" value="2.7" step="0.1" class="w-full rounded border border-slate-300 px-1 py-1 text-[11px] outline-none text-center" oninput="handleInput()"></div>
-                            <div><label class="block text-[10px] font-semibold text-slate-700 mb-0.5">擠料 Dp</label><input type="number" id="dpInput" value="3.5" step="0.1" class="w-full rounded border border-slate-300 px-1 py-1 text-[11px] outline-none text-center" oninput="handleInput()"></div>
-                            <div><label class="block text-[10px] font-semibold text-slate-700 mb-0.5">盲孔 D</label><input type="number" id="dInput" value="3.6" step="0.1" class="w-full rounded border border-slate-300 px-1 py-1 text-[11px] outline-none text-center" oninput="handleInput()"></div>
-                        </div>
-                        <div class="grid grid-cols-4 gap-2">
-                            <div><label class="block text-[10px] font-semibold text-slate-700 mb-0.5">大高 Hh</label><input type="number" id="hhInput" value="0.3" step="0.1" class="w-full rounded border border-slate-300 px-1 py-1 text-[11px] outline-none text-center" oninput="handleInput()"></div>
-                            <div><label class="block text-[10px] font-semibold text-slate-700 mb-0.5">槽高 Hu</label><input type="number" id="huInput" value="0.3" step="0.1" class="w-full rounded border border-slate-300 px-1 py-1 text-[11px] outline-none text-center" oninput="handleInput()"></div>
-                            <div><label class="block text-[10px] font-semibold text-slate-700 mb-0.5">擠高 Hp</label><input type="number" id="hpInput" value="0.3" step="0.1" class="w-full rounded border border-slate-300 px-1 py-1 text-[11px] outline-none text-center" oninput="handleInput()"></div>
-                            <div><label class="block text-[10px] font-semibold text-slate-700 mb-0.5">外露 Hb</label><input type="number" id="hbInput" value="2.3" step="0.1" class="w-full rounded border border-slate-300 px-1 py-1 text-[11px] outline-none text-center" oninput="handleInput()"></div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">槽底幾何 (Profile)</label>
+                        <div class="flex bg-slate-200 rounded p-0.5 w-full gap-0.5">
+                            <button id="btnShapeRect" onclick="setShape('rect')" class="flex-1 text-[9px] py-1 rounded bg-white font-bold shadow-sm text-indigo-600 transition-all">矩形</button>
+                            <button id="btnShapeTri" onclick="setShape('tri')" class="flex-1 text-[9px] py-1 rounded text-slate-600 font-semibold hover:text-slate-800 transition-all flex justify-center items-center gap-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18L12 4z"/></svg>45°錐
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="glass-panel rounded-xl p-4 bg-gradient-to-br from-white to-slate-50 border-emerald-100 flex flex-col gap-3">
-                <button id="calcBtn" onclick="executeCalculation()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-md transition-all active:scale-95 flex justify-center items-center gap-2 text-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                    <span>深度分析與拉力計算</span>
+            <!-- 鋁釘幾何 -->
+            <div class="glass-panel rounded-xl p-3 flex-shrink-0">
+                <div class="grid grid-cols-4 gap-1.5">
+                    <div class="space-y-1.5">
+                        <div><label class="block text-[9px] font-semibold text-slate-600 mb-0.5">大頭Dh</label><input type="number" id="dhInput" value="4.6" step="0.1" class="w-full rounded border border-slate-300 px-1 py-0.5 text-[10px] text-center" oninput="handleSync('dh', this.value)"></div>
+                        <div><label class="block text-[9px] font-semibold text-slate-600 mb-0.5">頭高Hh</label><input type="number" id="hhInput" value="0.3" step="0.1" class="w-full rounded border border-slate-300 px-1 py-0.5 text-[10px] text-center" oninput="handleSync('hh', this.value)"></div>
+                    </div>
+                    <div class="space-y-1.5">
+                        <div><label class="block text-[9px] font-semibold text-slate-600 mb-0.5">退刀Du</label><input type="number" id="duInput" value="3.2" step="0.1" class="w-full rounded border border-slate-300 px-1 py-0.5 text-[10px] text-center" oninput="handleSync('du', this.value)"></div>
+                        <div><label class="block text-[9px] font-bold text-indigo-700 mb-0.5">槽高Hu(=t)</label><input type="number" id="huInput" value="0.3" step="0.05" class="w-full rounded border border-indigo-300 bg-indigo-50 px-1 py-0.5 text-[10px] text-center font-bold" oninput="handleSync('hu', this.value)"></div>
+                    </div>
+                    <div class="space-y-1.5">
+                        <div><label class="block text-[9px] font-bold text-red-600 mb-0.5">擠料Dp</label><input type="number" id="dpInput" value="4.2" step="0.1" class="w-full rounded border border-red-300 bg-red-50 px-1 py-0.5 text-[10px] text-center font-bold" oninput="handleSync('dp', this.value)"></div>
+                        <div><label class="block text-[9px] font-semibold text-slate-600 mb-0.5">擠高Hp</label><input type="number" id="hpInput" value="0.3" step="0.1" class="w-full rounded border border-slate-300 px-1 py-0.5 text-[10px] text-center" oninput="handleSync('hp', this.value)"></div>
+                    </div>
+                    <div class="space-y-1.5">
+                        <div><label class="block text-[9px] font-semibold text-slate-600 mb-0.5">盲孔D</label><input type="number" id="dInput" value="3.6" step="0.1" class="w-full rounded border border-slate-300 px-1 py-0.5 text-[10px] text-center" oninput="handleSync('d', this.value)"></div>
+                        <div><label class="block text-[9px] font-semibold text-slate-600 mb-0.5">孔長Hb</label><input type="number" id="hbInput" value="2.3" step="0.1" class="w-full rounded border border-slate-300 px-1 py-0.5 text-[10px] text-center" oninput="handleSync('hb', this.value)"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 計算結果與公式 (無須滾動) -->
+            <div class="glass-panel rounded-xl p-3 bg-gradient-to-br from-white to-slate-50 border-emerald-100 flex-1 overflow-y-auto flex flex-col">
+                <!-- 縮小了按鈕的大小和間距 -->
+                <button id="calcBtn" onclick="executeCalculation(true)" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 rounded-lg shadow-md transition-all active:scale-95 flex justify-center items-center gap-1 text-[11px] mb-2 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    <span>更新計算與 + 紀錄</span>
                 </button>
 
-                <div id="resultsSection" class="grid grid-cols-2 gap-3 transition-opacity duration-300">
-                    <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm text-center relative overflow-hidden">
-                        <div class="flex justify-center items-baseline gap-1">
-                            <span id="resultNewton" class="text-3xl font-black text-slate-800">---</span>
-                            <span class="text-sm text-slate-500 font-bold">N</span>
+                <!-- 縮小了數字框的文字大小、padding及高度 -->
+                <div id="resultsSection" class="grid grid-cols-2 gap-2 mb-2 transition-opacity duration-300 flex-shrink-0">
+                    <div class="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm text-center flex flex-col justify-center">
+                        <div class="flex justify-center items-baseline gap-0.5">
+                            <span id="resultNewton" class="text-xl font-black text-slate-800">---</span>
+                            <span class="text-[9px] text-slate-500 font-bold">N</span>
                         </div>
-                        <p class="text-[10px] text-slate-400 mt-1">極限牛頓力</p>
+                        <p class="text-[8px] text-slate-400 mt-0.5">極限牛頓力</p>
                     </div>
-                    <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm text-center relative overflow-hidden">
-                        <div class="flex justify-center items-baseline gap-1">
-                            <span id="resultKgf" class="text-3xl font-black text-emerald-600">---</span>
-                            <span class="text-sm text-emerald-500 font-bold">kgf</span>
+                    <div class="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm text-center flex flex-col justify-center">
+                        <div class="flex justify-center items-baseline gap-0.5">
+                            <span id="resultKgf" class="text-xl font-black text-emerald-600">---</span>
+                            <span class="text-[9px] text-emerald-500 font-bold">kgf</span>
                         </div>
-                        <p class="text-[10px] text-slate-400 mt-1">等效公斤力</p>
+                        <p class="text-[8px] text-slate-400 mt-0.5">等效公斤力</p>
                     </div>
+                </div>
+
+                <!-- 縮緊公式區塊的行距以避免產生捲軸 -->
+                <div id="logicSection" class="space-y-1 text-slate-700 text-[9px] transition-opacity duration-300 pb-1 flex-1">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-0.5 mb-1">
+                        <h3 class="text-[10px] font-bold text-slate-800">物理模型展開公式</h3>
+                    </div>
+                    <div class="math-step"><div class="step-dot"></div><h4 class="font-bold mb-0.5" id="logic-step1-title">Step 1: 幾何</h4><div class="bg-slate-100 p-1 rounded font-mono" id="logic-step1-formula"></div></div>
+                    <div class="math-step"><div class="step-dot"></div><h4 class="font-bold mb-0.5" id="logic-step2-title">Step 2: 剪切 (A)</h4><div class="bg-slate-100 p-1 rounded font-mono" id="logic-shear-formula"></div></div>
+                    <div class="math-step"><div class="step-dot"></div><h4 class="font-bold mb-0.5" id="logic-step3-title">Step 3: 潰縮 (B)</h4><div class="bg-slate-100 p-1 rounded font-mono" id="logic-crush-formula"></div></div>
+                    <div class="math-step"><div class="step-dot"></div><h4 class="font-bold mb-0.5">Step 4: 理論拉力</h4><div class="bg-indigo-50 p-1 rounded font-mono border border-indigo-100 flex items-center flex-wrap gap-1">F = min(A, B) = <strong class="text-emerald-600 text-xs"><span id="math-f-final">?</span> N</strong><span id="math-failure-mode" class="px-1 py-0.5 rounded text-white shadow-sm text-[8px] font-bold"></span></div></div>
                 </div>
             </div>
-
-            <div id="logicSection" class="glass-panel rounded-xl p-4 flex-1 transition-opacity duration-300">
-                <div class="flex justify-between items-center border-b border-slate-200 pb-1 mb-2">
-                    <h3 class="text-sm font-bold text-slate-800 flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-500"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                        力學模型
-                    </h3>
-                    <button onclick="addRecord()" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-2 py-1 rounded font-bold transition-colors">
-                        + 儲存至左側紀錄
-                    </button>
-                </div>
-                
-                <div class="space-y-1.5 text-slate-700 text-[11px]">
-                    <div class="math-step">
-                        <div class="step-dot"></div>
-                        <h4 class="font-bold mb-0.5 text-[11px]">Step 1: 有效抗拉厚度</h4>
-                        <div class="bg-slate-100 p-1.5 rounded font-mono text-[10px] flex items-center gap-2">
-                            <span>t_eff = t = <strong class="text-red-600"><span id="math-t">?</span> mm</strong></span>
-                        </div>
-                    </div>
-                    <div class="math-step">
-                        <div class="step-dot"></div>
-                        <h4 class="font-bold mb-0.5 text-[11px]">Step 2: A-剪切 (<span class="font-serif italic">沿大頭 Dh</span>)</h4>
-                        <div class="bg-slate-100 p-1.5 rounded font-mono text-[10px]">
-                            A_shear = π × <span class="text-red-600 font-bold">Dh</span> × t_eff = <span id="math-a-shear">?</span> mm²<br>
-                            F_shear = A_shear × (UTS × 0.6) = <span id="math-f-shear">?</span> N
-                        </div>
-                    </div>
-                    <div class="math-step">
-                        <div class="step-dot"></div>
-                        <h4 class="font-bold mb-0.5 text-[11px]">Step 3: B-潰縮 (<span class="font-serif italic">Dh與Du間</span>)</h4>
-                        <div class="bg-slate-100 p-1.5 rounded font-mono text-[10px]">
-                            A_bearing = (π/4) × (Dh² - Du²) = <span id="math-a-bearing">?</span> mm²<br>
-                            F_crush = A_bearing × UTS = <span id="math-f-crush">?</span> N
-                        </div>
-                    </div>
-                    <div class="math-step">
-                        <div class="step-dot"></div>
-                        <h4 class="font-bold mb-0.5 text-[11px]">Step 4: 極限拉力</h4>
-                        <div class="bg-indigo-50 p-1.5 rounded font-mono text-[10px] border border-indigo-100">
-                            F = min(A, B) = <strong class="text-emerald-600 text-sm"><span id="math-f">?</span> N</strong>
-                            <span id="math-failure-mode" class="ml-1 px-1 rounded text-white shadow-sm"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 
     <script>
-        let currentForceN = 0;
-        let currentForceKgf = 0;
-        let currentFailureMode = "";
-        let recordCount = 0;
-        let isCalculating = false;
-        let hasCalculated = false;
+        let currentForceN = 0; let currentForceKgf = 0; let currentFailureMode = "";
+        let recordCount = 0; let isCalculating = false; let hasCalculated = false;
+        let currentShape = 'rect';
 
-        function syncFromSVG(param, val) {
-            if (!val || isNaN(val)) return; 
-            const panelInput = document.getElementById(param + 'Input');
-            if (panelInput) {
-                panelInput.value = val;
-                if (param === 't') {
-                    const display = document.getElementById('tDisplay');
-                    if (display) display.innerText = parseFloat(val).toFixed(2);
-                    const slider = document.getElementById('tSlider');
-                    if (slider) slider.value = val;
-                }
+        function setShape(shape) {
+            currentShape = shape;
+            document.getElementById('btnShapeRect').className = shape === 'rect' ? 'flex-1 text-[9px] py-1 rounded bg-white font-bold shadow-sm text-indigo-600 transition-all' : 'flex-1 text-[9px] py-1 rounded text-slate-600 font-semibold hover:text-slate-800 transition-all';
+            document.getElementById('btnShapeTri').className = shape === 'tri' ? 'flex-1 text-[9px] py-1 rounded bg-white font-bold shadow-sm text-indigo-600 transition-all flex justify-center items-center gap-0.5' : 'flex-1 text-[9px] py-1 rounded text-slate-600 font-semibold hover:text-slate-800 transition-all flex justify-center items-center gap-0.5';
+            runUpdate();
+        }
+        
+        function updateValueSafe(id, valStr) { const el = document.getElementById(id); if (el && el !== document.activeElement) el.value = valStr; }
+        
+        function handleSync(sourceId, valStr) {
+            if (valStr === '') return; const val = parseFloat(valStr); if (isNaN(val)) return;
+            if (sourceId === 'hu' || sourceId === 't') { 
+                updateValueSafe('huInput', valStr); updateValueSafe('svgInput_hu', valStr); 
+                updateValueSafe('svgInput_t', valStr);
+            } else { 
+                updateValueSafe(sourceId + 'Input', valStr); updateValueSafe('svgInput_' + sourceId, valStr); 
             }
-            handleInput();
+            runUpdate();
         }
+        
+        function updateUTS() { const select = document.getElementById('materialSelect'); if (select.value !== 'custom') updateValueSafe('utsInput', select.value); runUpdate(); }
+        function safeSetText(id, txt) { const el = document.getElementById(id); if (el) el.innerText = txt; }
 
-        function syncSlider(idPrefix, val) {
-            document.getElementById(idPrefix + 'Input').value = val;
-            document.getElementById(idPrefix + 'Display').innerText = parseFloat(val).toFixed(2);
-            handleInput();
-        }
-
-        function updateUTS() {
-            const select = document.getElementById('materialSelect');
-            const utsInput = document.getElementById('utsInput');
-            if (select.value !== 'custom') {
-                utsInput.value = select.value;
-            }
-            handleInput();
-        }
-
-        function safeSetText(id, txt) {
-            const el = document.getElementById(id);
-            if (el) el.innerText = txt;
-        }
-
-        function handleInput() {
-            const uts = parseFloat(document.getElementById('utsInput').value) || 0;
-            const t = parseFloat(document.getElementById('tInput').value) || 0;
-            const dh = parseFloat(document.getElementById('dhInput').value) || 0;
-            const dp = parseFloat(document.getElementById('dpInput').value) || 0;
-            const du = parseFloat(document.getElementById('duInput').value) || 0;
-            const d  = parseFloat(document.getElementById('dInput').value) || 0;
-            const hh = parseFloat(document.getElementById('hhInput').value) || 0;
-            const hp = parseFloat(document.getElementById('hpInput').value) || 0;
-            const hu = parseFloat(document.getElementById('huInput').value) || 0;
-            const hb = parseFloat(document.getElementById('hbInput').value) || 0;
-
+        function runUpdate() {
+            const uts = parseFloat(document.getElementById('utsInput').value)||0; const hu = parseFloat(document.getElementById('huInput').value)||0;
+            const dh = parseFloat(document.getElementById('dhInput').value)||0; const dp = parseFloat(document.getElementById('dpInput').value)||0;
+            const du = parseFloat(document.getElementById('duInput').value)||0; const d = parseFloat(document.getElementById('dInput').value)||0;
+            const hh = parseFloat(document.getElementById('hhInput').value)||0; const hp = parseFloat(document.getElementById('hpInput').value)||0;
+            const hb = parseFloat(document.getElementById('hbInput').value)||0; const t = hu;
             updateSVG({dh, dp, du, d, hh, hp, hu, hb, t});
-
-            if (hasCalculated) {
-                document.getElementById('resultsSection').classList.add('opacity-40');
-                document.getElementById('logicSection').classList.add('opacity-40');
-            }
+            if (hasCalculated) { document.getElementById('resultsSection').classList.add('opacity-40'); document.getElementById('logicSection').classList.add('opacity-40'); }
         }
 
-        async function executeCalculation() {
-            if (isCalculating) return;
-            isCalculating = true;
-
-            const btn = document.getElementById('calcBtn');
-            const originalContent = btn.innerHTML;
+        async function executeCalculation(autoRecord = false) {
+            if (isCalculating) return; isCalculating = true;
+            const btn = document.getElementById('calcBtn'); const originalContent = btn.innerHTML;
+            btn.innerHTML = `<svg class="animate-spin h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>計算中...</span>`;
+            btn.classList.add('bg-indigo-400', 'cursor-not-allowed'); 
+            await new Promise(resolve => setTimeout(resolve, 300));
             
-            btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>運算分析中...</span>`;
-            btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
-            btn.classList.add('bg-indigo-400', 'cursor-not-allowed');
-
-            await new Promise(resolve => setTimeout(resolve, 600));
-
             performMathLogic();
-
-            btn.innerHTML = originalContent;
-            btn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
-            btn.classList.remove('bg-indigo-400', 'cursor-not-allowed');
             
-            document.getElementById('resultsSection').classList.remove('opacity-40');
-            document.getElementById('logicSection').classList.remove('opacity-40');
+            btn.innerHTML = originalContent; btn.classList.remove('bg-indigo-400', 'cursor-not-allowed');
+            document.getElementById('resultsSection').classList.remove('opacity-40'); document.getElementById('logicSection').classList.remove('opacity-40');
+            isCalculating = false; hasCalculated = true;
             
-            isCalculating = false;
-            hasCalculated = true;
+            if (autoRecord) addRecord();
         }
 
         function performMathLogic() {
-            const uts = parseFloat(document.getElementById('utsInput').value) || 0;
-            const t = parseFloat(document.getElementById('tInput').value) || 0;
-            const dh = parseFloat(document.getElementById('dhInput').value) || 0;
-            const dp = parseFloat(document.getElementById('dpInput').value) || 0;
-            const du = parseFloat(document.getElementById('duInput').value) || 0;
+            const uts = parseFloat(document.getElementById('utsInput').value)||0; const hu = parseFloat(document.getElementById('huInput').value)||0;
+            const dp = parseFloat(document.getElementById('dpInput').value)||0; const du = parseFloat(document.getElementById('duInput').value)||0;
+            const t_eff = hu; let areaShear=0, areaBearing=0, forceShear=0, forceCrush=0;
 
-            const t_eff = t; 
-            
-            const areaShear = Math.PI * dh * t_eff;
-            const forceShear = areaShear * (uts * 0.6);
-            
-            const areaBearing = dh > du ? (Math.PI / 4) * (Math.pow(dh, 2) - Math.pow(du, 2)) : 0;
-            const forceCrush = areaBearing * uts;
-            
-            currentForceN = Math.min(forceShear, forceCrush);
-            currentForceKgf = currentForceN / 9.80665;
-            
-            const modeEl = document.getElementById('math-failure-mode');
-            if (modeEl) {
-                if (forceShear < forceCrush) {
-                    currentFailureMode = "剪切";
-                    modeEl.innerText = "剪切 (Shear)";
-                    modeEl.className = "ml-1 text-[10px] font-bold px-1 rounded bg-red-500 text-white shadow-sm";
-                } else {
-                    currentFailureMode = "潰縮";
-                    modeEl.innerText = "潰縮 (Crush)";
-                    modeEl.className = "ml-1 text-[10px] font-bold px-1 rounded bg-blue-500 text-white shadow-sm";
-                }
+            if (currentShape === 'tri') {
+                const d_avg = (dp + du) / 2; areaShear = Math.PI * d_avg * t_eff;
+                areaBearing = dp > du ? (Math.PI / 4) * (Math.pow(dp, 2) - Math.pow(du, 2)) : 0;
+                forceShear = areaShear * (uts * 0.6); forceCrush = areaBearing * uts * 0.707;
+                
+                document.getElementById('logic-step1-formula').innerHTML = `<div class="text-[9px]">t_eff = Hu = <strong class="text-indigo-600">${t_eff.toFixed(2)}mm</strong></div>`;
+                document.getElementById('logic-step2-title').innerHTML = `Step 2: 剪切 A (<span class="font-serif italic text-red-600">沿斜面平均徑 Davg</span>)`;
+                document.getElementById('logic-shear-formula').innerHTML = `
+                    D_avg = (Dp + Du)/2 = ${d_avg.toFixed(2)} mm<br>
+                    A_sh = π × ${d_avg.toFixed(2)} × ${t_eff.toFixed(2)} = ${areaShear.toFixed(1)} mm²<br>
+                    <span class="text-slate-500">F_sh = ${areaShear.toFixed(1)} × (${uts} × 0.6) = ${(forceShear).toFixed(0)} N</span>
+                `;
+                document.getElementById('logic-step3-title').innerHTML = `Step 3: 潰縮 B (<span class="font-serif italic text-blue-600">45°倒錐承壓折減</span>)`;
+                document.getElementById('logic-crush-formula').innerHTML = `
+                    A_br = 0.785 × (${dp.toFixed(2)}² - ${du.toFixed(2)}²) = ${areaBearing.toFixed(1)} mm²<br>
+                    <span class="text-slate-500">F_cr = ${areaBearing.toFixed(1)} × ${uts} × 0.707 = ${(forceCrush).toFixed(0)} N</span>
+                `;
+            } else {
+                areaShear = Math.PI * dp * t_eff; areaBearing = dp > du ? (Math.PI / 4) * (Math.pow(dp, 2) - Math.pow(du, 2)) : 0;
+                forceShear = areaShear * (uts * 0.6); forceCrush = areaBearing * uts;
+                
+                document.getElementById('logic-step1-formula').innerHTML = `<div class="text-[9px]">t_eff = Hu = <strong class="text-indigo-600">${t_eff.toFixed(2)}mm</strong></div>`;
+                document.getElementById('logic-step2-title').innerHTML = `Step 2: 剪切 A (<span class="font-serif italic text-red-600">沿擠料環 Dp</span>)`;
+                document.getElementById('logic-shear-formula').innerHTML = `
+                    A_sh = π × ${dp.toFixed(2)} × ${t_eff.toFixed(2)} = ${areaShear.toFixed(1)} mm²<br>
+                    <span class="text-slate-500">F_sh = ${areaShear.toFixed(1)} × (${uts} × 0.6) = ${(forceShear).toFixed(0)} N</span>
+                `;
+                document.getElementById('logic-step3-title').innerHTML = `Step 3: 潰縮 B (<span class="font-serif italic text-blue-600">Dp與Du間的平口</span>)`;
+                document.getElementById('logic-crush-formula').innerHTML = `
+                    A_br = 0.785 × (${dp.toFixed(2)}² - ${du.toFixed(2)}²) = ${areaBearing.toFixed(1)} mm²<br>
+                    <span class="text-slate-500">F_cr = ${areaBearing.toFixed(1)} × ${uts} = ${(forceCrush).toFixed(0)} N</span>
+                `;
             }
+            currentForceN = Math.min(forceShear, forceCrush); currentForceKgf = currentForceN / 9.80665;
+            const modeEl = document.getElementById('math-failure-mode');
+            if (forceShear < forceCrush) { currentFailureMode = "剪切斷裂"; modeEl.innerText = "剪切"; modeEl.className = "ml-1 px-1 py-0.5 rounded bg-red-500 text-white text-[8px] font-bold"; }
+            else { currentFailureMode = "承壓潰縮"; modeEl.innerText = "潰縮"; modeEl.className = "ml-1 px-1 py-0.5 rounded bg-blue-500 text-white text-[8px] font-bold"; }
+            safeSetText('resultNewton', currentForceN.toLocaleString('en-US', { maximumFractionDigits: 0 })); safeSetText('resultKgf', currentForceKgf.toLocaleString('en-US', { maximumFractionDigits: 1 })); safeSetText('math-f-final', currentForceN.toFixed(0));
+        }
 
-            safeSetText('resultNewton', currentForceN.toLocaleString('en-US', { maximumFractionDigits: 0 }));
-            safeSetText('resultKgf', currentForceKgf.toLocaleString('en-US', { maximumFractionDigits: 1 }));
-
-            safeSetText('math-t', t.toFixed(2));
-            safeSetText('math-teff2', t_eff.toFixed(2));
-            safeSetText('math-dh-shear', dh.toFixed(2));
-            safeSetText('math-dh2', dh.toFixed(2));
-            safeSetText('math-du', du.toFixed(2));
-            
-            safeSetText('math-a-shear', areaShear.toFixed(1));
-            safeSetText('math-f-shear', forceShear.toFixed(0));
-            
-            safeSetText('math-a-bearing', areaBearing.toFixed(1));
-            safeSetText('math-f-crush', forceCrush.toFixed(0));
-            
-            safeSetText('math-f', currentForceN.toFixed(0));
+        function setIndicator(type, x1, y1, y2, text, textX, textY, xRight = null) {
+            const centerX = 450;
+            if (type === 'Shear') {
+                if (document.getElementById('svgShearLeft')) { document.getElementById('svgShearLeft').setAttribute('x1', x1); document.getElementById('svgShearLeft').setAttribute('y1', y1); document.getElementById('svgShearLeft').setAttribute('x2', x1); document.getElementById('svgShearLeft').setAttribute('y2', y2);
+                    const rightX = centerX + (centerX - x1); document.getElementById('svgShearRight').setAttribute('x1', rightX); document.getElementById('svgShearRight').setAttribute('y1', y1); document.getElementById('svgShearRight').setAttribute('x2', rightX); document.getElementById('svgShearRight').setAttribute('y2', y2); }
+                if (document.getElementById('svgShearBg')) { document.getElementById('svgShearBg').setAttribute('x', textX - 5); document.getElementById('svgShearBg').setAttribute('y', textY - 12); document.getElementById('svgShearText').setAttribute('x', textX); document.getElementById('svgShearText').setAttribute('y', textY); document.getElementById('svgShearText').textContent = text; }
+            } else if (type === 'Bearing') {
+                if (document.getElementById('svgBearingLeft')) { document.getElementById('svgBearingLeft').setAttribute('x1', x1); document.getElementById('svgBearingLeft').setAttribute('y1', y1); document.getElementById('svgBearingLeft').setAttribute('x2', xRight); document.getElementById('svgBearingLeft').setAttribute('y2', y1);
+                    const rX1 = centerX + (centerX - xRight); const rX2 = centerX + (centerX - x1); document.getElementById('svgBearingRight').setAttribute('x1', rX1); document.getElementById('svgBearingRight').setAttribute('y1', y1); document.getElementById('svgBearingRight').setAttribute('x2', rX2); document.getElementById('svgBearingRight').setAttribute('y2', y1); }
+                if (document.getElementById('svgBearingBg')) { document.getElementById('svgBearingBg').setAttribute('x', textX - 5); document.getElementById('svgBearingBg').setAttribute('y', textY - 12); document.getElementById('svgBearingText').setAttribute('x', textX); document.getElementById('svgBearingText').setAttribute('y', textY); document.getElementById('svgBearingText').textContent = text; }
+            }
         }
 
         function updateSVG(params) {
-            // 中心微調向右，為左側文字留出空間
-            const centerX = 430;
-            const scale = 55;
-
-            const r_d  = (params.d * scale) / 2;
-            const r_dp = (params.dp * scale) / 2;
-            const r_du = (params.du * scale) / 2;
-            const r_dh = (params.dh * scale) / 2;
-            const r_th = (2.0 * scale) / 2; 
-
-            const y_surface = 230; // 下移基準面，給上方箭頭與標註留出充足空間
-            const y_flangeTop = y_surface; 
-            const y_postTop = y_flangeTop - (params.hb * scale); 
-            const y_undercutTop = y_flangeTop + (params.hp * scale); 
+            const centerX = 450; const scale = 55;
+            const r_dh = (params.dh*scale)/2; const r_dp = (params.dp*scale)/2; const r_du = (params.du*scale)/2;
+            const r_d = (params.d*scale)/2; const r_th = (2.0*scale)/2; const t_px = params.hu*scale;
             
-            const y_headTop = y_undercutTop + (params.t * scale); 
-            const y_holeBottom = y_headTop + (params.hh * scale); 
+            // 完全修正為 柱朝上，齊平基準面在頂部
+            const y_surface = 180; const y_flangeTop = y_surface; const y_postTop = y_flangeTop - (params.hb*scale);
+            const y_undercutTop = y_flangeTop + (params.hp*scale); const y_headTop = y_undercutTop + (params.hu*scale);
+            const y_holeBottom = y_headTop + (params.hh*scale); const chamfer = 0.2*scale; const y_plateBottom = y_holeBottom + 35; const y_thread_bottom = y_postTop + ((params.hb*scale)*0.7);
+
+            if(document.getElementById('centerLine')) { document.getElementById('centerLine').setAttribute('y1', 20); document.getElementById('centerLine').setAttribute('y2', y_plateBottom + 20); }
+            if (document.getElementById('fArrow')) document.getElementById('fArrow').setAttribute('d', `M ${centerX} ${y_postTop - 45} L ${centerX} ${y_postTop - 85}`);
+            if (document.getElementById('fText')) document.getElementById('fText').setAttribute('y', y_postTop - 60);
+
+            let nutPath = `M ${centerX - r_th} ${y_postTop} L ${centerX - r_d} ${y_postTop} L ${centerX - r_d} ${y_flangeTop} L ${centerX - r_dp} ${y_flangeTop} L ${centerX - r_dp} ${y_undercutTop} `;
+            let pL = `M 20 ${y_surface} L ${centerX - r_dp} ${y_surface} L ${centerX - r_dp} ${y_undercutTop} `;
+            let pR = `M 780 ${y_surface} L ${centerX + r_dp} ${y_surface} L ${centerX + r_dp} ${y_undercutTop} `;
+            let sqL = ''; let sqR = ''; const max_r = Math.max(r_dh, r_dp, r_d);
             
-            const chamfer = 0.2 * scale;
-            const y_plateBottom = y_holeBottom + 35; 
-            const y_thread_bottom = y_postTop + ((params.hb * scale) * 0.7);
+            // 將剪切與潰縮文字方塊拉到極左，防擋圖
+            const textX_shear = 160; 
+            const textY_shear = y_undercutTop + t_px/2 + 4; const bearingTextY = y_undercutTop - 12;
 
-            if(document.getElementById('centerLine')) {
-                document.getElementById('centerLine').setAttribute('x1', centerX);
-                document.getElementById('centerLine').setAttribute('x2', centerX);
-                document.getElementById('centerLine').setAttribute('y2', 370);
-            }
-            if (document.getElementById('fArrow')) {
-                // 將拉拔力箭頭大幅上移，完全避開 D 尺寸標註框
-                document.getElementById('fArrow').setAttribute('d', `M ${centerX} ${y_postTop - 45} L ${centerX} ${y_postTop - 85}`);
-            }
-            if (document.getElementById('fText')) {
-                document.getElementById('fText').setAttribute('x', centerX + 10);
-                document.getElementById('fText').setAttribute('y', y_postTop - 60);
-            }
-
-            const nutPath = `
-                M ${centerX - r_th} ${y_postTop} L ${centerX - r_d} ${y_postTop} L ${centerX - r_d} ${y_flangeTop}
-                L ${centerX - r_dp} ${y_flangeTop} L ${centerX - r_dp} ${y_undercutTop} L ${centerX - r_du} ${y_undercutTop}
-                L ${centerX - r_du} ${y_headTop} L ${centerX - r_dh} ${y_headTop} L ${centerX - r_dh} ${y_holeBottom - chamfer}
-                L ${centerX - r_dh + chamfer} ${y_holeBottom} L ${centerX + r_dh - chamfer} ${y_holeBottom}
-                L ${centerX + r_dh} ${y_holeBottom - chamfer} L ${centerX + r_dh} ${y_headTop} L ${centerX + r_du} ${y_headTop}
-                L ${centerX + r_du} ${y_undercutTop} L ${centerX + r_dp} ${y_undercutTop} L ${centerX + r_dp} ${y_flangeTop}
-                L ${centerX + r_d} ${y_flangeTop} L ${centerX + r_d} ${y_postTop} L ${centerX + r_th} ${y_postTop}
-                L ${centerX + r_th} ${y_thread_bottom} L ${centerX - r_th} ${y_thread_bottom} Z
-            `;
-            if (document.getElementById('svgNut')) document.getElementById('svgNut').setAttribute('d', nutPath);
-            if (document.getElementById('svgNutHatch')) document.getElementById('svgNutHatch').setAttribute('d', nutPath);
-
-            let pL = `M 30 ${y_surface} L ${centerX - r_dp} ${y_surface} L ${centerX - r_dp} ${y_undercutTop} `;
-            pL += `L ${centerX - r_du} ${y_undercutTop} L ${centerX - r_du} ${y_headTop} L ${centerX - r_dh} ${y_headTop} `;
-            pL += `L ${centerX - r_dh} ${y_holeBottom} L ${centerX} ${y_holeBottom} L ${centerX} ${y_plateBottom} L 30 ${y_plateBottom} Z`;
-            
-            if (document.getElementById('svgPlateL')) document.getElementById('svgPlateL').setAttribute('d', pL);
-            if (document.getElementById('svgPlateLHatch')) document.getElementById('svgPlateLHatch').setAttribute('d', pL);
-
-            let pR = `M 770 ${y_surface} L ${centerX + r_dp} ${y_surface} L ${centerX + r_dp} ${y_undercutTop} `;
-            pR += `L ${centerX + r_du} ${y_undercutTop} L ${centerX + r_du} ${y_headTop} L ${centerX + r_dh} ${y_headTop} `;
-            pR += `L ${centerX + r_dh} ${y_holeBottom} L ${centerX} ${y_holeBottom} L ${centerX} ${y_plateBottom} L 770 ${y_plateBottom} Z`;
-            
-            if (document.getElementById('svgPlateR')) document.getElementById('svgPlateR').setAttribute('d', pR);
-            if (document.getElementById('svgPlateRHatch')) document.getElementById('svgPlateRHatch').setAttribute('d', pR);
-
-            let sqL = `M ${centerX - r_dh} ${y_undercutTop} L ${centerX - r_du} ${y_undercutTop} L ${centerX - r_du} ${y_headTop} L ${centerX - r_dh} ${y_headTop} Z`;
-            let sqR = `M ${centerX + r_dh} ${y_undercutTop} L ${centerX + r_du} ${y_undercutTop} L ${centerX + r_du} ${y_headTop} L ${centerX + r_dh} ${y_headTop} Z`;
-            if (document.getElementById('svgSqueezeL')) document.getElementById('svgSqueezeL').setAttribute('d', sqL);
-            if (document.getElementById('svgSqueezeR')) document.getElementById('svgSqueezeR').setAttribute('d', sqR);
-
-            // 【重點修改 1】將 Shear 面和 Bearing 面的文字移到左方，徹底解決右側擁擠
-            if (document.getElementById('svgShearLeft')) {
-                document.getElementById('svgShearLeft').setAttribute('x1', centerX - r_dh); document.getElementById('svgShearLeft').setAttribute('y1', y_undercutTop);
-                document.getElementById('svgShearLeft').setAttribute('x2', centerX - r_dh); document.getElementById('svgShearLeft').setAttribute('y2', y_headTop);
-                document.getElementById('svgShearRight').setAttribute('x1', centerX + r_dh); document.getElementById('svgShearRight').setAttribute('y1', y_undercutTop);
-                document.getElementById('svgShearRight').setAttribute('x2', centerX + r_dh); document.getElementById('svgShearRight').setAttribute('y2', y_headTop);
+            if (currentShape === 'tri') {
+                // 鋁釘倒錐 (錐度往下漸擴)
+                nutPath += `L ${centerX - r_du} ${y_undercutTop} L ${centerX - r_dh} ${y_headTop} `;
+                pL += `L ${centerX - r_dh} ${y_undercutTop} L ${centerX - r_dh} ${y_holeBottom} `; pR += `L ${centerX + r_dh} ${y_undercutTop} L ${centerX + r_dh} ${y_holeBottom} `;
+                // 擠入的深灰色鋁材填滿整個倒錐空間
+                sqL = `M ${centerX - r_dh} ${y_undercutTop} L ${centerX - r_du} ${y_undercutTop} L ${centerX - r_dh} ${y_headTop} Z`; sqR = `M ${centerX + r_dh} ${y_undercutTop} L ${centerX + r_du} ${y_undercutTop} L ${centerX + r_dh} ${y_headTop} Z`;
+                
+                const r_avg = (r_dp + r_du) / 2; setIndicator('Shear', centerX - r_avg, y_undercutTop, y_headTop, '剪切面 (Davg) →', textX_shear, textY_shear);
+                setIndicator('Bearing', centerX - r_dp, y_undercutTop, y_undercutTop, '潰縮面 (Dp-Du) →', textX_shear, bearingTextY, centerX - r_du);
+            } else {
+                nutPath += `L ${centerX - r_du} ${y_undercutTop} L ${centerX - r_du} ${y_headTop} L ${centerX - r_dh} ${y_headTop} `;
+                pL += `L ${centerX - r_dh} ${y_undercutTop} L ${centerX - r_dh} ${y_holeBottom} `; pR += `L ${centerX + r_dh} ${y_undercutTop} L ${centerX + r_dh} ${y_holeBottom} `;
+                sqL = `M ${centerX - r_dh} ${y_undercutTop} L ${centerX - r_du} ${y_undercutTop} L ${centerX - r_du} ${y_headTop} L ${centerX - r_dh} ${y_headTop} Z`; sqR = `M ${centerX + r_dh} ${y_undercutTop} L ${centerX + r_du} ${y_undercutTop} L ${centerX + r_du} ${y_headTop} L ${centerX + r_dh} ${y_headTop} Z`;
+                setIndicator('Shear', centerX - r_dp, y_undercutTop, y_headTop, '剪切面 (Dp) →', textX_shear, textY_shear);
+                setIndicator('Bearing', centerX - r_dp, y_undercutTop, y_undercutTop, '潰縮面 (Dp-Du) →', textX_shear, bearingTextY, centerX - r_du);
             }
             
-            const max_r = Math.max(r_dh, r_dp, r_d);
-            const textX_shear = centerX - max_r - 135; 
-            const textY_shear = y_undercutTop + (y_headTop - y_undercutTop)/2 + 4;
-            
-            if (document.getElementById('svgShearBg')) {
-                document.getElementById('svgShearBg').setAttribute('x', textX_shear - 5); document.getElementById('svgShearBg').setAttribute('y', textY_shear - 15);
-                document.getElementById('svgShearText').setAttribute('x', textX_shear); document.getElementById('svgShearText').setAttribute('y', textY_shear);
-            }
+            nutPath += `L ${centerX - r_dh} ${y_holeBottom - chamfer} L ${centerX - r_dh + chamfer} ${y_holeBottom} L ${centerX} ${y_holeBottom} `;
+            pL += `L ${centerX} ${y_holeBottom} L ${centerX} ${y_plateBottom} L 20 ${y_plateBottom} Z`; pR += `L ${centerX} ${y_holeBottom} L ${centerX} ${y_plateBottom} L 780 ${y_plateBottom} Z`;
+            nutPath += `L ${centerX + r_dh - chamfer} ${y_holeBottom} L ${centerX + r_dh} ${y_holeBottom - chamfer} L ${centerX + r_dh} ${y_headTop} `;
+            if (currentShape === 'tri') nutPath += `L ${centerX + r_du} ${y_undercutTop} `; else nutPath += `L ${centerX + r_du} ${y_headTop} L ${centerX + r_du} ${y_undercutTop} `;
+            nutPath += `L ${centerX + r_dp} ${y_undercutTop} L ${centerX + r_dp} ${y_flangeTop} L ${centerX + r_d} ${y_flangeTop} L ${centerX + r_d} ${y_postTop} L ${centerX + r_th} ${y_postTop} L ${centerX + r_th} ${y_thread_bottom} L ${centerX - r_th} ${y_thread_bottom} Z`;
 
-            if (document.getElementById('svgBearingLeft')) {
-                document.getElementById('svgBearingLeft').setAttribute('x1', centerX - r_dh); document.getElementById('svgBearingLeft').setAttribute('y1', y_headTop);
-                document.getElementById('svgBearingLeft').setAttribute('x2', centerX - r_du); document.getElementById('svgBearingLeft').setAttribute('y2', y_headTop);
-                document.getElementById('svgBearingRight').setAttribute('x1', centerX + r_du); document.getElementById('svgBearingRight').setAttribute('y1', y_headTop);
-                document.getElementById('svgBearingRight').setAttribute('x2', centerX + r_dh); document.getElementById('svgBearingRight').setAttribute('y2', y_headTop);
-            }
-            const bearingTextY = y_headTop + 15;
-            if (document.getElementById('svgBearingBg')) {
-                document.getElementById('svgBearingBg').setAttribute('x', textX_shear - 5); document.getElementById('svgBearingBg').setAttribute('y', bearingTextY - 15);
-                document.getElementById('svgBearingText').setAttribute('x', textX_shear); document.getElementById('svgBearingText').setAttribute('y', bearingTextY);
-            }
+            if (document.getElementById('svgNut')) document.getElementById('svgNut').setAttribute('d', nutPath); if (document.getElementById('svgNutHatch')) document.getElementById('svgNutHatch').setAttribute('d', nutPath);
+            if (document.getElementById('svgPlateL')) document.getElementById('svgPlateL').setAttribute('d', pL); if (document.getElementById('svgPlateLHatch')) document.getElementById('svgPlateLHatch').setAttribute('d', pL);
+            if (document.getElementById('svgPlateR')) document.getElementById('svgPlateR').setAttribute('d', pR); if (document.getElementById('svgPlateRHatch')) document.getElementById('svgPlateRHatch').setAttribute('d', pR);
+            if (document.getElementById('svgSqueezeL')) document.getElementById('svgSqueezeL').setAttribute('d', sqL); if (document.getElementById('svgSqueezeR')) document.getElementById('svgSqueezeR').setAttribute('d', sqR);
 
-            // 更新輸入框數值
-            if(document.getElementById('svgInput_dh')) document.getElementById('svgInput_dh').value = params.dh; 
-            if(document.getElementById('svgInput_du')) document.getElementById('svgInput_du').value = params.du;
-            if(document.getElementById('svgInput_dp')) document.getElementById('svgInput_dp').value = params.dp; 
-            if(document.getElementById('svgInput_d')) document.getElementById('svgInput_d').value = params.d;
-            if(document.getElementById('svgInput_t')) document.getElementById('svgInput_t').value = params.t; 
-            if(document.getElementById('svgInput_hh')) document.getElementById('svgInput_hh').value = params.hh;
-            if(document.getElementById('svgInput_hu')) document.getElementById('svgInput_hu').value = params.hu; 
-            if(document.getElementById('svgInput_hp')) document.getElementById('svgInput_hp').value = params.hp;
+            if(document.getElementById('svgInput_dh')) document.getElementById('svgInput_dh').value = params.dh; if(document.getElementById('svgInput_du')) document.getElementById('svgInput_du').value = params.du;
+            if(document.getElementById('svgInput_dp')) document.getElementById('svgInput_dp').value = params.dp; if(document.getElementById('svgInput_d')) document.getElementById('svgInput_d').value = params.d;
+            if(document.getElementById('svgInput_t')) document.getElementById('svgInput_t').value = params.t; if(document.getElementById('svgInput_hh')) document.getElementById('svgInput_hh').value = params.hh;
+            if(document.getElementById('svgInput_hu')) document.getElementById('svgInput_hu').value = params.hu; if(document.getElementById('svgInput_hp')) document.getElementById('svgInput_hp').value = params.hp;
             if(document.getElementById('svgInput_hb')) document.getElementById('svgInput_hb').value = params.hb;
 
-            // 定位 直徑 D
             function setDimD(id, y, r, extY1) {
-                if (!document.getElementById(`dim${id}_line`)) return;
-                document.getElementById(`dim${id}_line`).setAttribute('x1', centerX - r); document.getElementById(`dim${id}_line`).setAttribute('x2', centerX + r);
-                document.getElementById(`dim${id}_line`).setAttribute('y1', y); document.getElementById(`dim${id}_line`).setAttribute('y2', y);
-                document.getElementById(`dim${id}_ext1`).setAttribute('x1', centerX - r); document.getElementById(`dim${id}_ext1`).setAttribute('x2', centerX - r);
-                document.getElementById(`dim${id}_ext1`).setAttribute('y1', extY1); document.getElementById(`dim${id}_ext1`).setAttribute('y2', y - 5);
-                document.getElementById(`dim${id}_ext2`).setAttribute('x1', centerX + r); document.getElementById(`dim${id}_ext2`).setAttribute('x2', centerX + r);
-                document.getElementById(`dim${id}_ext2`).setAttribute('y1', extY1); document.getElementById(`dim${id}_ext2`).setAttribute('y2', y - 5);
-                const fo = document.getElementById(`dim${id}_fo`);
-                if(fo) { fo.setAttribute('x', centerX - (parseInt(fo.getAttribute('width'))/2)); fo.setAttribute('y', y - 13); }
+                if (!document.getElementById(`dim${id}_line`)) return; document.getElementById(`dim${id}_line`).setAttribute('x1', centerX - r); document.getElementById(`dim${id}_line`).setAttribute('x2', centerX + r); document.getElementById(`dim${id}_line`).setAttribute('y1', y); document.getElementById(`dim${id}_line`).setAttribute('y2', y);
+                document.getElementById(`dim${id}_ext1`).setAttribute('x1', centerX - r); document.getElementById(`dim${id}_ext1`).setAttribute('x2', centerX - r); document.getElementById(`dim${id}_ext1`).setAttribute('y1', extY1); document.getElementById(`dim${id}_ext1`).setAttribute('y2', y - 5);
+                document.getElementById(`dim${id}_ext2`).setAttribute('x1', centerX + r); document.getElementById(`dim${id}_ext2`).setAttribute('x2', centerX + r); document.getElementById(`dim${id}_ext2`).setAttribute('y1', extY1); document.getElementById(`dim${id}_ext2`).setAttribute('y2', y - 5);
+                const fo = document.getElementById(`dim${id}_fo`); if(fo) { fo.setAttribute('x', centerX - (parseInt(fo.getAttribute('width'))/2)); fo.setAttribute('y', y - 11); }
             }
-            
-            setDimD('D', y_postTop - 25, r_d, y_postTop);
-            setDimD('Dp', y_flangeTop + 10, r_dp, y_flangeTop);
-            setDimD('Du', y_undercutTop + 10, r_du, y_undercutTop);
-            setDimD('Dh', y_holeBottom + 30, r_dh, y_holeBottom);
+            setDimD('D', y_postTop - 25, r_d, y_postTop); setDimD('Dp', y_flangeTop + 10, r_dp, y_flangeTop); setDimD('Du', y_undercutTop + 10, r_du, y_undercutTop); setDimD('Dh', y_holeBottom + 25, r_dh, y_holeBottom);
 
-            // 定位 t (厚度) - 移至最左側
-            const tLineX = textX_shear - 35;
-            if(document.getElementById('dimT_line')) {
-                document.getElementById('dimT_line').setAttribute('x1', tLineX); document.getElementById('dimT_line').setAttribute('x2', tLineX);
-                document.getElementById('dimT_line').setAttribute('y1', y_undercutTop); document.getElementById('dimT_line').setAttribute('y2', y_headTop);
-                document.getElementById('dimT_ext1').setAttribute('x1', textX_shear - 5); document.getElementById('dimT_ext1').setAttribute('x2', tLineX + 5);
-                document.getElementById('dimT_ext1').setAttribute('y1', y_undercutTop); document.getElementById('dimT_ext1').setAttribute('y2', y_undercutTop);
-                document.getElementById('dimT_ext2').setAttribute('x1', centerX - r_dh); document.getElementById('dimT_ext2').setAttribute('x2', tLineX + 5);
-                document.getElementById('dimT_ext2').setAttribute('y1', y_headTop); document.getElementById('dimT_ext2').setAttribute('y2', y_headTop);
-            }
-            const foT = document.getElementById('dimT_fo');
-            if(foT) { foT.setAttribute('x', tLineX - parseInt(foT.getAttribute('width')) - 10); foT.setAttribute('y', y_undercutTop + (y_headTop - y_undercutTop)/2 - 13); }
+            const tLineX = textX_shear - 15;
+            if(document.getElementById('dimT_line')) { document.getElementById('dimT_line').setAttribute('x1', tLineX); document.getElementById('dimT_line').setAttribute('x2', tLineX); document.getElementById('dimT_line').setAttribute('y1', y_undercutTop); document.getElementById('dimT_line').setAttribute('y2', y_headTop);
+                document.getElementById('dimT_ext1').setAttribute('x1', textX_shear - 5); document.getElementById('dimT_ext1').setAttribute('x2', tLineX + 5); document.getElementById('dimT_ext1').setAttribute('y1', y_undercutTop); document.getElementById('dimT_ext1').setAttribute('y2', y_undercutTop);
+                document.getElementById('dimT_ext2').setAttribute('x1', centerX - r_dp); document.getElementById('dimT_ext2').setAttribute('x2', tLineX + 5); document.getElementById('dimT_ext2').setAttribute('y1', y_headTop); document.getElementById('dimT_ext2').setAttribute('y2', y_headTop); }
+            const foT = document.getElementById('dimT_fo'); if(foT) { foT.setAttribute('x', tLineX - parseInt(foT.getAttribute('width')) - 8); foT.setAttribute('y', y_undercutTop + (y_headTop - y_undercutTop)/2 - 11); }
 
-            // 【重點修改 2】高度 H 排版優化，使用錯位排列 (Zig-zag) 避免上下重疊
-            const hLineX = centerX + max_r + 40;
+            const hLineX = centerX + max_r + 30;
             function setDimH(id, y_start, y_end, r, xOffset = 0) {
-                if (!document.getElementById(`dim${id}_line`)) return;
-                
-                document.getElementById(`dim${id}_line`).setAttribute('x1', hLineX); 
-                document.getElementById(`dim${id}_line`).setAttribute('x2', hLineX);
-                document.getElementById(`dim${id}_line`).setAttribute('y1', y_start); 
-                document.getElementById(`dim${id}_line`).setAttribute('y2', y_end);
-                
-                document.getElementById(`dim${id}_ext1`).setAttribute('x1', centerX + r); 
-                document.getElementById(`dim${id}_ext1`).setAttribute('x2', hLineX - 5);
-                document.getElementById(`dim${id}_ext1`).setAttribute('y1', y_start); 
-                document.getElementById(`dim${id}_ext1`).setAttribute('y2', y_start);
-                
-                document.getElementById(`dim${id}_ext2`).setAttribute('x1', centerX + r); 
-                document.getElementById(`dim${id}_ext2`).setAttribute('x2', hLineX - 5);
-                document.getElementById(`dim${id}_ext2`).setAttribute('y1', y_end); 
-                document.getElementById(`dim${id}_ext2`).setAttribute('y2', y_end);
-                
-                const box_cy = y_start + (y_end - y_start)/2;
-                
-                const fo = document.getElementById(`dim${id}_fo`);
-                if(fo) { 
-                    fo.setAttribute('x', hLineX + 5 + xOffset); 
-                    fo.setAttribute('y', box_cy - 13); 
-                }
-
-                // 如果有向右錯位，繪製小引導線連接
-                let leader = document.getElementById(`dim${id}_leader`);
-                if (leader) {
-                    if (xOffset > 0) {
-                        leader.setAttribute('x1', hLineX); leader.setAttribute('x2', hLineX + 5 + xOffset);
-                        leader.setAttribute('y1', box_cy); leader.setAttribute('y2', box_cy);
-                        leader.style.display = 'block';
-                    } else {
-                        leader.style.display = 'none';
-                    }
-                }
+                if (!document.getElementById(`dim${id}_line`)) return; document.getElementById(`dim${id}_line`).setAttribute('x1', hLineX); document.getElementById(`dim${id}_line`).setAttribute('x2', hLineX); document.getElementById(`dim${id}_line`).setAttribute('y1', y_start); document.getElementById(`dim${id}_line`).setAttribute('y2', y_end);
+                document.getElementById(`dim${id}_ext1`).setAttribute('x1', centerX + r); document.getElementById(`dim${id}_ext1`).setAttribute('x2', hLineX - 5); document.getElementById(`dim${id}_ext1`).setAttribute('y1', y_start); document.getElementById(`dim${id}_ext1`).setAttribute('y2', y_start);
+                document.getElementById(`dim${id}_ext2`).setAttribute('x1', centerX + r); document.getElementById(`dim${id}_ext2`).setAttribute('x2', hLineX - 5); document.getElementById(`dim${id}_ext2`).setAttribute('y1', y_end); document.getElementById(`dim${id}_ext2`).setAttribute('y2', y_end);
+                const box_cy = y_start + (y_end - y_start)/2; const fo = document.getElementById(`dim${id}_fo`); if(fo) { fo.setAttribute('x', hLineX + 5 + xOffset); fo.setAttribute('y', box_cy - 11); }
+                let leader = document.getElementById(`dim${id}_leader`); if (leader) { if (xOffset > 0) { leader.setAttribute('x1', hLineX); leader.setAttribute('x2', hLineX + 5 + xOffset); leader.setAttribute('y1', box_cy); leader.setAttribute('y2', box_cy); leader.style.display = 'block'; } else { leader.style.display = 'none'; } }
             }
-            
-            // 將 Hu 向右錯位 76 像素，完美避開與 Hp 和 Hh 發生重疊
-            setDimH('Hb', y_postTop, y_flangeTop, r_d, 0);
-            setDimH('Hp', y_flangeTop, y_undercutTop, r_dp, 0);
-            setDimH('Hu', y_undercutTop, y_headTop, r_du, 76); 
-            setDimH('Hh', y_headTop, y_holeBottom, r_dh, 0);
+            setDimH('Hb', y_postTop, y_flangeTop, r_d, 0); setDimH('Hp', y_flangeTop, y_undercutTop, r_dp, 0); setDimH('Hu', y_undercutTop, y_headTop, r_du, 65); setDimH('Hh', y_headTop, y_holeBottom, r_dh, 0);
         }
 
         function addRecord() {
-            if (!hasCalculated) {
-                alert("請先點擊「深度分析與拉力計算」獲得最新數據！");
-                return;
-            }
-
-            const emptyRow = document.getElementById('emptyStateRow');
-            if (emptyRow) emptyRow.style.display = 'none';
-
-            const uts = document.getElementById('utsInput').value;
-            const t = document.getElementById('tInput').value;
-            const dh = document.getElementById('dhInput').value; const dp = document.getElementById('dpInput').value;
-            const du = document.getElementById('duInput').value; const d  = document.getElementById('dInput').value;
-            const hh = document.getElementById('hhInput').value; const hp = document.getElementById('hpInput').value;
-            const hu = document.getElementById('huInput').value; const hb = document.getElementById('hbInput').value;
-
-            recordCount++;
-            const rowId = 'record-' + recordCount;
-
-            const tbody = document.getElementById('historyTableBody');
-            const tr = document.createElement('tr');
-            tr.id = rowId;
-            tr.className = 'bg-white border-b hover:bg-slate-50 transition-colors';
-            
-            const modeColor = currentFailureMode === "剪切" ? "text-red-600" : "text-blue-600";
-
-            tr.innerHTML = `
-                <td class="px-3 py-2">${uts}</td>
-                <td class="px-3 py-2">${t}</td>
-                <td class="px-3 py-2 text-slate-500"><strong class="text-red-500">${dh}</strong>/${du}/${dp}/${d}</td>
-                <td class="px-3 py-2 text-slate-500">${hh}/${hu}/${hp}/${hb}</td>
-                <td class="px-3 py-2 font-bold text-slate-800 bg-emerald-50/50">${currentForceN.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
-                <td class="px-3 py-2 font-bold ${modeColor}">${currentFailureMode}</td>
-                <td class="px-3 py-2 text-center">
-                    <button onclick="deleteRecord('${rowId}')" class="text-slate-400 hover:text-red-500 transition-colors" title="刪除此紀錄">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-                    </button>
-                </td>
-            `;
-            
-            tbody.appendChild(tr);
-            tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            if (!hasCalculated) { alert("請先點擊「更新計算」"); return; }
+            const emptyRow = document.getElementById('emptyStateRow'); if (emptyRow) emptyRow.style.display = 'none';
+            const uts=document.getElementById('utsInput').value; const hu=document.getElementById('huInput').value;
+            const dh=document.getElementById('dhInput').value; const dp=document.getElementById('dpInput').value; const du=document.getElementById('duInput').value;
+            recordCount++; const rowId = 'record-' + recordCount; const tbody = document.getElementById('historyTableBody'); const tr = document.createElement('tr'); tr.id = rowId; tr.className = 'bg-white border-b hover:bg-slate-50 transition-colors';
+            const modeColor = currentFailureMode === "剪切斷裂" ? "text-red-600" : "text-blue-600";
+            const shapeLabel = currentShape === 'tri' ? '<span class="text-[8px] bg-blue-50 text-blue-600 px-1 rounded mr-0.5">45°</span>' : '<span class="text-[8px] bg-slate-100 text-slate-600 px-1 rounded mr-0.5">矩形</span>';
+            tr.innerHTML = `<td class="px-2 py-1.5 flex items-center">${shapeLabel}${uts}</td><td class="px-2 py-1.5 font-bold text-indigo-600">${hu}</td><td class="px-2 py-1.5 text-slate-500">${dh}/<strong class="text-red-500">${dp}</strong>/${du}</td><td class="px-2 py-1.5 font-bold text-slate-800 bg-emerald-50/50">${currentForceN.toLocaleString('en-US',{maximumFractionDigits:0})}</td><td class="px-2 py-1.5 font-bold ${modeColor} text-[8px]">${currentFailureMode.substring(0,2)}</td><td class="px-1 py-1.5 text-center"><button onclick="deleteRecord('${rowId}')" class="text-slate-300 hover:text-red-500 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></td>`;
+            tbody.insertBefore(tr, tbody.firstChild); document.getElementById('recordCountLabel').innerText = recordCount;
         }
-
         function deleteRecord(rowId) {
-            const row = document.getElementById(rowId);
-            if (row) row.remove();
-            
-            const tbody = document.getElementById('historyTableBody');
-            const rows = tbody.querySelectorAll('tr:not(#emptyStateRow)');
-            if (rows.length === 0) {
-                const emptyRow = document.getElementById('emptyStateRow');
-                if (emptyRow) emptyRow.style.display = 'table-row';
-            }
+            const row = document.getElementById(rowId); if (row) { row.remove(); recordCount--; document.getElementById('recordCountLabel').innerText = recordCount; }
+            const tbody = document.getElementById('historyTableBody'); if (tbody.querySelectorAll('tr:not(#emptyStateRow)').length === 0) { const emptyRow = document.getElementById('emptyStateRow'); if (emptyRow) emptyRow.style.display = 'table-row'; }
         }
-
-        window.onload = function() {
-            handleInput();
-            executeCalculation(); 
-        };
+        window.onload = function() { runUpdate(); executeCalculation(); };
     </script>
 </body>
 </html>
