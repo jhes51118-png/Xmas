@@ -1,474 +1,255 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>盲孔壓鉚鋁釘拉拔力理論計算機 - 最終完美版</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; overflow: hidden; }
-        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 4px 20px -5px rgba(31, 38, 135, 0.1); }
-        svg path, svg line, svg rect, foreignObject { transition: all 0.2s ease-out; }
-        .math-step { position: relative; padding-left: 1.25rem; margin-bottom: 0.35rem; }
-        .math-step::before { content: ''; position: absolute; left: 0; top: 0.4rem; bottom: -0.2rem; width: 2px; background-color: #e2e8f0; }
-        .math-step:last-child::before { display: none; }
-        .step-dot { position: absolute; left: -0.3rem; top: 0.25rem; width: 0.7rem; height: 0.7rem; border-radius: 50%; background-color: #3b82f6; border: 2px solid #fff; }
-        
-        .svg-dim-box { display: flex; align-items: center; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.9); border: 1px solid #94a3b8; border-radius: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s; box-sizing: border-box; }
-        .svg-dim-box:hover, .svg-dim-box:focus-within { border-color: #3b82f6; background-color: #ffffff; box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3); transform: scale(1.05); z-index: 10; }
-        .svg-dim-label { font-size: 10px; font-weight: 700; color: #475569; padding-left: 3px; user-select: none; cursor: text; }
-        .svg-dim-input { width: 100%; background: transparent; border: none; outline: none; font-size: 11px; font-weight: 800; color: #0f172a; text-align: center; padding: 0 3px 0 0; margin: 0; cursor: text; }
-        
-        .svg-dim-box.indigo-accent { border-color: #a5b4fc; background-color: #eff6ff; }
-        .svg-dim-box.indigo-accent:hover, .svg-dim-box.indigo-accent:focus-within { border-color: #6366f1; box-shadow: 0 2px 5px rgba(99, 102, 241, 0.3); }
-        .svg-dim-box.indigo-accent .svg-dim-label { color: #4338ca; }
-        .svg-dim-box.indigo-accent .svg-dim-input { color: #3730a3; }
-
-        .svg-dim-box.red-accent { border-color: #fca5a5; background-color: #fef2f2; }
-        .svg-dim-box.red-accent:hover, .svg-dim-box.red-accent:focus-within { border-color: #ef4444; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.3); }
-        .svg-dim-box.red-accent .svg-dim-label { color: #b91c1c; }
-        .svg-dim-box.red-accent .svg-dim-input { color: #991b1b; }
-        
-        .table-container::-webkit-scrollbar { height: 6px; width: 6px; }
-        .table-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
-        .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>薄板機殼 沖壓+CMT複合工藝 設計指南</title>
+<style>
+  :root {
+    --navy: #122436; --navy2: #1a3550; --accent: #10b981; /* 改為代表綠能與 CMT 的翡翠綠 */
+    --accent2: #0ea5a5; --bg: #f5f7fa; --card: #ffffff; --border: #e2e8f0; 
+    --text: #1e293b; --muted: #64748b;
+    --warn-bg: #fff4e5; --warn-b: #e8590c; 
+    --ok-bg: #eafaf1; --ok-b: #10b981; 
+    --info-bg: #eef4ff; --info-b: #38bdf8;
+  }
+  * { box-sizing: border-box; }
+  body { 
+      margin: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif; 
+      background: var(--bg); color: var(--text); line-height: 1.75; font-size: 15.5px; 
+  }
+  .wrap { display: flex; max-width: 1440px; margin: 0 auto; min-height: 100vh; }
+  
+  /* Sidebar Styles */
+  nav.sidebar { 
+      width: 250px; flex-shrink: 0; 
+      background: linear-gradient(180deg, var(--navy), var(--navy2)); 
+      color: #e2e8f0; position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 28px 18px; 
+  }
+  nav.sidebar .brand { font-size: 13px; letter-spacing: .5px; color: #38bdf8; text-transform: uppercase; margin-bottom: 4px; }
+  nav.sidebar h1 { font-size: 17px; color: #fff; margin: 0 0 22px; line-height: 1.5; }
+  nav.sidebar a { 
+      display: block; color: #cbd5e1; text-decoration: none; padding: 8px 10px; 
+      border-radius: 7px; font-size: 13.5px; margin-bottom: 2px; transition: background .15s; 
+  }
+  nav.sidebar a:hover { background: rgba(255,255,255,.10); color: #fff; }
+  nav.sidebar .grp { margin-top: 18px; font-size: 11px; color: #6f93c4; text-transform: uppercase; letter-spacing: .6px; padding-left: 10px; }
+  
+  /* Main Content Styles */
+  main { flex: 1; padding: 44px 56px; max-width: 1050px; }
+  
+  header.hero { 
+      background: linear-gradient(135deg, var(--navy), #065f46); /* 深綠色漸層 */
+      color: #fff; padding: 34px 38px; border-radius: 14px; margin-bottom: 36px; 
+  }
+  header.hero .kicker { font-size: 12.5px; letter-spacing: 1px; text-transform: uppercase; opacity: .8; margin-bottom: 8px; }
+  header.hero h1 { margin: 0 0 10px; font-size: 26px; }
+  header.hero p { margin: 0; opacity: .92; font-size: 14.5px; }
+  
+  section { margin-bottom: 52px; scroll-margin-top: 40px; }
+  h2 { font-size: 21px; border-bottom: 2px solid var(--accent); padding-bottom: 9px; margin-bottom: 18px; color: var(--navy); }
+  h3 { font-size: 16.5px; color: var(--navy2); margin: 26px 0 10px; }
+  h4 { font-size: 14.5px; color: var(--accent); margin: 18px 0 6px; }
+  p { margin: 0 0 12px; }
+  
+  /* Table Styles */
+  table { width: 100%; border-collapse: collapse; margin: 14px 0 22px; font-size: 13.6px; background: var(--card); }
+  th, td { border: 1px solid var(--border); padding: 12px 14px; text-align: left; vertical-align: top; }
+  th { background: #eef2f7; font-weight: 600; color: var(--navy); }
+  tr:nth-child(even) td { background: #fafbfd; }
+  
+  /* Callouts & Tags */
+  .callout { background: var(--info-bg); border-left: 4px solid var(--info-b); padding: 13px 18px; border-radius: 8px; margin: 16px 0; font-size: 14.3px; }
+  .callout.warn { background: var(--warn-bg); border-left-color: var(--warn-b); }
+  .callout.ok { background: var(--ok-bg); border-left-color: var(--ok-b); }
+  .callout b { color: var(--navy); }
+  
+  .tag { display: inline-block; background: var(--accent); color: #fff; font-size: 11.5px; padding: 3px 10px; border-radius: 12px; margin: 0 5px 5px 0; }
+  .tag.blue { background: #38bdf8; }
+  .tag.gray { background: #64748b; }
+  
+  /* Cards & Grids */
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 16px 0; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 16px 0; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+  .card h4 { margin-top: 0; display: flex; align-items: center; }
+  .card h4 span { font-size: 1.2rem; margin-right: 8px; }
+  
+  .badge-cost { color: #059669; font-weight: 600; }
+  .badge-rigid { color: #0284c7; font-weight: 600; }
+  .badge-surf { color: #8b5cf6; font-weight: 600; }
+  
+  .foot { margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12.5px; }
+  
+  /* 原理步驟圖 */
+  .flow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 18px 0; }
+  .flow .step { background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; padding: 10px 14px; font-size: 13.3px; min-width: 130px; text-align: center; }
+  .flow .arrow { color: var(--muted); font-size: 18px; font-weight: bold; }
+  
+  @media (max-width:900px){ .wrap{flex-direction:column} nav.sidebar{position:relative;height:auto;width:100%} main{padding:28px 20px} .grid3, .grid4{grid-template-columns:1fr} }
+</style>
 </head>
-<body class="h-screen p-2 md:p-3 text-slate-800 flex justify-center items-start overflow-hidden">
+<body>
+<div class="wrap">
+  <nav class="sidebar">
+    <div class="brand">Hybrid Manufacturing</div>
+    <h1>薄板機殼 沖壓+CMT<br>DED 設計指南</h1>
+    <a href="#overview">1. 專案背景與痛點</a>
+    <a href="#comparison">2. 工藝對決：三大 DED 評估</a>
+    <a href="#cmt-core">3. CMT 核心原理解析</a>
+    <a href="#advantages">4. 1.8mm 薄板專屬優勢</a>
+    <a href="#cnc-process">5. 複合加工 (先印後銑) 流程</a>
+    <a href="#conclusion">6. 決策總結</a>
+    
+    <div class="grp">Context Parameters</div>
+    <a style="opacity:.75;cursor:default" href="#">基材：1.8mm 鋁板</a>
+    <a style="opacity:.75;cursor:default" href="#">特徵：局部增材 Boss 柱</a>
+    <a style="opacity:.75;cursor:default" href="#">後製：CNC 銑削成型</a>
+  </nav>
 
-    <div class="max-w-[1400px] w-full h-full grid grid-cols-1 lg:grid-cols-10 gap-3">
-        
-        <!-- ================= 左側面板：佔 6/10 ================= -->
-        <div class="lg:col-span-6 flex flex-col gap-3 h-full overflow-hidden">
-            
-            <!-- 上方：動態示意圖 (自動填滿空間) -->
-            <div class="glass-panel rounded-xl p-3 relative flex flex-col flex-1 overflow-hidden">
-                <div class="flex items-center justify-between gap-2 mb-2 flex-shrink-0">
-                    <h1 class="text-lg font-bold text-slate-800 flex items-center gap-2 truncate">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><path d="M14 4c0-1.1.9-2 2-2"/><path d="M20 2c1.1 0 2 .9 2 2"/><path d="M22 8c0 1.1-.9 2-2 2"/><path d="M16 10c-1.1 0-2-.9-2-2"/><path d="M8 4c0-1.1.9-2 2-2"/><path d="M4 2c1.1 0 2 .9 2 2"/><path d="M2 8c0 1.1.9 2 2 2"/><path d="M8 10c-1.1 0-2-.9-2-2"/><path d="M14 20c0 1.1.9 2 2 2"/><path d="M20 22c1.1 0 2-.9 2-2"/><path d="M22 16c0-1.1-.9-2-2-2"/><path d="M16 14c-1.1 0-2 .9-2 2"/><path d="M8 20c0 1.1.9 2 2 2"/><path d="M4 22c1.1 0 2-.9 2-2"/><path d="M2 16c0-1.1.9-2 2 2"/><path d="M8 14c-1.1 0-2 .9-2 2"/></svg>
-                        盲孔壓鉚計算機 (齊平)
-                    </h1>
-                    <span class="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm tracking-wide flex-shrink-0">💡點擊圖面數字修改</span>
-                </div>
-                
-                <div class="w-full bg-slate-50 border border-slate-200 rounded-lg flex justify-center items-center flex-1 p-2 overflow-hidden">
-                    <svg id="schematic" viewBox="0 0 800 340" class="w-full h-full drop-shadow-sm" preserveAspectRatio="xMidYMid meet">
-                        <defs>
-                            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" /></marker>
-                            <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444" /></marker>
-                            <marker id="arrow-v" viewBox="0 0 10 10" refX="5" refY="9" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 0 L 5 10 L 10 0 z" fill="#64748b" /></marker>
-                            <marker id="arrow-v-rev" viewBox="0 0 10 10" refX="5" refY="1" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 10 L 5 0 L 10 10 z" fill="#64748b" /></marker>
-                            <linearGradient id="metalNut" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#94a3b8" /><stop offset="50%" stop-color="#f8fafc" /><stop offset="100%" stop-color="#64748b" /></linearGradient>
-                            <linearGradient id="metalPlate" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#e2e8f0" /><stop offset="100%" stop-color="#94a3b8" /></linearGradient>
-                            <pattern id="hatch" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="8" stroke="#cbd5e1" stroke-width="2" /></pattern>
-                            <pattern id="plateHatch" width="8" height="8" patternTransform="rotate(-45 0 0)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="8" stroke="#94a3b8" stroke-width="1.5" /></pattern>
-                        </defs>
+  <main>
+    <header class="hero">
+      <div class="kicker">Notebook Chassis &middot; Hybrid Manufacturing Guide</div>
+      <h1>顛覆雷射迷思：1.8mm 薄板機殼 CMT Advanced 局部增材指南</h1>
+      <p>目標：在 1.8mm 沖壓鋁板上，8秒內快速增材 Boss 柱毛胚，且<b>背面絕不能產生熱印痕或變形</b>。後續進入 CNC 機台精銑成型。<br>
+      核心決策：棄用昂貴的 DED-雷射與會燒穿板材的傳統 DED-電弧，全面導入 <b>CMT Advanced (冷金屬過渡) 電弧技術</b>。</p>
+    </header>
 
-                        <!-- 中心線與紅色表面基準線 -->
-                        <line id="centerLine" x1="450" y1="10" x2="450" y2="330" stroke="#94a3b8" stroke-dasharray="10 5 2 5" stroke-width="1" />
-                        <line id="svgRedRefLine" x1="20" y1="180" x2="780" y2="180" stroke="#ef4444" stroke-width="2" />
-                        <text id="svgRedRefText" x="30" y="174" fill="#ef4444" font-size="11" font-weight="bold">齊平基準面 (Top Surface)</text>
-
-                        <!-- 鋁板(Plate) -->
-                        <path id="svgPlateL" d="" fill="url(#metalPlate)" stroke="#475569" stroke-width="1.5" stroke-linejoin="round"/>
-                        <path id="svgPlateR" d="" fill="url(#metalPlate)" stroke="#475569" stroke-width="1.5" stroke-linejoin="round"/>
-                        <path id="svgPlateLHatch" d="" fill="url(#plateHatch)" stroke-linejoin="round"/>
-                        <path id="svgPlateRHatch" d="" fill="url(#plateHatch)" stroke-linejoin="round"/>
-                        
-                        <!-- 擠入的鋁材(Squeeze) -->
-                        <path id="svgSqueezeL" d="" fill="#475569" opacity="0.8" stroke="#334155" stroke-width="0.5"/>
-                        <path id="svgSqueezeR" d="" fill="#475569" opacity="0.8" stroke="#334155" stroke-width="0.5"/>
-                        
-                        <!-- 鋁釘(Nut) -->
-                        <path id="svgNut" d="" fill="url(#metalNut)" stroke="#334155" stroke-width="1.5" stroke-linejoin="round"/>
-                        <path id="svgNutHatch" d="" fill="url(#hatch)" stroke-linejoin="round"/>
-
-                        <!-- 拉力箭頭 F -->
-                        <path id="fArrow" d="M 450 40 L 450 15" stroke="#ef4444" stroke-width="2.5" marker-end="url(#arrow-red)" fill="none" />
-                        <text id="fText" x="460" y="30" fill="#ef4444" font-weight="bold" font-size="14">拉拔力 (F)</text>
-
-                        <!-- 剪切與潰縮標示線 (移至極左側防遮擋) -->
-                        <line id="svgShearLeft" stroke="#ef4444" stroke-dasharray="4 3" stroke-width="1.5" />
-                        <line id="svgShearRight" stroke="#ef4444" stroke-dasharray="4 3" stroke-width="1.5" />
-                        <rect id="svgShearBg" width="125" height="20" fill="#fef2f2" fill-opacity="0.9" rx="3" stroke="#fecaca"/>
-                        <text id="svgShearText" fill="#dc2626" font-size="10" font-weight="bold">← 剪切面</text>
-
-                        <line id="svgBearingLeft" stroke="#3b82f6" stroke-dasharray="3 2" stroke-width="1.5" />
-                        <line id="svgBearingRight" stroke="#3b82f6" stroke-dasharray="3 2" stroke-width="1.5" />
-                        <rect id="svgBearingBg" width="135" height="20" fill="#eff6ff" fill-opacity="0.9" rx="3" stroke="#bfdbfe"/>
-                        <text id="svgBearingText" fill="#2563eb" font-size="10" font-weight="bold">← 潰縮面</text>
-
-                        <!-- 尺寸細線 -->
-                        <g id="dimensions_lines_d" stroke-width="0.8">
-                            <line id="dimDh_line" stroke="#64748b" marker-start="url(#arrow)" marker-end="url(#arrow)" />
-                            <line id="dimDh_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimDh_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
-                            <line id="dimDu_line" stroke="#64748b" marker-start="url(#arrow)" marker-end="url(#arrow)" />
-                            <line id="dimDu_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimDu_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
-                            <line id="dimDp_line" stroke="#64748b" marker-start="url(#arrow)" marker-end="url(#arrow)" />
-                            <line id="dimDp_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimDp_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
-                            <line id="dimD_line" stroke="#64748b" marker-start="url(#arrow)" marker-end="url(#arrow)" />
-                            <line id="dimD_ext1" stroke="#94a3b8" stroke-dasharray="3" /><line id="dimD_ext2" stroke="#94a3b8" stroke-dasharray="3" />
-                            <line id="dimT_line" stroke="#ef4444" marker-start="url(#arrow-red)" marker-end="url(#arrow-red)" stroke-width="2"/>
-                            <line id="dimT_ext1" stroke="#fecaca" stroke-dasharray="3" /><line id="dimT_ext2" stroke="#fecaca" stroke-dasharray="3" />
-                        </g>
-                        <g id="dimensions_lines_h" stroke-width="0.8">
-                            <line id="dimHh_line" stroke="#64748b" marker-start="url(#arrow-v-rev)" marker-end="url(#arrow-v)" />
-                            <line id="dimHh_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimHh_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
-                            <line id="dimHu_line" stroke="#64748b" marker-start="url(#arrow-v-rev)" marker-end="url(#arrow-v)" />
-                            <line id="dimHu_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimHu_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
-                            <line id="dimHp_line" stroke="#64748b" marker-start="url(#arrow-v-rev)" marker-end="url(#arrow-v)" />
-                            <line id="dimHp_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimHp_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
-                            <line id="dimHb_line" stroke="#64748b" marker-start="url(#arrow-v-rev)" marker-end="url(#arrow-v)" />
-                            <line id="dimHb_ext1" stroke="#cbd5e1" stroke-dasharray="3" /><line id="dimHb_ext2" stroke="#cbd5e1" stroke-dasharray="3" />
-                            <line id="dimHu_leader" stroke="#64748b" stroke-dasharray="2" stroke-width="1" style="display:none;" />
-                        </g>
-
-                        <!-- 輸入框 -->
-                        <foreignObject id="dimDh_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box red-accent"><label class="svg-dim-label">Dh=</label><input type="number" id="svgInput_dh" class="svg-dim-input" oninput="handleSync('dh', this.value)" step="0.1" /></div></foreignObject>
-                        <foreignObject id="dimDu_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Du=</label><input type="number" id="svgInput_du" class="svg-dim-input" oninput="handleSync('du', this.value)" step="0.1" /></div></foreignObject>
-                        <foreignObject id="dimDp_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box" title="擠料環"><label class="svg-dim-label">Dp=</label><input type="number" id="svgInput_dp" class="svg-dim-input" oninput="handleSync('dp', this.value)" step="0.1" /></div></foreignObject>
-                        <foreignObject id="dimD_fo" width="65" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">D=</label><input type="number" id="svgInput_d" class="svg-dim-input" oninput="handleSync('d', this.value)" step="0.1" /></div></foreignObject>
-                        
-                        <foreignObject id="dimT_fo" width="80" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box indigo-accent"><label class="svg-dim-label">Hu=t=</label><input type="number" id="svgInput_t" class="svg-dim-input" oninput="handleSync('hu', this.value)" step="0.05" /></div></foreignObject>
-                        
-                        <foreignObject id="dimHh_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hh=</label><input type="number" id="svgInput_hh" class="svg-dim-input" oninput="handleSync('hh', this.value)" step="0.1" /></div></foreignObject>
-                        <foreignObject id="dimHu_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box indigo-accent"><label class="svg-dim-label">Hu=</label><input type="number" id="svgInput_hu" class="svg-dim-input" oninput="handleSync('hu', this.value)" step="0.1" /></div></foreignObject>
-                        <foreignObject id="dimHp_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hp=</label><input type="number" id="svgInput_hp" class="svg-dim-input" oninput="handleSync('hp', this.value)" step="0.1" /></div></foreignObject>
-                        <foreignObject id="dimHb_fo" width="70" height="22"><div xmlns="http://www.w3.org/1999/xhtml" class="svg-dim-box"><label class="svg-dim-label">Hb=</label><input type="number" id="svgInput_hb" class="svg-dim-input" oninput="handleSync('hb', this.value)" step="0.1" /></div></foreignObject>
-                    </svg>
-                </div>
-            </div>
-
-            <!-- 下方：紀錄比較清單 (高度加高至 250px) -->
-            <div class="glass-panel rounded-xl flex flex-col h-[250px] flex-shrink-0">
-                <div class="p-2 flex justify-between items-center bg-slate-50 border-b border-slate-200">
-                    <span class="text-xs font-bold text-slate-700">📋 紀錄比較清單 (<span id="recordCountLabel">0</span>)</span>
-                    <button onclick="document.getElementById('historyTableBody').innerHTML='<tr id=\'emptyStateRow\' class=\'bg-white border-b\'><td colspan=\'6\' class=\'px-2 py-6 text-center text-slate-400\'>尚未新增任何紀錄。點選右方「更新計算與+紀錄」即可比對。</td></tr>'; recordCount=0; document.getElementById('recordCountLabel').innerText=0;" class="text-[10px] text-slate-400 hover:text-red-500">清除全部</button>
-                </div>
-                <div class="table-container overflow-auto flex-1 bg-white">
-                    <table class="w-full text-[10px] text-left text-slate-600 whitespace-nowrap">
-                        <thead class="text-[9px] text-slate-700 uppercase bg-slate-100 sticky top-0 shadow-sm z-10">
-                            <tr><th class="px-2 py-1.5">形狀/UTS</th><th class="px-2 py-1.5">Hu(=t)</th><th class="px-2 py-1.5">Dh/Dp/Du</th><th class="px-2 py-1.5 text-emerald-700">拉力(N)</th><th class="px-2 py-1.5">最弱模式</th><th class="px-1 py-1.5 text-center">刪</th></tr>
-                        </thead>
-                        <tbody id="historyTableBody">
-                            <tr id="emptyStateRow" class="bg-white border-b"><td colspan="6" class="px-2 py-6 text-center text-slate-400">尚未新增任何紀錄。點選右方「更新計算與+紀錄」即可比對。</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+    <section id="overview">
+      <h2>1. 專案背景與技術痛點</h2>
+      <p>在系統件與機殼結構的開發上，複合製造（先快速局部堆疊粗胚，再用 CNC 銑削成精密特徵）能大幅節省整塊鋁料掏空的 CNC 時間與廢料。但當母材厚度僅有 <b>1.8mm 鋁板</b>時，面臨極大挑戰：</p>
+      <div class="grid3">
+        <div class="card">
+          <h4 class="badge-rigid">痛點一：致命熱變形</h4>
+          <p style="margin:0;font-size:14px">鋁材導熱極快。若熱源控制不當，熱量瞬間穿透 1.8mm 薄板，會導致嚴重翹曲（失去平面度，CNC 無法夾持）甚至直接燒穿。</p>
         </div>
-
-        <!-- ================= 右側面板：佔 4/10 ================= -->
-        <div class="lg:col-span-4 flex flex-col gap-3 h-full overflow-hidden">
-            
-            <!-- 參數設定 -->
-            <div class="glass-panel rounded-xl p-3 flex-shrink-0">
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">材質 UTS (MPa)</label>
-                        <div class="flex items-center gap-1">
-                            <select id="materialSelect" class="flex-1 rounded border border-slate-300 px-1 py-1 bg-white text-[10px] outline-none" onchange="updateUTS()">
-                                <option value="110">AL 1100</option>
-                                <option value="228" selected>AL 5052</option>
-                                <option value="310">AL 6061</option>
-                                <option value="custom">自訂</option>
-                            </select>
-                            <input type="number" id="utsInput" value="228" class="w-10 rounded border border-slate-300 px-1 py-1 text-[10px] text-center outline-none" oninput="handleSync('uts', this.value)">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">槽底幾何 (Profile)</label>
-                        <div class="flex bg-slate-200 rounded p-0.5 w-full gap-0.5">
-                            <button id="btnShapeRect" onclick="setShape('rect')" class="flex-1 text-[9px] py-1 rounded bg-white font-bold shadow-sm text-indigo-600 transition-all">矩形</button>
-                            <button id="btnShapeTri" onclick="setShape('tri')" class="flex-1 text-[9px] py-1 rounded text-slate-600 font-semibold hover:text-slate-800 transition-all flex justify-center items-center gap-0.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18L12 4z"/></svg>45°錐
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 鋁釘幾何 -->
-            <div class="glass-panel rounded-xl p-3 flex-shrink-0">
-                <div class="grid grid-cols-4 gap-1.5">
-                    <div class="space-y-1.5">
-                        <div><label class="block text-[9px] font-bold text-red-600 mb-0.5">大頭Dh</label><input type="number" id="dhInput" value="4.6" step="0.1" class="w-full rounded border border-red-300 bg-red-50 px-1 py-0.5 text-[10px] text-center font-bold" oninput="handleSync('dh', this.value)"></div>
-                        <div><label class="block text-[9px] font-semibold text-slate-600 mb-0.5">頭高Hh</label><input type="number" id="hhInput" value="0.3" step="0.1" class="w-full rounded border border-slate-300 px-1 py-0.5 text-[10px] text-center" oninput="handleSync('hh', this.value)"></div>
-                    </div>
-                    <div class="space-y-1.5">
-                        <div><label class="block text-[9px] font-semibold text-slate-600 mb-0.5">退刀Du</label><input type="number" id="duInput" value="3.2" step="0.1" class="w-full rounded border border-slate-300 px-1 py-0.5 text-[10px] text-center" oninput="handleSync('du', this.value)"></div>
-                        <div><label class="block text-[9px] font-bold text-indigo-700 mb-0.5">槽高Hu(=t)</label><input type="number" id="huInput" value="0.3" step="0.05" class="w-full rounded border border-indigo-300 bg-indigo-50 px-1 py-0.5 text-[10px] text-center font-bold" oninput="handleSync('hu', this.value)"></div>
-                    </div>
-                    <div class="space-y-1.5">
-                        <div><label class="block text-[9px] font-semibold text-slate-600 mb-0.5">擠料Dp</label><input type="number" id="dpInput" value="4.2" step="0.1" class="w-full rounded border border-slate-300 px-1 py-0.5 text-[10px] text-center" oninput="handleSync('dp', this.value)"></div>
-                        <div><label class="block text-[9px] font-semibold text-slate-600 mb-0.5">擠高Hp</label><input type="number" id="hpInput" value="0.3" step="0.1" class="w-full rounded border border-slate-300 px-1 py-0.5 text-[10px] text-center" oninput="handleSync('hp', this.value)"></div>
-                    </div>
-                    <div class="space-y-1.5">
-                        <div><label class="block text-[9px] font-semibold text-slate-600 mb-0.5">盲孔D</label><input type="number" id="dInput" value="3.6" step="0.1" class="w-full rounded border border-slate-300 px-1 py-0.5 text-[10px] text-center" oninput="handleSync('d', this.value)"></div>
-                        <div><label class="block text-[9px] font-semibold text-slate-600 mb-0.5">孔長Hb</label><input type="number" id="hbInput" value="2.3" step="0.1" class="w-full rounded border border-slate-300 px-1 py-0.5 text-[10px] text-center" oninput="handleSync('hb', this.value)"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 計算結果與公式 (自適應剩餘高度，可滾動) -->
-            <div class="glass-panel rounded-xl p-3 bg-gradient-to-br from-white to-slate-50 border-emerald-100 flex-1 overflow-y-auto flex flex-col">
-                <button id="calcBtn" onclick="executeCalculation(true)" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 rounded-lg shadow-md transition-all active:scale-95 flex justify-center items-center gap-1 text-[11px] mb-2 flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                    <span>更新計算與 + 紀錄</span>
-                </button>
-
-                <!-- 結果數字框縮小與扁平化 -->
-                <div id="resultsSection" class="grid grid-cols-2 gap-2 mb-2 transition-opacity duration-300 flex-shrink-0">
-                    <div class="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm text-center flex flex-col justify-center">
-                        <div class="flex justify-center items-baseline gap-0.5">
-                            <span id="resultNewton" class="text-xl font-black text-slate-800">---</span>
-                            <span class="text-[9px] text-slate-500 font-bold">N</span>
-                        </div>
-                        <p class="text-[8px] text-slate-400 mt-0.5">極限牛頓力</p>
-                    </div>
-                    <div class="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm text-center flex flex-col justify-center">
-                        <div class="flex justify-center items-baseline gap-0.5">
-                            <span id="resultKgf" class="text-xl font-black text-emerald-600">---</span>
-                            <span class="text-[9px] text-emerald-500 font-bold">kgf</span>
-                        </div>
-                        <p class="text-[8px] text-slate-400 mt-0.5">等效公斤力</p>
-                    </div>
-                </div>
-
-                <!-- 物理模型公式區塊 (採 先列公式 -> 下行帶入數字 格式) -->
-                <div id="logicSection" class="space-y-1 text-slate-700 text-[9px] transition-opacity duration-300 pb-1 flex-1">
-                    <div class="flex justify-between items-center border-b border-slate-100 pb-0.5 mb-1">
-                        <h3 class="text-[10px] font-bold text-slate-800">物理模型展開公式</h3>
-                    </div>
-                    <div class="math-step"><div class="step-dot"></div><h4 class="font-bold mb-0.5" id="logic-step1-title">Step 1: 幾何</h4><div class="bg-slate-100 p-1.5 rounded font-mono leading-tight" id="logic-step1-formula"></div></div>
-                    <div class="math-step"><div class="step-dot"></div><h4 class="font-bold mb-0.5" id="logic-step2-title">Step 2: 剪切 (A)</h4><div class="bg-slate-100 p-1.5 rounded font-mono leading-tight" id="logic-shear-formula"></div></div>
-                    <div class="math-step"><div class="step-dot"></div><h4 class="font-bold mb-0.5" id="logic-step3-title">Step 3: 潰縮 (B)</h4><div class="bg-slate-100 p-1.5 rounded font-mono leading-tight" id="logic-crush-formula"></div></div>
-                    <div class="math-step"><div class="step-dot"></div><h4 class="font-bold mb-0.5">Step 4: 理論拉力</h4><div class="bg-indigo-50 p-1 rounded font-mono border border-indigo-100 flex items-center flex-wrap gap-1">F = min(A, B) = <strong class="text-emerald-600 text-xs"><span id="math-f-final">?</span> N</strong><span id="math-failure-mode" class="px-1 py-0.5 rounded text-white shadow-sm text-[8px] font-bold"></span></div></div>
-                </div>
-            </div>
+        <div class="card">
+          <h4 class="badge-surf">痛點二：背面外觀印痕</h4>
+          <p style="margin:0;font-size:14px">機殼外觀面（背面）通常有嚴格標準。即使沒燒穿，過大的熱影響區（HAZ）也會在背面留下熱變色或凸起印痕。</p>
         </div>
+        <div class="card">
+          <h4 class="badge-cost">痛點三：雷射光學反射</h4>
+          <p style="margin:0;font-size:14px">平滑鋁合金對紅外雷射反射率極高。要強行建立熔池需瞬間極高功率，反而對薄板造成巨大熱衝擊，且雷射粉末成本極高。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="comparison">
+      <h2>2. 工藝對決：三大 DED 技術評估矩陣</h2>
+      <p>針對「在 1.8mm 鋁板上快速印柱子」此單一任務，進行技術收斂評估：</p>
+      <table>
+        <tr>
+          <th style="width:20%">評估指標</th>
+          <th style="width:26%">DED-雷射 (粉末/線材)</th>
+          <th style="width:26%; color:#e8590c">傳統 DED-電弧 (MIG/MAG)</th>
+          <th style="width:28%; background-color:#eafaf1; color:#065f46">CMT Advanced (冷金屬過渡)</th>
+        </tr>
+        <tr>
+          <td><b>熱輸入與薄板變形</b></td>
+          <td>低。熱影響區小。</td>
+          <td><b style="color:red">極高。極易燒穿或造成整片翹曲。</b></td>
+          <td style="background-color:#f0fdf4"><b>極低。冷熱交替輸出，不燒穿薄板。</b></td>
+        </tr>
+        <tr>
+          <td><b>背面外觀印痕</b></td>
+          <td>優良。</td>
+          <td>差。熱變色嚴重，常伴隨大量飛濺。</td>
+          <td style="background-color:#f0fdf4"><b>優良。100% 無飛濺，外觀乾淨。</b></td>
+        </tr>
+        <tr>
+          <td><b>組織緻密度 (抗銑削)</b></td>
+          <td>高。但鋁粉易受潮生氣孔。</td>
+          <td>一般。極易產生吸氫氣孔。</td>
+          <td style="background-color:#f0fdf4"><b>極優。絲材機械攪拌熔池，有效排氣孔。</b></td>
+        </tr>
+        <tr>
+          <td><b>設備與耗材成本</b></td>
+          <td>極昂貴（雷射源 + 粉末）。</td>
+          <td>低廉。</td>
+          <td style="background-color:#f0fdf4"><b>低廉。使用標準鋁銲絲，且能耗少30%。</b></td>
+        </tr>
+        <tr>
+          <td><b>決策建議</b></td>
+          <td><span class="tag blue">次選 (成本過高)</span></td>
+          <td><span class="tag gray">排除 (無法加工薄板)</span></td>
+          <td style="background-color:#f0fdf4"><span class="tag">首選平台</span></td>
+        </tr>
+      </table>
+      <div class="callout ok">
+        <b>廠商宣稱驗證：</b> 廠商指出「雷射加熱基材，電弧加熱銲絲」，這在物理上反映了雷射克服鋁反光的高熱衝擊痛點。但唯有使用 <b>Fronius 的 CMT 設備</b>，才能真正在電弧製程中將總熱輸入降到不留背痕的程度。
+      </div>
+    </section>
+
+    <section id="cmt-core">
+      <h2>3. CMT 核心原理解析：為何它不燒穿板材？</h2>
+      <p>CMT (Cold Metal Transfer) 顛覆了傳統電弧依靠「極大電流炸斷銲絲」的物理過程。它將<b>「電流控制」</b>與伺服馬達的<b>「高頻機械運動」</b>完美同步：</p>
+      
+      <div class="flow">
+        <div class="step">
+          <b>Step 1. 送絲與探測</b><br>
+          <span style="font-size:12px; color:#64748b">銲絲前送，電弧燃燒預熱鋁板。</span>
+        </div>
+        <div class="arrow">→</div>
+        <div class="step">
+          <b>Step 2. 瞬間降流</b><br>
+          <span style="font-size:12px; color:#64748b">接觸熔池短路瞬間，電流降至近乎零。</span>
+        </div>
+        <div class="arrow">→</div>
+        <div class="step" style="border-color:#e8590c">
+          <b style="color:#e8590c">Step 3. 物理抽回 (關鍵)</b><br>
+          <span style="font-size:12px; color:#64748b">馬達向後抽絲，用拉力分離熔滴。</span>
+        </div>
+        <div class="arrow">→</div>
+        <div class="step">
+          <b>Step 4. 重新起弧</b><br>
+          <span style="font-size:12px; color:#64748b">重新送絲起弧。每秒循環達 70 次。</span>
+        </div>
+      </div>
+      
+      <div class="callout">
+        <b>無電流的「冷」過渡：</b> 因為熔滴是在幾乎沒有電流的狀態下被「物理拉斷」滴入熔池，所以熱輸入極低，且完全沒有炸裂產生的飛濺。這賦予了熔池充分的冷卻時間，保護 1.8mm 鋁板免於熱穿透。
+      </div>
+    </section>
+
+    <section id="advantages">
+      <h2>4. 1.8mm 薄板專屬優勢 (CMT Advanced 配方)</h2>
+      <div class="grid4">
+        <div class="card">
+          <h4><span>⚡</span> 智能極性交替</h4>
+          <p style="font-size:13.5px">交直流 (AC/DC) 疊加。能在短路階段精準逆轉極性，達成冷熱交替，確保 Boss 柱有夠高的沉積道挺度（高寬比），卻不將熱量下傳。</p>
+        </div>
+        <div class="card">
+          <h4><span>🚫</span> 100% 無飛濺</h4>
+          <p style="font-size:13.5px">透過機械抽絲取代電壓反饋，徹底消除傳統 MIG 銲接在鋁板上留下的難看金屬渣，保護外觀面免受二次傷害。</p>
+        </div>
+        <div class="card">
+          <h4><span>🌪️</span> 物理排氣孔</h4>
+          <p style="font-size:13.5px">銲絲每秒幾十次的進退動作，等於在<b>不停地對熔池進行機械攪拌</b>。這能有效抑制鋁合金最致命的氣孔與未熔合缺陷。</p>
+        </div>
+        <div class="card">
+          <h4><span>💰</span> 綠色高效能</h4>
+          <p style="font-size:13.5px">使用低成本 ER系列 鋁銲絲，且透過精準熱控制，在同等 8秒 熔絲效率下，能耗比傳統製程減少 30%。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="conclusion">
+      <h2>5. 決策總結</h2>
+      <div class="callout ok">
+        <b>設計指引定調：</b><br>
+        在「1.8mm 薄板局部增材 + CNC 精銑」的複合製程中，<b>全面推薦採用 CMT Advanced 電弧技術</b>。<br><br>
+        它不僅完美破解了傳統電弧「必定燒穿與變形」的魔咒，更具備了雷射 DED 無法比擬的<b>低設備成本、低耗材費用與免粉末工安風險</b>優勢。同時，其特有的熔池攪拌效應，能提供極佳的內部緻密度，確保 Boss 柱在後續承受 CNC 強大切削力時不會斷裂。
+      </div>
+      <p style="font-size: 14px; color: var(--muted); margin-top: 20px;">
+        * 現場驗證建議：要求供應商直接在 1.8mm 鋁板試片上進行 8 秒成型測試，翻看背面無熱痕、放上大理石平台打表無翹曲，即可放行進入量產評估。
+      </p>
+    </section>
+
+    <div class="foot">
+      文件狀態：發行版 v1.0 | 應用範圍：筆記型電腦系統件、鋁合金機殼薄板件複合增材製造。
     </div>
-
-    <script>
-        let currentForceN = 0; let currentForceKgf = 0; let currentFailureMode = "";
-        let recordCount = 0; let isCalculating = false; let hasCalculated = false;
-        let currentShape = 'rect';
-
-        function setShape(shape) {
-            currentShape = shape;
-            document.getElementById('btnShapeRect').className = shape === 'rect' ? 'flex-1 text-[9px] py-1 rounded bg-white font-bold shadow-sm text-indigo-600 transition-all' : 'flex-1 text-[9px] py-1 rounded text-slate-600 font-semibold hover:text-slate-800 transition-all';
-            document.getElementById('btnShapeTri').className = shape === 'tri' ? 'flex-1 text-[9px] py-1 rounded bg-white font-bold shadow-sm text-indigo-600 transition-all flex justify-center items-center gap-0.5' : 'flex-1 text-[9px] py-1 rounded text-slate-600 font-semibold hover:text-slate-800 transition-all flex justify-center items-center gap-0.5';
-            runUpdate();
-        }
-        
-        function updateValueSafe(id, valStr) { const el = document.getElementById(id); if (el && el !== document.activeElement) el.value = valStr; }
-        
-        function handleSync(sourceId, valStr) {
-            if (valStr === '') return; const val = parseFloat(valStr); if (isNaN(val)) return;
-            if (sourceId === 'hu' || sourceId === 't') { 
-                updateValueSafe('huInput', valStr); updateValueSafe('svgInput_hu', valStr); 
-                updateValueSafe('svgInput_t', valStr);
-            } else { 
-                updateValueSafe(sourceId + 'Input', valStr); updateValueSafe('svgInput_' + sourceId, valStr); 
-            }
-            runUpdate();
-        }
-        
-        function updateUTS() { const select = document.getElementById('materialSelect'); if (select.value !== 'custom') updateValueSafe('utsInput', select.value); runUpdate(); }
-        function safeSetText(id, txt) { const el = document.getElementById(id); if (el) el.innerText = txt; }
-
-        function runUpdate() {
-            const uts = parseFloat(document.getElementById('utsInput').value)||0; const hu = parseFloat(document.getElementById('huInput').value)||0;
-            const dh = parseFloat(document.getElementById('dhInput').value)||0; const dp = parseFloat(document.getElementById('dpInput').value)||0;
-            const du = parseFloat(document.getElementById('duInput').value)||0; const d = parseFloat(document.getElementById('dInput').value)||0;
-            const hh = parseFloat(document.getElementById('hhInput').value)||0; const hp = parseFloat(document.getElementById('hpInput').value)||0;
-            const hb = parseFloat(document.getElementById('hbInput').value)||0; const t = hu;
-            updateSVG({dh, dp, du, d, hh, hp, hu, hb, t});
-            if (hasCalculated) { document.getElementById('resultsSection').classList.add('opacity-40'); document.getElementById('logicSection').classList.add('opacity-40'); }
-        }
-
-        async function executeCalculation(autoRecord = false) {
-            if (isCalculating) return; isCalculating = true;
-            const btn = document.getElementById('calcBtn'); const originalContent = btn.innerHTML;
-            btn.innerHTML = `<svg class="animate-spin h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>計算中...</span>`;
-            btn.classList.add('bg-indigo-400', 'cursor-not-allowed'); 
-            await new Promise(resolve => setTimeout(resolve, 300));
-            
-            performMathLogic();
-            
-            btn.innerHTML = originalContent; btn.classList.remove('bg-indigo-400', 'cursor-not-allowed');
-            document.getElementById('resultsSection').classList.remove('opacity-40'); document.getElementById('logicSection').classList.remove('opacity-40');
-            isCalculating = false; hasCalculated = true;
-            
-            if (autoRecord) addRecord();
-        }
-
-        // ================== 重構：雙行公式帶入數值 ==================
-        function performMathLogic() {
-            const uts = parseFloat(document.getElementById('utsInput').value)||0; const hu = parseFloat(document.getElementById('huInput').value)||0;
-            const dh = parseFloat(document.getElementById('dhInput').value)||0; const du = parseFloat(document.getElementById('duInput').value)||0;
-            const t_eff = hu; let areaShear=0, areaBearing=0, forceShear=0, forceCrush=0;
-
-            if (currentShape === 'tri') {
-                const d_avg = (dh + du) / 2; areaShear = Math.PI * d_avg * t_eff;
-                areaBearing = dh > du ? (Math.PI / 4) * (Math.pow(dh, 2) - Math.pow(du, 2)) : 0;
-                forceShear = areaShear * (uts * 0.6); forceCrush = areaBearing * uts * 1.414;
-                
-                document.getElementById('logic-step1-formula').innerHTML = `<div class="text-indigo-600 font-bold">t_eff = Hu = ${t_eff.toFixed(2)} mm</div>`;
-                document.getElementById('logic-step2-title').innerHTML = `Step 2: 剪切 A (<span class="font-serif italic text-red-600">沿斜面平均徑 Davg</span>)`;
-                document.getElementById('logic-shear-formula').innerHTML = `
-                    <div class="text-slate-600">D_avg = (Dh + Du) / 2</div>
-                    <div class="text-slate-500 mb-1">D_avg = (${dh.toFixed(2)} + ${du.toFixed(2)}) / 2 = ${d_avg.toFixed(2)} mm</div>
-                    <div class="text-slate-600">A_sh = π × D_avg × t_eff</div>
-                    <div class="text-slate-500 mb-1">A_sh = π × ${d_avg.toFixed(2)} × ${t_eff.toFixed(2)} = ${areaShear.toFixed(1)} mm²</div>
-                    <div class="text-slate-600">F_sh = A_sh × (UTS × 0.6)</div>
-                    <div class="text-slate-500">F_sh = ${areaShear.toFixed(1)} × (${uts} × 0.6) = ${(forceShear).toFixed(0)} N</div>
-                `;
-                document.getElementById('logic-step3-title').innerHTML = `Step 3: 潰縮 B (<span class="font-serif italic text-blue-600">45°倒錐承壓修正</span>)`;
-                document.getElementById('logic-crush-formula').innerHTML = `
-                    <div class="text-slate-600">A_br = (π/4) × (Dh² - Du²)</div>
-                    <div class="text-slate-500 mb-1">A_br = 0.7854 × (${dh.toFixed(2)}² - ${du.toFixed(2)}²) = ${areaBearing.toFixed(1)} mm²</div>
-                    <div class="text-slate-600">F_cr = A_br × UTS × sec(45°)</div>
-                    <div class="text-slate-500">F_cr = ${areaBearing.toFixed(1)} × ${uts} × 1.414 = ${(forceCrush).toFixed(0)} N</div>
-                `;
-            } else {
-                areaShear = Math.PI * dh * t_eff; areaBearing = dh > du ? (Math.PI / 4) * (Math.pow(dh, 2) - Math.pow(du, 2)) : 0;
-                forceShear = areaShear * (uts * 0.6); forceCrush = areaBearing * uts;
-                
-                document.getElementById('logic-step1-formula').innerHTML = `<div class="text-indigo-600 font-bold">t_eff = Hu = ${t_eff.toFixed(2)} mm</div>`;
-                document.getElementById('logic-step2-title').innerHTML = `Step 2: 剪切 A (<span class="font-serif italic text-red-600">沿大頭外緣 Dh</span>)`;
-                document.getElementById('logic-shear-formula').innerHTML = `
-                    <div class="text-slate-600">A_sh = π × Dh × t_eff</div>
-                    <div class="text-slate-500 mb-1">A_sh = π × ${dh.toFixed(2)} × ${t_eff.toFixed(2)} = ${areaShear.toFixed(1)} mm²</div>
-                    <div class="text-slate-600">F_sh = A_sh × (UTS × 0.6)</div>
-                    <div class="text-slate-500">F_sh = ${areaShear.toFixed(1)} × (${uts} × 0.6) = ${(forceShear).toFixed(0)} N</div>
-                `;
-                document.getElementById('logic-step3-title').innerHTML = `Step 3: 潰縮 B (<span class="font-serif italic text-blue-600">Dh與Du間的平口</span>)`;
-                document.getElementById('logic-crush-formula').innerHTML = `
-                    <div class="text-slate-600">A_br = (π/4) × (Dh² - Du²)</div>
-                    <div class="text-slate-500 mb-1">A_br = 0.7854 × (${dh.toFixed(2)}² - ${du.toFixed(2)}²) = ${areaBearing.toFixed(1)} mm²</div>
-                    <div class="text-slate-600">F_cr = A_br × UTS</div>
-                    <div class="text-slate-500">F_cr = ${areaBearing.toFixed(1)} × ${uts} = ${(forceCrush).toFixed(0)} N</div>
-                `;
-            }
-            currentForceN = Math.min(forceShear, forceCrush); currentForceKgf = currentForceN / 9.80665;
-            const modeEl = document.getElementById('math-failure-mode');
-            if (forceShear < forceCrush) { currentFailureMode = "剪切斷裂"; modeEl.innerText = "剪切"; modeEl.className = "ml-1 px-1 py-0.5 rounded bg-red-500 text-white text-[8px] font-bold"; }
-            else { currentFailureMode = "承壓潰縮"; modeEl.innerText = "潰縮"; modeEl.className = "ml-1 px-1 py-0.5 rounded bg-blue-500 text-white text-[8px] font-bold"; }
-            safeSetText('resultNewton', currentForceN.toLocaleString('en-US', { maximumFractionDigits: 0 })); safeSetText('resultKgf', currentForceKgf.toLocaleString('en-US', { maximumFractionDigits: 1 })); safeSetText('math-f-final', currentForceN.toFixed(0));
-        }
-
-        // ================== SVG 繪圖引擎 ==================
-        function setIndicator(type, x1, y1, y2, text, textX, textY, xRight = null) {
-            const centerX = 450;
-            if (type === 'Shear') {
-                if (document.getElementById('svgShearLeft')) { document.getElementById('svgShearLeft').setAttribute('x1', x1); document.getElementById('svgShearLeft').setAttribute('y1', y1); document.getElementById('svgShearLeft').setAttribute('x2', x1); document.getElementById('svgShearLeft').setAttribute('y2', y2);
-                    const rightX = centerX + (centerX - x1); document.getElementById('svgShearRight').setAttribute('x1', rightX); document.getElementById('svgShearRight').setAttribute('y1', y1); document.getElementById('svgShearRight').setAttribute('x2', rightX); document.getElementById('svgShearRight').setAttribute('y2', y2); }
-                if (document.getElementById('svgShearBg')) { document.getElementById('svgShearBg').setAttribute('x', textX - 5); document.getElementById('svgShearBg').setAttribute('y', textY - 12); document.getElementById('svgShearText').setAttribute('x', textX); document.getElementById('svgShearText').setAttribute('y', textY); document.getElementById('svgShearText').textContent = text; }
-            } else if (type === 'Bearing') {
-                if (document.getElementById('svgBearingLeft')) { document.getElementById('svgBearingLeft').setAttribute('x1', x1); document.getElementById('svgBearingLeft').setAttribute('y1', y1); document.getElementById('svgBearingLeft').setAttribute('x2', xRight); document.getElementById('svgBearingLeft').setAttribute('y2', y1);
-                    const rX1 = centerX + (centerX - xRight); const rX2 = centerX + (centerX - x1); document.getElementById('svgBearingRight').setAttribute('x1', rX1); document.getElementById('svgBearingRight').setAttribute('y1', y1); document.getElementById('svgBearingRight').setAttribute('x2', rX2); document.getElementById('svgBearingRight').setAttribute('y2', y1); }
-                if (document.getElementById('svgBearingBg')) { document.getElementById('svgBearingBg').setAttribute('x', textX - 5); document.getElementById('svgBearingBg').setAttribute('y', textY - 12); document.getElementById('svgBearingText').setAttribute('x', textX); document.getElementById('svgBearingText').setAttribute('y', textY); document.getElementById('svgBearingText').textContent = text; }
-            }
-        }
-
-        function updateSVG(params) {
-            const centerX = 450; const scale = 55;
-            const r_dh = (params.dh*scale)/2; const r_dp = (params.dp*scale)/2; const r_du = (params.du*scale)/2;
-            const r_d = (params.d*scale)/2; const r_th = (2.0*scale)/2; const t_px = params.hu*scale;
-            
-            // 方向：柱朝上，齊平基準面在頂部
-            const y_surface = 180; const y_flangeTop = y_surface; const y_postTop = y_flangeTop - (params.hb*scale);
-            const y_undercutTop = y_flangeTop + (params.hp*scale); const y_headTop = y_undercutTop + (params.hu*scale);
-            const y_holeBottom = y_headTop + (params.hh*scale); const chamfer = 0.2*scale; const y_plateBottom = y_holeBottom + 35; const y_thread_bottom = y_postTop + ((params.hb*scale)*0.7);
-
-            if(document.getElementById('centerLine')) { document.getElementById('centerLine').setAttribute('y1', 20); document.getElementById('centerLine').setAttribute('y2', y_plateBottom + 20); }
-            if (document.getElementById('fArrow')) document.getElementById('fArrow').setAttribute('d', `M ${centerX} ${y_postTop - 45} L ${centerX} ${y_postTop - 85}`);
-            if (document.getElementById('fText')) document.getElementById('fText').setAttribute('y', y_postTop - 60);
-
-            let nutPath = `M ${centerX - r_th} ${y_postTop} L ${centerX - r_d} ${y_postTop} L ${centerX - r_d} ${y_flangeTop} L ${centerX - r_dp} ${y_flangeTop} L ${centerX - r_dp} ${y_undercutTop} `;
-            let pL = `M 20 ${y_surface} L ${centerX - r_dp} ${y_surface} L ${centerX - r_dp} ${y_undercutTop} `;
-            let pR = `M 780 ${y_surface} L ${centerX + r_dp} ${y_surface} L ${centerX + r_dp} ${y_undercutTop} `;
-            let sqL = ''; let sqR = ''; const max_r = Math.max(r_dh, r_dp, r_d);
-            
-            const textX_shear = 160; 
-            const textY_shear = y_undercutTop + t_px/2 + 4; const bearingTextY = y_undercutTop - 12;
-
-            if (currentShape === 'tri') {
-                // 鋁釘倒錐 (錐度往下漸擴)
-                nutPath += `L ${centerX - r_du} ${y_undercutTop} L ${centerX - r_dh} ${y_headTop} `;
-                pL += `L ${centerX - r_dh} ${y_undercutTop} L ${centerX - r_dh} ${y_holeBottom} `; pR += `L ${centerX + r_dh} ${y_undercutTop} L ${centerX + r_dh} ${y_holeBottom} `;
-                sqL = `M ${centerX - r_dh} ${y_undercutTop} L ${centerX - r_du} ${y_undercutTop} L ${centerX - r_dh} ${y_headTop} Z`; sqR = `M ${centerX + r_dh} ${y_undercutTop} L ${centerX + r_du} ${y_undercutTop} L ${centerX + r_dh} ${y_headTop} Z`;
-                
-                const r_avg = (r_dh + r_du) / 2; setIndicator('Shear', centerX - r_avg, y_undercutTop, y_headTop, '剪切面 (Davg) →', textX_shear, textY_shear);
-                setIndicator('Bearing', centerX - r_dh, y_undercutTop, y_undercutTop, '潰縮面 (Dh-Du) →', textX_shear, bearingTextY, centerX - r_du);
-            } else {
-                // 矩形
-                nutPath += `L ${centerX - r_du} ${y_undercutTop} L ${centerX - r_du} ${y_headTop} L ${centerX - r_dh} ${y_headTop} `;
-                pL += `L ${centerX - r_dh} ${y_undercutTop} L ${centerX - r_dh} ${y_holeBottom} `; pR += `L ${centerX + r_dh} ${y_undercutTop} L ${centerX + r_dh} ${y_holeBottom} `;
-                sqL = `M ${centerX - r_dh} ${y_undercutTop} L ${centerX - r_du} ${y_undercutTop} L ${centerX - r_du} ${y_headTop} L ${centerX - r_dh} ${y_headTop} Z`; sqR = `M ${centerX + r_dh} ${y_undercutTop} L ${centerX + r_du} ${y_undercutTop} L ${centerX + r_du} ${y_headTop} L ${centerX + r_dh} ${y_headTop} Z`;
-                setIndicator('Shear', centerX - r_dh, y_undercutTop, y_headTop, '剪切面 (Dh) →', textX_shear, textY_shear);
-                setIndicator('Bearing', centerX - r_dh, y_undercutTop, y_undercutTop, '潰縮面 (Dh-Du) →', textX_shear, bearingTextY, centerX - r_du);
-            }
-            
-            nutPath += `L ${centerX - r_dh} ${y_holeBottom - chamfer} L ${centerX - r_dh + chamfer} ${y_holeBottom} L ${centerX} ${y_holeBottom} `;
-            pL += `L ${centerX} ${y_holeBottom} L ${centerX} ${y_plateBottom} L 20 ${y_plateBottom} Z`; pR += `L ${centerX} ${y_holeBottom} L ${centerX} ${y_plateBottom} L 780 ${y_plateBottom} Z`;
-            nutPath += `L ${centerX + r_dh - chamfer} ${y_holeBottom} L ${centerX + r_dh} ${y_holeBottom - chamfer} L ${centerX + r_dh} ${y_headTop} `;
-            if (currentShape === 'tri') nutPath += `L ${centerX + r_du} ${y_undercutTop} `; else nutPath += `L ${centerX + r_du} ${y_headTop} L ${centerX + r_du} ${y_undercutTop} `;
-            nutPath += `L ${centerX + r_dp} ${y_undercutTop} L ${centerX + r_dp} ${y_flangeTop} L ${centerX + r_d} ${y_flangeTop} L ${centerX + r_d} ${y_postTop} L ${centerX + r_th} ${y_postTop} L ${centerX + r_th} ${y_thread_bottom} L ${centerX - r_th} ${y_thread_bottom} Z`;
-
-            if (document.getElementById('svgNut')) document.getElementById('svgNut').setAttribute('d', nutPath); if (document.getElementById('svgNutHatch')) document.getElementById('svgNutHatch').setAttribute('d', nutPath);
-            if (document.getElementById('svgPlateL')) document.getElementById('svgPlateL').setAttribute('d', pL); if (document.getElementById('svgPlateLHatch')) document.getElementById('svgPlateLHatch').setAttribute('d', pL);
-            if (document.getElementById('svgPlateR')) document.getElementById('svgPlateR').setAttribute('d', pR); if (document.getElementById('svgPlateRHatch')) document.getElementById('svgPlateRHatch').setAttribute('d', pR);
-            if (document.getElementById('svgSqueezeL')) document.getElementById('svgSqueezeL').setAttribute('d', sqL); if (document.getElementById('svgSqueezeR')) document.getElementById('svgSqueezeR').setAttribute('d', sqR);
-
-            if(document.getElementById('svgInput_dh')) document.getElementById('svgInput_dh').value = params.dh; if(document.getElementById('svgInput_du')) document.getElementById('svgInput_du').value = params.du;
-            if(document.getElementById('svgInput_dp')) document.getElementById('svgInput_dp').value = params.dp; if(document.getElementById('svgInput_d')) document.getElementById('svgInput_d').value = params.d;
-            if(document.getElementById('svgInput_t')) document.getElementById('svgInput_t').value = params.t; if(document.getElementById('svgInput_hh')) document.getElementById('svgInput_hh').value = params.hh;
-            if(document.getElementById('svgInput_hu')) document.getElementById('svgInput_hu').value = params.hu; if(document.getElementById('svgInput_hp')) document.getElementById('svgInput_hp').value = params.hp;
-            if(document.getElementById('svgInput_hb')) document.getElementById('svgInput_hb').value = params.hb;
-
-            function setDimD(id, y, r, extY1) {
-                if (!document.getElementById(`dim${id}_line`)) return; document.getElementById(`dim${id}_line`).setAttribute('x1', centerX - r); document.getElementById(`dim${id}_line`).setAttribute('x2', centerX + r); document.getElementById(`dim${id}_line`).setAttribute('y1', y); document.getElementById(`dim${id}_line`).setAttribute('y2', y);
-                document.getElementById(`dim${id}_ext1`).setAttribute('x1', centerX - r); document.getElementById(`dim${id}_ext1`).setAttribute('x2', centerX - r); document.getElementById(`dim${id}_ext1`).setAttribute('y1', extY1); document.getElementById(`dim${id}_ext1`).setAttribute('y2', y - 5);
-                document.getElementById(`dim${id}_ext2`).setAttribute('x1', centerX + r); document.getElementById(`dim${id}_ext2`).setAttribute('x2', centerX + r); document.getElementById(`dim${id}_ext2`).setAttribute('y1', extY1); document.getElementById(`dim${id}_ext2`).setAttribute('y2', y - 5);
-                const fo = document.getElementById(`dim${id}_fo`); if(fo) { fo.setAttribute('x', centerX - (parseInt(fo.getAttribute('width'))/2)); fo.setAttribute('y', y - 11); }
-            }
-            setDimD('D', y_postTop - 25, r_d, y_postTop); setDimD('Dp', y_flangeTop + 10, r_dp, y_flangeTop); setDimD('Du', y_undercutTop + 10, r_du, y_undercutTop); setDimD('Dh', y_holeBottom + 25, r_dh, y_holeBottom);
-
-            const tLineX = textX_shear - 15;
-            if(document.getElementById('dimT_line')) { document.getElementById('dimT_line').setAttribute('x1', tLineX); document.getElementById('dimT_line').setAttribute('x2', tLineX); document.getElementById('dimT_line').setAttribute('y1', y_undercutTop); document.getElementById('dimT_line').setAttribute('y2', y_headTop);
-                document.getElementById('dimT_ext1').setAttribute('x1', textX_shear - 5); document.getElementById('dimT_ext1').setAttribute('x2', tLineX + 5); document.getElementById('dimT_ext1').setAttribute('y1', y_undercutTop); document.getElementById('dimT_ext1').setAttribute('y2', y_undercutTop);
-                document.getElementById('dimT_ext2').setAttribute('x1', centerX - r_dh); document.getElementById('dimT_ext2').setAttribute('x2', tLineX + 5); document.getElementById('dimT_ext2').setAttribute('y1', y_headTop); document.getElementById('dimT_ext2').setAttribute('y2', y_headTop); }
-            const foT = document.getElementById('dimT_fo'); if(foT) { foT.setAttribute('x', tLineX - parseInt(foT.getAttribute('width')) - 8); foT.setAttribute('y', y_undercutTop + (y_headTop - y_undercutTop)/2 - 11); }
-
-            const hLineX = centerX + max_r + 30;
-            function setDimH(id, y_start, y_end, r, xOffset = 0) {
-                if (!document.getElementById(`dim${id}_line`)) return; document.getElementById(`dim${id}_line`).setAttribute('x1', hLineX); document.getElementById(`dim${id}_line`).setAttribute('x2', hLineX); document.getElementById(`dim${id}_line`).setAttribute('y1', y_start); document.getElementById(`dim${id}_line`).setAttribute('y2', y_end);
-                document.getElementById(`dim${id}_ext1`).setAttribute('x1', centerX + r); document.getElementById(`dim${id}_ext1`).setAttribute('x2', hLineX - 5); document.getElementById(`dim${id}_ext1`).setAttribute('y1', y_start); document.getElementById(`dim${id}_ext1`).setAttribute('y2', y_start);
-                document.getElementById(`dim${id}_ext2`).setAttribute('x1', centerX + r); document.getElementById(`dim${id}_ext2`).setAttribute('x2', hLineX - 5); document.getElementById(`dim${id}_ext2`).setAttribute('y1', y_end); document.getElementById(`dim${id}_ext2`).setAttribute('y2', y_end);
-                const box_cy = y_start + (y_end - y_start)/2; const fo = document.getElementById(`dim${id}_fo`); if(fo) { fo.setAttribute('x', hLineX + 5 + xOffset); fo.setAttribute('y', box_cy - 11); }
-                let leader = document.getElementById(`dim${id}_leader`); if (leader) { if (xOffset > 0) { leader.setAttribute('x1', hLineX); leader.setAttribute('x2', hLineX + 5 + xOffset); leader.setAttribute('y1', box_cy); leader.setAttribute('y2', box_cy); leader.style.display = 'block'; } else { leader.style.display = 'none'; } }
-            }
-            setDimH('Hb', y_postTop, y_flangeTop, r_d, 0); setDimH('Hp', y_flangeTop, y_undercutTop, r_dp, 0); setDimH('Hu', y_undercutTop, y_headTop, r_du, 65); setDimH('Hh', y_headTop, y_holeBottom, r_dh, 0);
-        }
-
-        function addRecord() {
-            if (!hasCalculated) { alert("請先點擊「更新計算」"); return; }
-            const emptyRow = document.getElementById('emptyStateRow'); if (emptyRow) emptyRow.style.display = 'none';
-            const uts=document.getElementById('utsInput').value; const hu=document.getElementById('huInput').value;
-            const dh=document.getElementById('dhInput').value; const dp=document.getElementById('dpInput').value; const du=document.getElementById('duInput').value;
-            recordCount++; const rowId = 'record-' + recordCount; const tbody = document.getElementById('historyTableBody'); const tr = document.createElement('tr'); tr.id = rowId; tr.className = 'bg-white border-b hover:bg-slate-50 transition-colors';
-            const modeColor = currentFailureMode === "剪切斷裂" ? "text-red-600" : "text-blue-600";
-            const shapeLabel = currentShape === 'tri' ? '<span class="text-[8px] bg-blue-50 text-blue-600 px-1 rounded mr-0.5">45°</span>' : '<span class="text-[8px] bg-slate-100 text-slate-600 px-1 rounded mr-0.5">矩形</span>';
-            tr.innerHTML = `<td class="px-2 py-1.5 flex items-center">${shapeLabel}${uts}</td><td class="px-2 py-1.5 font-bold text-indigo-600">${hu}</td><td class="px-2 py-1.5 text-slate-500"><strong class="text-red-500">${dh}</strong>/${dp}/${du}</td><td class="px-2 py-1.5 font-bold text-slate-800 bg-emerald-50/50">${currentForceN.toLocaleString('en-US',{maximumFractionDigits:0})}</td><td class="px-2 py-1.5 font-bold ${modeColor} text-[8px]">${currentFailureMode.substring(0,2)}</td><td class="px-1 py-1.5 text-center"><button onclick="deleteRecord('${rowId}')" class="text-slate-300 hover:text-red-500 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></td>`;
-            tbody.insertBefore(tr, tbody.firstChild); document.getElementById('recordCountLabel').innerText = recordCount;
-        }
-        function deleteRecord(rowId) {
-            const row = document.getElementById(rowId); if (row) { row.remove(); recordCount--; document.getElementById('recordCountLabel').innerText = recordCount; }
-            const tbody = document.getElementById('historyTableBody'); if (tbody.querySelectorAll('tr:not(#emptyStateRow)').length === 0) { const emptyRow = document.getElementById('emptyStateRow'); if (emptyRow) emptyRow.style.display = 'table-row'; }
-        }
-        window.onload = function() { runUpdate(); executeCalculation(); };
-    </script>
+  </main>
+</div>
 </body>
 </html>
